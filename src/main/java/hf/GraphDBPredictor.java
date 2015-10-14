@@ -15,6 +15,8 @@ public class GraphDBPredictor {
 
     private static final String dbFolder = "C:/Users/ufnagyi/Documents/Neo4J_Database";
 
+//         F:/Dokumentumok/Neo4j
+
     public GraphDBPredictor(){
         graphDB = new GraphDB();
     }
