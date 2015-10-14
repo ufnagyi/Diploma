@@ -2,7 +2,6 @@ package hf;
 
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
-import org.neo4j.cypher.internal.compiler.v1_9.commands.Has;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.UniqueFactory;
@@ -18,14 +17,24 @@ import java.util.Map;
  */
 public class GraphDB {
     public GraphDatabaseService graphDB;
+    public Database db = null;
     public ExtendedDatabase dbExt = null;
 
     public enum Labels implements Label {
-        ITEM, USER, META;
+        Item, User, Meta
+    }
+
+    public enum indexedProperties {
+        Item("itemID"), User("userID"), Meta("mword");
+        private String property;
+
+        private indexedProperties(String str) {
+            this.property = str;
+        }
     }
 
     public enum Relationships implements RelationshipType {
-        SEEN, HAS_META;
+        SEEN, HAS_META
     }
 
     private static void registerShutdownHook( final GraphDatabaseService graphDb )
@@ -44,46 +53,143 @@ public class GraphDB {
     }
 
     public void buildDB(Database db) {
-        dbExt = (ExtendedDatabase) db;
+        this.db = db;
+        this.dbExt = (ExtendedDatabase) db;
+
         graphDB = new GraphDatabaseFactory().newEmbeddedDatabase("C:/Users/ufnagyi/Documents/Neo4J_Database");
         registerShutdownHook(graphDB);
 
-        loadItemsToGraphDB(db);
-        //loadUsersToGraphDB(db);
+        loadMetaWordsToGraphDB();
+        loadItemsToGraphDB();
+        loadUsersToGraphDB();
         createIndexes();
 
     }
 
     private void createIndexes() {
-        Transaction tx = graphDB.beginTx();
-        Schema schema = graphDB.schema();
+        Transaction tx;
 
+        //Cypherrel indexeles:
+
+//        tx = graphDB.beginTx();
+//        graphDB.execute("CREATE INDEX ON :Item(itemID)");
+//        tx.success();
+//        tx.close();
+//
+//        tx = graphDB.beginTx();
+//        graphDB.execute("CREATE INDEX ON :User(userID)");
+//        tx.success();
+//        tx.close();
+//
+//        tx = graphDB.beginTx();
+//        graphDB.execute("CREATE INDEX ON :Meta(mword)");
+//        tx.success();
+//        tx.close();
+
+        //Javaval indexeles
+
+        tx = graphDB.beginTx();
+        Schema schema = graphDB.schema();
         //item és user indexelés ID szerint
-        IndexDefinition indexDefinition;
-        indexDefinition = schema.indexFor(Labels.ITEM).on("ItemID").create();
-        indexDefinition = schema.indexFor(Labels.USER).on("UserID").create();
+        if(!checkForIndex(schema.getIndexes(Labels.Item),indexedProperties.Item.property)) {
+            IndexDefinition indexDefinition = schema.indexFor(Labels.Item).on(indexedProperties.Item.property).create();
+            tx.success();
+            tx.close();
+            tx = graphDB.beginTx();
+        }
+        if(!checkForIndex(schema.getIndexes(Labels.User),indexedProperties.User.property)) {
+            IndexDefinition indexDefinition = schema.indexFor(Labels.User).on(indexedProperties.User.property).create();
+            tx.success();
+            tx.close();
+            tx = graphDB.beginTx();
+        }
+        if(!checkForIndex(schema.getIndexes(Labels.Meta),indexedProperties.Meta.property)) {
+            IndexDefinition indexDefinition = schema.indexFor(Labels.Meta).on(indexedProperties.Meta.property).create();
+            tx.success();
+            tx.close();
+            tx = graphDB.beginTx();
+        }
         for (IndexDefinition definition : schema.getIndexes())
-            definition.toString();
+            System.out.println(definition.toString());
         tx.success();
         tx.close();
     }
 
+    public boolean checkForIndex(Iterable<IndexDefinition> indexes, String propertyName){
+        for(IndexDefinition index : indexes) {
+            for (String key: index.getPropertyKeys()) {
+                if (key.equals(propertyName)) {
+                    return true; // index for given label and property exists
+                }
+            }
+        }
+        return false;
+    }
+
+    public void loadMetaWordsToGraphDB() {
+        int mwCNT = 0;
+
+        HashSet<String> allUniqueMetaWords = new HashSet<>(100);
+
+        for (Database.Item i : db.items(null)) {
+            HashSet<String> itemMWords = getUniqueItemMetaWordsByKey(i.idx,"VodMenuDirect", "[^\\p{L}0-9:_ ]");
+            for (String mW : itemMWords) {
+                if (!allUniqueMetaWords.contains(mW)) {
+                    allUniqueMetaWords.add(mW);
+                    mwCNT++;
+                }
+            }
+        }
+        System.out.println(mwCNT);
+
+        Node node;
+        Transaction tx = graphDB.beginTx();
+        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "Meta") {
+            @Override
+            protected void initialize(Node created, Map<String, Object> properties) {
+                created.setProperty("mword", properties.get("mword"));
+            }
+        };
+
+        //Metawordok feltöltése a gráfba
+        Iterator<String> iterator = allUniqueMetaWords.iterator();
+        int j = 0;
+        while(iterator.hasNext()) {
+            String mW = iterator.next();
+            node = factory.getOrCreate("mword",mW);
+            setMetaWordProperty(node,mW);
+            j++;
+            if (j % 100 == 0) {
+                tx.success();
+                tx.close();
+                tx = graphDB.beginTx();
+                System.out.println(j);
+            }
+        }
+        tx.success();
+        tx.close();
+
+        System.out.println("A metaword node-ok feltoltese sikerult!");
+    }
 
     //TODO
-    private void loadRelationshipsToGraphDB(Database db) {
+    private void loadRelationshipsToGraphDB() {
+    }
+
+    private void loadUsersToGraphDB() {
         int j = 0;
         Node node;
         Transaction tx = graphDB.beginTx();
-        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "USER") {
+        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "User") {
             @Override
             protected void initialize(Node created, Map<String, Object> properties) {
-                created.setProperty("UserID", properties.get("UserID"));
+                created.setProperty("userID", properties.get("userID"));
             }
         };
 
         //Userek feltöltése a gráfba
         for (Database.User u : db.users(null)) {
-            node = factory.getOrCreate("UserID", u.idx);
+            node = factory.getOrCreate("userID", u.idx);
             setUserProperty(node, u);
             j++;
             if (j % 1000 == 0) {
@@ -99,56 +205,25 @@ public class GraphDB {
         System.out.println("A userek feltoltese sikerult!");
     }
 
-    private void loadUsersToGraphDB(Database db) {
+    private void loadItemsToGraphDB() {
         int j = 0;
         Node node;
-        Transaction tx = graphDB.beginTx();
-        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "USER") {
-            @Override
-            protected void initialize(Node created, Map<String, Object> properties) {
-                created.setProperty("UserID", properties.get("UserID"));
-            }
-        };
-
-        //Userek feltöltése a gráfba
-        for (Database.User u : db.users(null)) {
-            node = factory.getOrCreate("UserID", u.idx);
-            setUserProperty(node, u);
-            j++;
-            if (j % 1000 == 0) {
-                tx.success();
-                tx.close();
-                tx = graphDB.beginTx();
-                System.out.println(j);
-            }
-        }
-        tx.success();
-        tx.close();
-
-        System.out.println("A userek feltoltese sikerult!");
-    }
-
-    private void loadItemsToGraphDB(Database db) {
-        int j = 0;
-        Node node;
-        HashSet<String> allUniqueMetaWords = new HashSet<String>(100);
         Transaction tx = graphDB.beginTx();
 //        Schema schema = graphDB.schema();
 //        for (IndexDefinition definition : schema.getIndexes())
 //            definition.toString();
 
-        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "ITEM") {
+        UniqueFactory<Node> factory = new UniqueFactory.UniqueNodeFactory(graphDB, "Item") {
             @Override
             protected void initialize(Node created, Map<String, Object> properties) {
-                created.setProperty("ItemID", properties.get("ItemID"));
+                created.setProperty("itemID", properties.get("itemID"));
             }
         };
 
-        String cypherCommand;
         //Itemek feltöltése a gráfba
         for (Database.Item i : db.items(null)) {
             int iIdx = i.idx;
-            node = factory.getOrCreate("ItemID", iIdx);
+            node = factory.getOrCreate("itemID", iIdx);
             setItemProperty(node, i);
             j++;
             if (j % 500 == 0) {
@@ -164,29 +239,32 @@ public class GraphDB {
         System.out.println("Az itemek feltoltese sikerult!");
     }
 
-    public HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator, HashSet<String> allUniqueMetaWords_ ){
-        HashSet<String> itemMetaWords = new HashSet<String>();
+    public HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator){
+        HashSet<String> itemMetaWords = new HashSet<>();
         String keyAll = dbExt.getItemKeyValue(iIdx, key);
         String[] values = keyAll.split(key_value_separator);
 
         for (String val : values) {
-            if (val.equals("") || val.length() < 3 || allUniqueMetaWords_.contains(val))
+            if (val.equals("") || val.length() < 3)
                 continue;
-            String mWord = val.toLowerCase();
-            itemMetaWords.add(mWord);
-            allUniqueMetaWords_.add(mWord);
+            itemMetaWords.add(val.toLowerCase());
         }
         return itemMetaWords;
     }
 
     public void setItemProperty(Node node, Database.Item i){
-        node.addLabel(Labels.ITEM);
-        node.setProperty("ItemID",i.idx);
-        node.setProperty("Name",i.name);
+        node.addLabel(Labels.Item);
+        node.setProperty("itemID",i.idx);
+        node.setProperty("name",i.name);
     }
 
     public void setUserProperty(Node node, Database.User u){
-        node.addLabel(Labels.USER);
-        node.setProperty("UserID",u.idx);
+        node.addLabel(Labels.User);
+        node.setProperty("userID",u.idx);
+    }
+
+    public void setMetaWordProperty(Node node, String metaWord){
+        node.addLabel(Labels.Meta);
+        node.setProperty("mword", metaWord);
     }
 }
