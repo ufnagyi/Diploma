@@ -52,11 +52,11 @@ public class GraphDB {
         } );
     }
 
-    public void buildDB(Database db) {
+    public void buildDB(Database db, String dbFolder) {
         this.db = db;
         this.dbExt = (ExtendedDatabase) db;
 
-        graphDB = new GraphDatabaseFactory().newEmbeddedDatabase("C:/Users/ufnagyi/Documents/Neo4J_Database");
+        graphDB = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
         registerShutdownHook(graphDB);
 
         loadMetaWordsToGraphDB();

@@ -13,6 +13,8 @@ public class GraphDBPredictor {
     public GraphDB graphDB;
     public Database db;
 
+    private static final String dbFolder = "C:/Users/ufnagyi/Documents/Neo4J_Database";
+
     public GraphDBPredictor(){
         graphDB = new GraphDB();
     }
@@ -24,7 +26,7 @@ public class GraphDBPredictor {
     public void train(){
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("GraphDB epites kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
-        graphDB.buildDB(db);
+        graphDB.buildDB(db, dbFolder);
         System.out.println("A grafDB felepult:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 }
