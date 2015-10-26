@@ -19,7 +19,7 @@ public class WordBasedPredictor extends Predictor {
     public static final String META_KEYS = "metaKeys";
     private static final String KEYVALUE_SEP = " ";
     private static final String KEYVALUE_WEIGHT_SEP = ":";
-    private static final String KEY_VALUE_LIST_SEPARATOR = "[^\\p{L}0-9:_ ]";
+    private static final String KEY_VALUE_LIST_SEPARATOR = "[^\\p{L}0-9:_. ]";
     private static final String wordToWordSetsByKeyValueFileName = "wordToWordSetsByKeyValue";
     private static final String wordToWordSimilaritiesFileName = "wordToWordSimilarities";
     private static final String wordToWordSuppsFileName = "wordToWordSupps";

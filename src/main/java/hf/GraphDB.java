@@ -9,6 +9,7 @@ import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,14 +67,14 @@ public class GraphDB {
         this.db = db;
         this.dbExt = (ExtendedDatabase) db;
 
-        graphDB = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
+        graphDB = new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbFolder));
         registerShutdownHook(graphDB);
 
-        //loadMetaWordsToGraphDB();
-//        loadItemsWithMetaWordsToGraphDB();
-//        loadUsersToGraphDB();
-//        createIndexes();
-//        listGraphDBInfo();
+        loadMetaWordsToGraphDB();
+        loadItemsWithMetaWordsToGraphDB();
+        loadUsersToGraphDB();
+        createIndexes();
+        listGraphDBInfo();
 
         loadEventRelationshipsToGraphDB();
 
@@ -145,7 +146,7 @@ public class GraphDB {
         HashSet<String> allUniqueMetaWords = new HashSet<>(100);
 
         for (Database.Item i : db.items(null)) {
-            HashSet<String> itemMWords = getUniqueItemMetaWordsByKey(i.idx,"VodMenuDirect", "[^\\p{L}0-9:_ ]");
+            HashSet<String> itemMWords = getUniqueItemMetaWordsByKey(i.idx,"VodMenuDirect", "[^\\p{L}0-9:_. ]");
             for (String mW : itemMWords) {
                 if (!allUniqueMetaWords.contains(mW)) {
                     allUniqueMetaWords.add(mW);

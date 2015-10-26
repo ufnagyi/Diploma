@@ -1,0 +1,36 @@
+CREATE CONSTRAINT ON (item:Item) ASSERT item.id IS UNIQUE;
+CREATE CONSTRAINT ON (user:User) ASSERT user.id IS UNIQUE;
+CREATE CONSTRAINT ON (meta:Meta) ASSERT meta.word IS UNIQUE;
+
+--ITEM NODE létrehozás
+--9 sec:
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+CREATE (i:Item { id: line.ItemID, title: line.Title })
+
+
+--USER NODE létrehozás
+--452 sec:
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/events_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+MERGE (u:User { id: line.UserID})
+
+
+--USER ITEM ÖSSZERENDELÉS
+--547 sec
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/events_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+MATCH (u:User { id: line.UserID}), (i:Item {id: line.ItemID}) 
+MERGE (u) - [:SEEN] -> (i)
+
+
+--VODMENU létrehozás és ITEM-VODMENU összerendelés
+--26 sec, 687 VODMENU node, 105 ezer kapcsolat
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_vodmenu_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+MATCH (i:Item {id: line.ItemID}) 
+MERGE (w:Meta {word: line.VODMenu})
+MERGE (i) - [:VOD] -> (w)
+
+
+

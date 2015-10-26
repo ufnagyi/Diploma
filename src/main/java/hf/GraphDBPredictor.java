@@ -25,7 +25,16 @@ public class GraphDBPredictor {
         this.db = db;
     }
 
+
+
     public void train(){
+
+        Reader r = new Reader(db);
+        r.createNewItemActorList();
+        r.createNewItemDirectorList();
+        r.createNewItemVODMenuList();
+        r.createNewItemList();
+        r.createNewEventList();
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("GraphDB epites kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         graphDB.buildDB(db, dbFolder);
