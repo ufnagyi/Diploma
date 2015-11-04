@@ -30,7 +30,7 @@ public class Main {
 	public static void buildDatabaseAndSave() throws Exception {
 		
 		System.out.println("Setting file paths...");
-		HashMap<String, String> path = new HashMap<String, String>();
+		HashMap<String, String> path = new HashMap<>();
 		path.put(ExtendedDatabase.ITEM, getItemsFilename());		
 		path.put(ExtendedDatabase.EVENT, getEventsFilename());
 		
@@ -227,8 +227,9 @@ public class Main {
 //		System.out.println("\nSTEP 1: Importing, building and saving database:");
 //		buildDatabaseAndSave();
 		
-		System.out.println("\nSTEP 2: Loading binary databases from file:");
-		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+//		System.out.println("\nSTEP 2: Loading binary databases from file:");
+//		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+		Database[] dbs = new Database[]{new Database()};
 
 		System.out.println("\nSTEP 3: Predictor training:");
 		Predictor[] preds = trainPredictors(dbs[0]);

@@ -1,7 +1,10 @@
 package hf;
 
 import gnu.trove.iterator.TObjectDoubleIterator;
+import gnu.trove.iterator.TObjectIntIterator;
+import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 import org.neo4j.graphdb.*;
@@ -9,14 +12,18 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+import org.neo4j.graphdb.traversal.*;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.kernel.impl.store.MetaDataStore;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by ufnagyi
@@ -69,7 +76,7 @@ public class GraphDB {
 
     public void initDB(Database db, File dbFolder){
         this.db = db;
-        this.dbExt = (ExtendedDatabase) db;
+//        this.dbExt = (ExtendedDatabase) db;
         graphDBService = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
         registerShutdownHook(graphDBService);
     }
@@ -358,98 +365,93 @@ public class GraphDB {
         tx.close();
     }
 
-    public void asd() {
+    public void computeItemToItemSims() {
         Transaction tx = graphDBService.beginTx();
             ArrayList<Node> nodeList = new ArrayList<>();
-            TObjectDoubleHashMap<Pair> itemToItemSimilarities = new TObjectDoubleHashMap<>();
-            Double sim;
+        TDoubleArrayList itemToItemSimilarities = new TDoubleArrayList();
 
-            ResourceIterator<Node> itemNodes = graphDBService.findNodes(Labels.Item);
-            while (itemNodes.hasNext()) {
-                nodeList.add(itemNodes.next());
-            }
-
-            int i = nodeList.size() - 1;
-            int percent = i / 100;
-            int j = 0;
-            int k;
-            int l = 1;
-            while (j < i) {
-                Node item = nodeList.get(j);
-                HashSet<Long> endNodeSetA = new HashSet<>();
-
-                long id1 = item.getId();
-
-                for (Relationship relationship : item.getRelationships(Direction.INCOMING, Relationships.SEEN)) {
-                    endNodeSetA.add(relationship.getOtherNode(item).getId());
-                }
-                k = j + 1;
-                while (k <= i) {
-                    Node item2 = nodeList.get(k);
-                    Pair p = new Pair((int) id1, (int) item2.getId());
-                    sim = computeCosineSimilarity(endNodeSetA, item2, Direction.INCOMING, Relationships.SEEN);
-                    if (sim > 0)
-                        itemToItemSimilarities.put(p, sim);
-
-//                    System.out.println(id2 + ":  " + computeCosineSimilarity(endNodeSetA, item2, Direction.INCOMING, Relationships.SEEN));
-                    k++;
-                }
-
-                if (j % percent == 0) {
-                    System.out.print(l + "% ");
-                    l++;
-                    tx.success();
-                    tx.close();
-                    tx = graphDBService.beginTx();
-                }
-                j++;
-                System.out.println(j);
-            }
-            tx.success();
+        TraversalDescription simNodeFinder = graphDBService.traversalDescription()
+                .depthFirst()
+                .relationships(Relationships.SEEN)
+                .evaluator(Evaluators.atDepth(2));
 
 
-        try {
-            PrintWriter out = new PrintWriter("similarity.txt");
-            TObjectDoubleIterator<Pair> iterator = itemToItemSimilarities.iterator();
-            i = 0;
-            while(iterator.hasNext()){
-                iterator.advance();
-                Pair p = iterator.key();
-                out.println(p.iIdx1 + "\t" + p.iIdx2 + "\t" + iterator.value());
-                i++;
-                if(i > 1000) {
-                    out.flush();
-                    i = 0;
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        ResourceIterator<Node> itemNodes = graphDBService.findNodes(Labels.Item);
+        while (itemNodes.hasNext()) {
+            Node n = itemNodes.next();
+//            if(Integer.parseInt((String)n.getProperty("id")) < 1000) nodeList.add(n);
+            nodeList.add(n);
         }
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        System.out.println("Szamitas kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
+
+        for(Node item : nodeList) {
+            computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, itemToItemSimilarities);
+        }
+        tx.success();
+
+        System.out.println("Elemek szama:" + itemToItemSimilarities.size());
+
+
+//        try {
+//            PrintWriter out = new PrintWriter("similarity.txt");
+//            TObjectDoubleIterator<Pair> iterator = itemToItemSimilarities.iterator();
+//            i = 0;
+//            while(iterator.hasNext()){
+//                iterator.advance();
+//                Pair p = iterator.key();
+//                out.println(p.iIdx1 + "\t" + p.iIdx2 + "\t" + iterator.value());
+//                i++;
+//                if(i > 1000) {
+//                    out.flush();
+//                    i = 0;
+//                }
+//            }
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
-    public double computeCosineSimilarity(HashSet<Long> endNodeSetA, Node nodeB, Direction direction, RelationshipType relationshipType){
-        //HashSet<Long> endNodeSetA = new HashSet<Long>();
-        HashSet<Long> endNodeSetB = new HashSet<>();
+    public HashSet<Long> getNeighbors(Node node, Relationships rel){
+        HashSet<Long> neighbors = new HashSet<>();
+        for( Relationship relationship : node.getRelationships(rel)){
+            neighbors.add(relationship.getOtherNode(node).getId());
+        }
+        return neighbors;
+    }
 
-        for( Relationship relationship : nodeB.getRelationships(direction, relationshipType)){
-            endNodeSetB.add(relationship.getOtherNode(nodeB).getId());
-        }
-        int suppA = endNodeSetA.size();
-        int suppB = endNodeSetB.size();
-        int suppAB = 0;
-        if(suppA < suppB){
-            for(Long l : endNodeSetA)
-                if(endNodeSetB.contains(l))
-                    suppAB++;
-        }
-        else {
-            for(Long l : endNodeSetB)
-                if(endNodeSetA.contains(l))
-                    suppAB++;
+    public void computeCosineSimilarity(Node nodeA, TraversalDescription description,
+                                          Relationships rel, TDoubleArrayList itemToItemSimilarities){
+
+        HashSet<Long> computedSimNodes = getNeighbors(nodeA,rel);
+        TObjectIntHashMap<Long> friendNodes = new TObjectIntHashMap<>();
+        TObjectIntHashMap<Long> suppABForAllB = new TObjectIntHashMap<>();
+
+        int suppA = nodeA.getDegree(rel);
+
+        for(Path path : description.traverse(nodeA)) {
+            Node friendNode = path.endNode();
+            long id = friendNode.getId();
+            if (!computedSimNodes.contains(id)) {                   //ha még nem lett kiszámolva a hasonlóságuk
+                friendNodes.put(id,friendNode.getDegree(rel));      //suppB
+                suppABForAllB.adjustOrPutValue(id,1,1);                    //suppAB növelés
+            }
         }
 
-        return (double) suppAB / (Math.sqrt(suppA) * Math.sqrt(suppB));
+        TObjectIntIterator<Long> friends = friendNodes.iterator();
+//        NumberFormat formatter = new DecimalFormat("#0.000000");
+        while(friends.hasNext()){
+            friends.advance();
+            long friend = friends.key();
+            int suppB = friends.value();
+            double suppAB = (double) suppABForAllB.get(friend);
+
+            itemToItemSimilarities.add(suppAB / (suppA * suppB));
+
+        }
+//        System.out.println("Kész: " + nodeA.getProperty("id"));
     }
 
 }

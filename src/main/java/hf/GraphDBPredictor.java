@@ -46,8 +46,7 @@ public class GraphDBPredictor {
 
         //ha fel kell építeni:
         //graphDB.buildDBFromImpressDB();
-        System.out.println("GraphDB szamitas kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
-        graphDB.asd();
+        graphDB.computeItemToItemSims();
 
 
         System.out.println("A grafDB felepult:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
