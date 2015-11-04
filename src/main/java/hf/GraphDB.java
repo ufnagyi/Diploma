@@ -1,15 +1,19 @@
 package hf;
 
+import gnu.trove.iterator.TObjectDoubleIterator;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,15 +22,15 @@ import java.util.Map;
  * Created by ufnagyi
  */
 public class GraphDB {
-    public GraphDatabaseService graphDB;
+    public GraphDatabaseService graphDBService = null;
     public Database db = null;
     public ExtendedDatabase dbExt = null;
 
     public enum Labels implements Label {
-        Item("itemID"), User("userID"), Meta("mword");
+        Item("ItemID"), User("UserID"), Meta("word");
         private String property;
 
-        private Labels(String str) {
+        Labels(String str) {
             this.property = str;
         }
 
@@ -36,10 +40,10 @@ public class GraphDB {
     }
 
     public enum Relationships implements RelationshipType {
-        SEEN("buy"), HAS_META("tag");
+        SEEN("buy"), VOD("tag"), DIRECTED_BY("dir"), ACTS_IN("act"), ITEM_SIM("isim");
         private String property;
 
-        private Relationships(String str) {
+        Relationships(String str) {
             this.property = str;
         }
 
@@ -63,21 +67,21 @@ public class GraphDB {
         } );
     }
 
-    public void buildDB(Database db, String dbFolder) {
+    public void initDB(Database db, File dbFolder){
         this.db = db;
         this.dbExt = (ExtendedDatabase) db;
+        graphDBService = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
+        registerShutdownHook(graphDBService);
+    }
 
-        graphDB = new GraphDatabaseFactory().newEmbeddedDatabase(new File(dbFolder));
-        registerShutdownHook(graphDB);
 
+    public void buildDBFromImpressDB() {
         loadMetaWordsToGraphDB();
         loadItemsWithMetaWordsToGraphDB();
         loadUsersToGraphDB();
         createIndexes();
-        listGraphDBInfo();
-
         loadEventRelationshipsToGraphDB();
-
+        listGraphDBInfo();
     }
 
     private void createIndexes() {
@@ -85,43 +89,43 @@ public class GraphDB {
 
         //Cypherrel indexeles:
 
-//        tx = graphDB.beginTx();
-//        graphDB.execute("CREATE INDEX ON :Item(itemID)");
+//        tx = graphDBService.beginTx();
+//        graphDBService.execute("CREATE INDEX ON :Item(itemID)");
 //        tx.success();
 //        tx.close();
 //
-//        tx = graphDB.beginTx();
-//        graphDB.execute("CREATE INDEX ON :User(userID)");
+//        tx = graphDBService.beginTx();
+//        graphDBService.execute("CREATE INDEX ON :User(userID)");
 //        tx.success();
 //        tx.close();
 //
-//        tx = graphDB.beginTx();
-//        graphDB.execute("CREATE INDEX ON :Meta(mword)");
+//        tx = graphDBService.beginTx();
+//        graphDBService.execute("CREATE INDEX ON :Meta(mword)");
 //        tx.success();
 //        tx.close();
 
         //Javaval indexeles
 
-        tx = graphDB.beginTx();
-        Schema schema = graphDB.schema();
+        tx = graphDBService.beginTx();
+        Schema schema = graphDBService.schema();
         //item és user indexelés ID szerint
         if(!checkForIndex(schema.getIndexes(Labels.Item),Labels.Item.getPropertyName())) {
             schema.indexFor(Labels.Item).on(Labels.Item.getPropertyName()).create();
             tx.success();
             tx.close();
-            tx = graphDB.beginTx();
+            tx = graphDBService.beginTx();
         }
         if(!checkForIndex(schema.getIndexes(Labels.User),Labels.User.getPropertyName())) {
             schema.indexFor(Labels.User).on(Labels.User.getPropertyName()).create();
             tx.success();
             tx.close();
-            tx = graphDB.beginTx();
+            tx = graphDBService.beginTx();
         }
         if(!checkForIndex(schema.getIndexes(Labels.Meta),Labels.Meta.getPropertyName())) {
             schema.indexFor(Labels.Meta).on(Labels.Meta.getPropertyName()).create();
             tx.success();
             tx.close();
-            tx = graphDB.beginTx();
+            tx = graphDBService.beginTx();
         }
         for (IndexDefinition definition : schema.getIndexes())
             System.out.println(definition.toString());
@@ -129,7 +133,7 @@ public class GraphDB {
         tx.close();
     }
 
-    public boolean checkForIndex(Iterable<IndexDefinition> indexes, String propertyName){
+    private boolean checkForIndex(Iterable<IndexDefinition> indexes, String propertyName){
         for(IndexDefinition index : indexes) {
             for (String key: index.getPropertyKeys()) {
                 if (key.equals(propertyName)) {
@@ -140,7 +144,7 @@ public class GraphDB {
         return false;
     }
 
-    public void loadMetaWordsToGraphDB() {
+    private void loadMetaWordsToGraphDB() {
         int mwCNT = 0;
 
         HashSet<String> allUniqueMetaWords = new HashSet<>(100);
@@ -156,8 +160,8 @@ public class GraphDB {
         }
         System.out.println(mwCNT);
 
-        Transaction tx = graphDB.beginTx();
-        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta,graphDB);
+        Transaction tx = graphDBService.beginTx();
+        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta, graphDBService);
 
         //Metawordok feltöltése a gráfba
         Iterator<String> iterator = allUniqueMetaWords.iterator();
@@ -169,7 +173,7 @@ public class GraphDB {
             if (j % 100 == 0) {
                 tx.success();
                 tx.close();
-                tx = graphDB.beginTx();
+                tx = graphDBService.beginTx();
                 System.out.println(j);
             }
         }
@@ -188,20 +192,20 @@ public class GraphDB {
         int numOfEvents = 0;
         Node userNode;
         Node itemNode;
-        Transaction tx = graphDB.beginTx();
+        Transaction tx = graphDBService.beginTx();
 
         for (Database.Item i : db.items(null)) {
-            itemNode = graphDB.findNode(Labels.Item, Labels.Item.getPropertyName(), i.idx);
+            itemNode = graphDBService.findNode(Labels.Item, Labels.Item.getPropertyName(), i.idx);
             if(itemNode == null) System.out.println("Item " + i.name + " | ID: " + i.idx + " nincs a grafban!");
 
             for (Database.Event e : db.itemEvents(i,null)){
-                userNode = graphDB.findNode(Labels.User,Labels.User.getPropertyName(),e.uIdx);
+                userNode = graphDBService.findNode(Labels.User,Labels.User.getPropertyName(),e.uIdx);
                 createUniqueRelationship(Relationships.SEEN.getPropertyName(),e.uIdx + "_" + i.idx,Relationships.SEEN,userNode,itemNode);
                 numOfEvents++;
                 if (numOfEvents % 200 == 0) {
                     tx.success();
                     tx.close();
-                    tx = graphDB.beginTx();
+                    tx = graphDBService.beginTx();
                     if(numOfEvents % 1000 == 0)
                         System.out.println(numOfEvents);
                 }
@@ -220,8 +224,8 @@ public class GraphDB {
 
     private void loadUsersToGraphDB() {
         int j = 0;
-        Transaction tx = graphDB.beginTx();
-        UniqueFactory<Node> userFactory = createUniqueNodeFactory(Labels.User,graphDB);
+        Transaction tx = graphDBService.beginTx();
+        UniqueFactory<Node> userFactory = createUniqueNodeFactory(Labels.User, graphDBService);
         //Userek feltöltése a gráfba
         for (Database.User u : db.users(null)) {
             userFactory.getOrCreate(Labels.User.getPropertyName(), u.idx);
@@ -229,7 +233,7 @@ public class GraphDB {
             if (j % 1000 == 0) {
                 tx.success();
                 tx.close();
-                tx = graphDB.beginTx();
+                tx = graphDBService.beginTx();
                 System.out.println(j);
             }
         }
@@ -243,10 +247,10 @@ public class GraphDB {
         int j = 0;
         Node itemNode;
         Node metaWNode;
-        Transaction tx = graphDB.beginTx();
+        Transaction tx = graphDBService.beginTx();
 
-        UniqueFactory<Node> itemFactory = createUniqueNodeFactory(Labels.Item,graphDB);
-        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta,graphDB);
+        UniqueFactory<Node> itemFactory = createUniqueNodeFactory(Labels.Item, graphDBService);
+        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta, graphDBService);
 
         //Itemek feltöltése a gráfba
         for (Database.Item i : db.items(null)) {
@@ -257,13 +261,13 @@ public class GraphDB {
             HashSet<String> itemMWords = getUniqueItemMetaWordsByKey(iIdx, "VodMenuDirect", "[^\\p{L}0-9:_ ]");
             for (String mW : itemMWords) {
                 metaWNode = mWordFactory.getOrCreate(Labels.Meta.getPropertyName(), mW);
-                createUniqueRelationship(Relationships.HAS_META.getPropertyName(), iIdx + "_" + mW, Relationships.HAS_META, itemNode, metaWNode);
+                createUniqueRelationship(Relationships.VOD.getPropertyName(), iIdx + "_" + mW, Relationships.VOD, itemNode, metaWNode);
             }
             j++;
             if (j % 100 == 0) {
                 tx.success();
                 tx.close();
-                tx = graphDB.beginTx();
+                tx = graphDBService.beginTx();
                 System.out.println(j);
             }
         }
@@ -273,7 +277,7 @@ public class GraphDB {
         System.out.println("Az itemek feltoltese sikerult!");
     }
 
-    public UniqueFactory<Node> createUniqueNodeFactory(final Labels nodeType, GraphDatabaseService graphDb) {
+    private UniqueFactory<Node> createUniqueNodeFactory(final Labels nodeType, GraphDatabaseService graphDb) {
          return new UniqueFactory.UniqueNodeFactory(graphDb, nodeType.name()) {
             @Override
             protected void initialize(Node createdNode, Map<String, Object> properties) {
@@ -283,10 +287,10 @@ public class GraphDB {
         };
     }
 
-    public Relationship createUniqueRelationship(String indexableKey, final String indexableValue,
+    private Relationship createUniqueRelationship(String indexableKey, final String indexableValue,
                                                  final RelationshipType type, final Node start, final Node end) {
 
-        UniqueFactory<Relationship> factory = new UniqueFactory.UniqueRelationshipFactory(graphDB, indexableKey) {
+        UniqueFactory<Relationship> factory = new UniqueFactory.UniqueRelationshipFactory(graphDBService, indexableKey) {
             @Override
             protected Relationship create(Map<String, Object> properties) {
                 return start.createRelationshipTo(end, type);
@@ -294,7 +298,7 @@ public class GraphDB {
         };
         return factory.getOrCreate(indexableKey, indexableValue);
     }
-    public HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator){
+    private HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator){
         HashSet<String> itemMetaWords = new HashSet<>();
         String keyAll = dbExt.getItemKeyValue(iIdx, key);
         String[] values = keyAll.split(key_value_separator);
@@ -307,50 +311,145 @@ public class GraphDB {
         return itemMetaWords;
     }
 
-    public void setItemProperty(Node node, Database.Item i){
+    private void setItemProperty(Node node, Database.Item i){
         node.setProperty(Labels.Item.getPropertyName(),i.name);
     }
 
     public void listGraphDBInfo(){
         System.out.println("--------------------------------------");
         System.out.println("Adatbazis informaciok:");
-        Transaction tx = graphDB.beginTx();
-        Schema schema = graphDB.schema();
+        Transaction tx = graphDBService.beginTx();
+        Schema schema = graphDBService.schema();
         System.out.println("---Label schema indexek:");
         for (IndexDefinition definition : schema.getIndexes())
             System.out.println(definition.toString());
         System.out.println("---Legacy indexek:");
         System.out.println("------Node indexek:");
-        for (String s : graphDB.index().nodeIndexNames())
+        for (String s : graphDBService.index().nodeIndexNames())
             System.out.println(s);
         System.out.println("------Relationship indexek:");
-        for (String s : graphDB.index().relationshipIndexNames())
+        for (String s : graphDBService.index().relationshipIndexNames())
             System.out.println(s);
-        Result r = graphDB.execute("MATCH (n:Item) RETURN COUNT(n)");
+        Result r = graphDBService.execute("MATCH (n:Item) RETURN COUNT(n)");
         System.out.print("Itemek szama: ");
         while(r.hasNext())
             System.out.println(r.next().values().toString());
-        r = graphDB.execute("MATCH (n:User) RETURN COUNT(n)");
+        r = graphDBService.execute("MATCH (n:User) RETURN COUNT(n)");
         System.out.print("Userek szama: ");
         while(r.hasNext())
             System.out.println(r.next().values().toString());
-        r = graphDB.execute("MATCH (n:Meta) RETURN COUNT(n)");
+        r = graphDBService.execute("MATCH (n:Meta) RETURN COUNT(n)");
         System.out.print("Metawordok szama: ");
         while(r.hasNext())
             System.out.println(r.next().values().toString());
-        r = graphDB.execute("MATCH (n:Item)-[r]->(w:Meta) RETURN TYPE(r), COUNT(*)");
+        r = graphDBService.execute("MATCH (n:Item)-[r]->(w:Meta) RETURN TYPE(r), COUNT(*)");
         System.out.println("Item-Metaword kapcsolatok szama: ");
         while(r.hasNext())
             System.out.println(r.next().toString());
-        r = graphDB.execute("MATCH (n:User)-[r]->(w:Item) RETURN TYPE(r), COUNT(*)");
+        r = graphDBService.execute("MATCH (n:User)-[r]->(w:Item) RETURN TYPE(r), COUNT(*)");
         System.out.println("Item-Metaword kapcsolatok szama: ");
         while(r.hasNext())
             System.out.println(r.next().toString());
-        r = graphDB.execute("MATCH (n:Item)-[r]->(w:Meta) RETURN n.itemID, n.name, COUNT(*) AS CNT ORDER BY CNT DESC LIMIT 5");
+        r = graphDBService.execute("MATCH (n:Item)-[r]->(w:Meta) RETURN n.itemID, n.name, COUNT(*) AS CNT ORDER BY CNT DESC LIMIT 5");
         System.out.print("Item-Metaword legtobb kapcsolatu 5 Item: ");
         while(r.hasNext())
             System.out.println(r.next().toString());
         tx.success();
         tx.close();
     }
+
+    public void asd() {
+        Transaction tx = graphDBService.beginTx();
+            ArrayList<Node> nodeList = new ArrayList<>();
+            TObjectDoubleHashMap<Pair> itemToItemSimilarities = new TObjectDoubleHashMap<>();
+            Double sim;
+
+            ResourceIterator<Node> itemNodes = graphDBService.findNodes(Labels.Item);
+            while (itemNodes.hasNext()) {
+                nodeList.add(itemNodes.next());
+            }
+
+            int i = nodeList.size() - 1;
+            int percent = i / 100;
+            int j = 0;
+            int k;
+            int l = 1;
+            while (j < i) {
+                Node item = nodeList.get(j);
+                HashSet<Long> endNodeSetA = new HashSet<>();
+
+                long id1 = item.getId();
+
+                for (Relationship relationship : item.getRelationships(Direction.INCOMING, Relationships.SEEN)) {
+                    endNodeSetA.add(relationship.getOtherNode(item).getId());
+                }
+                k = j + 1;
+                while (k <= i) {
+                    Node item2 = nodeList.get(k);
+                    Pair p = new Pair((int) id1, (int) item2.getId());
+                    sim = computeCosineSimilarity(endNodeSetA, item2, Direction.INCOMING, Relationships.SEEN);
+                    if (sim > 0)
+                        itemToItemSimilarities.put(p, sim);
+
+//                    System.out.println(id2 + ":  " + computeCosineSimilarity(endNodeSetA, item2, Direction.INCOMING, Relationships.SEEN));
+                    k++;
+                }
+
+                if (j % percent == 0) {
+                    System.out.print(l + "% ");
+                    l++;
+                    tx.success();
+                    tx.close();
+                    tx = graphDBService.beginTx();
+                }
+                j++;
+                System.out.println(j);
+            }
+            tx.success();
+
+
+        try {
+            PrintWriter out = new PrintWriter("similarity.txt");
+            TObjectDoubleIterator<Pair> iterator = itemToItemSimilarities.iterator();
+            i = 0;
+            while(iterator.hasNext()){
+                iterator.advance();
+                Pair p = iterator.key();
+                out.println(p.iIdx1 + "\t" + p.iIdx2 + "\t" + iterator.value());
+                i++;
+                if(i > 1000) {
+                    out.flush();
+                    i = 0;
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public double computeCosineSimilarity(HashSet<Long> endNodeSetA, Node nodeB, Direction direction, RelationshipType relationshipType){
+        //HashSet<Long> endNodeSetA = new HashSet<Long>();
+        HashSet<Long> endNodeSetB = new HashSet<>();
+
+        for( Relationship relationship : nodeB.getRelationships(direction, relationshipType)){
+            endNodeSetB.add(relationship.getOtherNode(nodeB).getId());
+        }
+        int suppA = endNodeSetA.size();
+        int suppB = endNodeSetB.size();
+        int suppAB = 0;
+        if(suppA < suppB){
+            for(Long l : endNodeSetA)
+                if(endNodeSetB.contains(l))
+                    suppAB++;
+        }
+        else {
+            for(Long l : endNodeSetB)
+                if(endNodeSetA.contains(l))
+                    suppAB++;
+        }
+
+        return (double) suppAB / (Math.sqrt(suppA) * Math.sqrt(suppB));
+    }
+
 }

@@ -6,31 +6,46 @@ CREATE CONSTRAINT ON (meta:Meta) ASSERT meta.word IS UNIQUE;
 --9 sec:
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_for_graphDB.csv' AS line FIELDTERMINATOR ';'
-CREATE (i:Item { id: line.ItemID, title: line.Title })
+CREATE (i:Item { id: toInt(line.ItemID), title: line.Title })
 
 
 --USER NODE létrehozás
 --452 sec:
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/events_for_graphDB.csv' AS line FIELDTERMINATOR ';'
-MERGE (u:User { id: line.UserID})
+MERGE (u:User { id: toInt(line.UserID)})
 
 
 --USER ITEM ÖSSZERENDELÉS
 --547 sec
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/events_for_graphDB.csv' AS line FIELDTERMINATOR ';'
-MATCH (u:User { id: line.UserID}), (i:Item {id: line.ItemID}) 
+MATCH (u:User { id: toInt(line.UserID)}), (i:Item {id: toInt(line.ItemID)})
 MERGE (u) - [:SEEN] -> (i)
 
 
 --VODMENU létrehozás és ITEM-VODMENU összerendelés
---26 sec, 687 VODMENU node, 105 ezer kapcsolat
+--26 sec, 687 META node, 105 ezer kapcsolat
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_vodmenu_for_graphDB.csv' AS line FIELDTERMINATOR ';'
-MATCH (i:Item {id: line.ItemID}) 
+MATCH (i:Item {id: toInt(line.ItemID)}) 
 MERGE (w:Meta {word: line.VODMenu})
 MERGE (i) - [:VOD] -> (w)
 
 
+--DIRECTOR létrehozás és ITEM-DIRECTOR összerendelés
+--3 sec, 1857 META node, 4840 DIRECTED_BY kapcsolat
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_directors_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+MATCH (i:Item {id: toInt(line.ItemID)}) 
+MERGE (w:Meta {word: line.Director})
+MERGE (i) - [:DIRECTED_BY] -> (w)
 
+
+--ACTOR létrehozás és ITEM-ACTOR összerendelés
+--7 sec, 7339 META node, 22137 ACTS_IN kapcsolat
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mvn/items_actors_for_graphDB.csv' AS line FIELDTERMINATOR ';'
+MATCH (i:Item {id: toInt(line.ItemID)}) 
+MERGE (w:Meta {word: line.Actor})
+MERGE (i) <- [:ACTS_IN] - (w)

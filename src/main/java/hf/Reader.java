@@ -17,6 +17,7 @@ public class Reader {
 
     private Database db;
     private ExtendedDatabase dbExt;
+    private final static char defaultSeparator = ',';
 
     public Reader(Database db_){this.db = db_;
     dbExt = (ExtendedDatabase) this.db;}
@@ -57,11 +58,10 @@ public class Reader {
 
     public void createNewEventList() {
         String outputName = "events_for_graphDB.csv";
-        char separator = ';';
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Event list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputName), separator,
+            CSVWriter writer = new CSVWriter(new FileWriter(outputName), defaultSeparator,
                     CSVWriter.NO_QUOTE_CHARACTER);
             String[] line = {"UserID", "ItemID"};
             writer.writeNext(line);
@@ -77,11 +77,10 @@ public class Reader {
 
     public void createNewItemList() {
         String outputName = "items_for_graphDB.csv";
-        char separator = ';';
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Item list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputName), separator,
+            CSVWriter writer = new CSVWriter(new FileWriter(outputName), defaultSeparator,
                     CSVWriter.DEFAULT_QUOTE_CHARACTER);
             String[] line = {"ItemID", "Actor", "Director", "Title", "VODMenuDirect"};
             writer.writeNext(line);
@@ -98,11 +97,10 @@ public class Reader {
 
     public void createNewItemActorList() {
         String outputName = "items_actors_for_graphDB.csv";
-        char separator = ';';
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Itemactor list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputName), separator,
+            CSVWriter writer = new CSVWriter(new FileWriter(outputName), defaultSeparator,
                     CSVWriter.DEFAULT_QUOTE_CHARACTER);
             String[] line = {"ItemID", "Actor"};
             writer.writeNext(line);
@@ -124,11 +122,10 @@ public class Reader {
 
     public void createNewItemDirectorList() {
         String outputName = "items_directors_for_graphDB.csv";
-        char separator = ';';
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Itemdirector list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputName), separator,
+            CSVWriter writer = new CSVWriter(new FileWriter(outputName), defaultSeparator,
                     CSVWriter.DEFAULT_QUOTE_CHARACTER);
             String[] line = {"ItemID", "Director"};
             writer.writeNext(line);
@@ -149,11 +146,10 @@ public class Reader {
 
     public void createNewItemVODMenuList() {
         String outputName = "items_vodmenu_for_graphDB.csv";
-        char separator = ';';
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Item vodmenu list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputName), separator,
+            CSVWriter writer = new CSVWriter(new FileWriter(outputName), defaultSeparator,
                     CSVWriter.DEFAULT_QUOTE_CHARACTER);
             String[] line = {"ItemID", "VODMenu"};
             writer.writeNext(line);
