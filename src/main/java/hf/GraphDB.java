@@ -47,7 +47,7 @@ public class GraphDB {
     }
 
     public enum Relationships implements RelationshipType {
-        SEEN("buy"), VOD("tag"), DIRECTED_BY("dir"), ACTS_IN("act"), ITEM_SIM("isim");
+        SEEN("buy"), VOD("tag"), DIRECTED_BY("dir"), ACTS_IN("act"), ITEM_SIM("cfsim");
         private String property;
 
         Relationships(String str) {
@@ -368,7 +368,6 @@ public class GraphDB {
     public void computeItemToItemSims() {
         Transaction tx = graphDBService.beginTx();
             ArrayList<Node> nodeList = new ArrayList<>();
-        TDoubleArrayList itemToItemSimilarities = new TDoubleArrayList();
 
         TraversalDescription simNodeFinder = graphDBService.traversalDescription()
                 .depthFirst()
@@ -379,19 +378,25 @@ public class GraphDB {
         ResourceIterator<Node> itemNodes = graphDBService.findNodes(Labels.Item);
         while (itemNodes.hasNext()) {
             Node n = itemNodes.next();
-//            if(Integer.parseInt((String)n.getProperty("id")) < 1000) nodeList.add(n);
+//            if(Integer.parseInt((String)n.getProperty("id")) < 100) nodeList.add(n);
             nodeList.add(n);
         }
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Szamitas kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
-
+        int uncommittedChanges = 0;
         for(Node item : nodeList) {
-            computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, itemToItemSimilarities);
+            uncommittedChanges = uncommittedChanges + computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, Relationships.ITEM_SIM);
+            if(uncommittedChanges > 1000) {
+                System.out.println("Commit");
+                uncommittedChanges = 0;
+                tx.success();
+                tx.close();
+                tx = graphDBService.beginTx();
+            }
         }
         tx.success();
-
-        System.out.println("Elemek szama:" + itemToItemSimilarities.size());
+        tx.close();
 
 
 //        try {
@@ -422,36 +427,41 @@ public class GraphDB {
         return neighbors;
     }
 
-    public void computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                          Relationships rel, TDoubleArrayList itemToItemSimilarities){
-
-        HashSet<Long> computedSimNodes = getNeighbors(nodeA,rel);
-        TObjectIntHashMap<Long> friendNodes = new TObjectIntHashMap<>();
+    public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
+                                          Relationships existingRelType, Relationships newRelType){
+        int changeCounter = 0;
+        HashSet<Long> computedSimNodes = getNeighbors(nodeA,newRelType);   //a már kiszámolt item szomszédok
+        TObjectIntHashMap<Node> friendNodes = new TObjectIntHashMap<>();
         TObjectIntHashMap<Long> suppABForAllB = new TObjectIntHashMap<>();
 
-        int suppA = nodeA.getDegree(rel);
+        int suppA = nodeA.getDegree(existingRelType);
 
         for(Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
             long id = friendNode.getId();
             if (!computedSimNodes.contains(id)) {                   //ha még nem lett kiszámolva a hasonlóságuk
-                friendNodes.put(id,friendNode.getDegree(rel));      //suppB
+                friendNodes.put(friendNode,friendNode.getDegree(existingRelType));      //suppB
                 suppABForAllB.adjustOrPutValue(id,1,1);                    //suppAB növelés
             }
         }
 
-        TObjectIntIterator<Long> friends = friendNodes.iterator();
-//        NumberFormat formatter = new DecimalFormat("#0.000000");
+        TObjectIntIterator<Node> friends = friendNodes.iterator();
         while(friends.hasNext()){
             friends.advance();
-            long friend = friends.key();
+            Node friend = friends.key();
             int suppB = friends.value();
-            double suppAB = (double) suppABForAllB.get(friend);
+            double suppAB = (double) suppABForAllB.get(friend.getId());
 
-            itemToItemSimilarities.add(suppAB / (suppA * suppB));
+            double sim = suppAB / (suppA * suppB);
+//            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
+            Relationship newRel = nodeA.createRelationshipTo(friend,newRelType);
+            newRel.setProperty(newRelType.getPropertyName(),sim);
+            changeCounter++;
+//            System.out.println(sim);
 
         }
 //        System.out.println("Kész: " + nodeA.getProperty("id"));
+        return changeCounter;
     }
 
 }
