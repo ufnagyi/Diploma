@@ -32,21 +32,29 @@ public class GraphDBPredictor {
 
     public void train(){
 
-//        Reader r = new Reader(db);
-//        r.createNewItemActorList();
-//        r.createNewItemDirectorList();
-//        r.createNewItemVODMenuList();
-//        r.createNewItemList();
-//        r.createNewEventList();
+        Reader r = new Reader(db);
+        //node CSV letrehozas:
+        r.createNewActorList();
+        r.createNewDirectorList();
+        r.createNewItemList();
+        r.createNewUserList();
+        r.createNewVODMenuList();
+        //relacio CSV letrehozas:
+        r.createNewACTSINRelList();
+        r.createNewDIRBYRelList();
+        r.createNewSEENRelList();
+        r.createNewHASMETARelList();
+
+
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("GraphDB epites kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 
         //grafdb szolgáltatás elindítása
-        graphDB.initDB(db, new File(dbFolder));
+        //graphDB.initDB(db, new File(dbFolder));
 
         //ha fel kell építeni:
         //graphDB.buildDBFromImpressDB();
-        graphDB.computeItemToItemSims();
+        //graphDB.computeItemToItemSims();
 
 
         System.out.println("A grafDB felepult:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));

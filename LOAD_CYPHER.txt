@@ -49,3 +49,65 @@ LOAD CSV WITH HEADERS FROM 'file:///F:/Dokumentumok/BME/4_felev/Diploma/nandi-mv
 MATCH (i:Item {id: toInt(line.ItemID)}) 
 MERGE (w:Meta {word: line.Actor})
 MERGE (i) <- [:ACTS_IN] - (w)
+
+----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
+--import_tool használata, CSV-k előállítása:
+
+Actor list CSV keszitese: 2015/11/08 01:03:52
+Actor list CSV keszitese KESZ: 2015/11/08 01:03:53
+Director list CSV keszitese: 2015/11/08 01:03:53
+Director list CSV keszitese KESZ: 2015/11/08 01:03:53
+Item list CSV keszitese: 2015/11/08 01:03:53
+Item list CSV keszitese KESZ: 2015/11/08 01:03:53
+User list CSV keszitese: 2015/11/08 01:03:53
+User list CSV keszitese KESZ: 2015/11/08 01:03:53
+Vodmenu list CSV keszitese: 2015/11/08 01:03:53
+Vodmenu list CSV keszitese KESZ: 2015/11/08 01:03:53
+Acts_in list CSV keszitese: 2015/11/08 01:03:53
+Acts_in list CSV keszitese KESZ: 2015/11/08 01:03:53
+Dir_by list CSV keszitese: 2015/11/08 01:03:53
+Dir_by list CSV keszitese KESZ: 2015/11/08 01:03:54
+Event list CSV keszitese: 2015/11/08 01:03:54
+Event list CSV keszitese KESZ: 2015/11/08 01:03:56
+Has_meta list CSV keszitese: 2015/11/08 01:03:56
+Has_meta list CSV keszitese KESZ: 2015/11/08 01:03:56
+
+--import-tool:
+--az utasítás:
+Neo4jImport --into C:/Users/ufnagyi/Documents/Neo4J_Database --nodes:Item items_for_graphDB.csv 
+--nodes:Actor actors_for_graphDB.csv --nodes:Director directors_for_graphDB.csv --nodes:VOD vodmenu_for_graphDB.csv 
+--nodes:User users_for_graphDB.csv --relationships:SEEN events_for_graphDB.csv --relationships:ACTS_IN acts_in_for_graphDB.csv 
+--relationships:DIR_BY dir_by_for_graphDB.csv --relationships:HAS_META has_meta_for_graphDB.csv 
+--bad-tolerance 0 --delimiter ";" --array-delimiter "," --quote "\""
+
+Nodes
+[*>:11,62 MB/s-----------|PROPERTIES------|NODE:7,63 MB---|LABEL SCAN---|v:6,64 MB/s-----------]380k
+Done in 3s 148ms
+Prepare node index
+[*DETECT:9,04 MB-------------------------------------------------------------------------------]370k
+Done in 766ms
+Calculate dense nodes
+[>:8,10 MB/s-------------------|*PREPARE(2)============================================|DIV|CAL]  4M
+Done in 9s 125ms
+Relationships
+[>:7,29 MB/s---------|*PREPARE(2)=======================================|RELATIONSHIP----|v:13,]  4M
+Done in 10s 924ms
+Node --> Relationship
+[*>:??--------------------------|LINK---------------------------|v:??--------------------------]380k
+Done in 236ms
+Relationship --> Relationship
+[>:74,65 MB/s-------|*LINK--------------------------------------------------|v:74,65 MB/s------]  4M
+Done in 2s 294ms
+Node counts
+[>:??---------------------------|*COUNT:76,29 MB-----------------------------------------------]380k
+Done in 249ms
+Relationship counts
+[*>:149,48 MB/s---------------------------------|COUNT-----------------------------------------]  4M
+Done in 1s 31ms
+
+IMPORT DONE in 29s 819ms. Imported:
+  370444 nodes
+  4604207 relationships
+  397479 properties
+

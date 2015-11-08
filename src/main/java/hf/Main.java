@@ -228,8 +228,8 @@ public class Main {
 //		buildDatabaseAndSave();
 		
 //		System.out.println("\nSTEP 2: Loading binary databases from file:");
-//		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
-		Database[] dbs = new Database[]{new Database()};
+		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+//		Database[] dbs = new Database[]{new Database()};
 
 		System.out.println("\nSTEP 3: Predictor training:");
 		Predictor[] preds = trainPredictors(dbs[0]);
