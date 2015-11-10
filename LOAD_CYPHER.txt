@@ -111,3 +111,14 @@ IMPORT DONE in 29s 819ms. Imported:
   4604207 relationships
   397479 properties
 
+--INDEXELÉS:
+--színészek és rendezők lehetnek többen is ugyanazzal a névvel
+CREATE CONSTRAINT ON (actor:Actor) ASSERT actor.ActorID IS UNIQUE;
+CREATE INDEX ON :Actor(name);
+CREATE INDEX ON :Director(name);
+CREATE CONSTRAINT ON (director:Director) ASSERT director.DirID IS UNIQUE;
+CREATE CONSTRAINT ON (vod:VOD) ASSERT vod.VodID IS UNIQUE;
+CREATE CONSTRAINT ON (vod:VOD) ASSERT vod.word IS UNIQUE;
+CREATE CONSTRAINT ON (item:Item) ASSERT item.ItemID IS UNIQUE;
+CREATE INDEX ON :Item(title);
+CREATE CONSTRAINT ON (user:User) ASSERT user.UserID IS UNIQUE;

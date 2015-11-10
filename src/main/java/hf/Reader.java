@@ -66,6 +66,21 @@ public class Reader {
         System.out.println("Done!");
     }
 
+
+    public void createAllCSVs(){
+        //node CSV letrehozas:
+        this.createNewActorList();
+        this.createNewDirectorList();
+        this.createNewItemList();
+        this.createNewUserList();
+        this.createNewVODMenuList();
+        //relacio CSV letrehozas:
+        this.createNewACTSINRelList();
+        this.createNewDIRBYRelList();
+        this.createNewSEENRelList();
+        this.createNewHASMETARelList();
+    }
+
     public void createNewItemList() {
         String outputName = "items_for_graphDB.csv";
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");

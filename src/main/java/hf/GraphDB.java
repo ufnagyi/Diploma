@@ -1,10 +1,7 @@
 package hf;
 
-import gnu.trove.iterator.TObjectDoubleIterator;
-import gnu.trove.iterator.TObjectIntIterator;
-import gnu.trove.list.array.TDoubleArrayList;
-import gnu.trove.map.hash.TObjectDoubleHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import com.google.common.base.Functions;
+import com.google.common.collect.Ordering;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 import org.neo4j.graphdb.*;
@@ -12,51 +9,42 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.graphdb.traversal.*;
-import org.neo4j.graphdb.traversal.Traverser;
-import org.neo4j.kernel.impl.store.MetaDataStore;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-/**
- * Created by ufnagyi
- */
 public class GraphDB {
     public GraphDatabaseService graphDBService = null;
     public Database db = null;
     public ExtendedDatabase dbExt = null;
+    private File dbFolder;
+    private boolean inited = false;
 
-    public enum Labels implements Label {
-        Item("ItemID"), User("UserID"), Meta("word");
-        private String property;
-
-        Labels(String str) {
-            this.property = str;
-        }
-
-        public String getPropertyName(){
-            return property;
-        }
+    public boolean isInited() {
+        return inited;
     }
 
-    public enum Relationships implements RelationshipType {
-        SEEN("buy"), VOD("tag"), DIRECTED_BY("dir"), ACTS_IN("act"), ITEM_SIM("cfsim");
-        private String property;
+    public GraphDB(Database db, String newDBFolder){
+        this.db = db;
+        this.dbExt = (ExtendedDatabase) db;
+        setDbFolder(newDBFolder);
+    }
 
-        Relationships(String str) {
-            this.property = str;
-        }
+    public GraphDB(String oldDBFolder){
+        setDbFolder(oldDBFolder);
+    }
 
-        public String getPropertyName(){
-            return property;
-        }
+    public File getDbFolder() {
+        return dbFolder;
+    }
+
+    public void setDbFolder(String dbFolder) {
+        this.dbFolder = new File(dbFolder);
     }
 
     private static void registerShutdownHook( final GraphDatabaseService graphDb )
@@ -74,27 +62,41 @@ public class GraphDB {
         } );
     }
 
-    public void initDB(Database db, File dbFolder){
-        this.db = db;
-//        this.dbExt = (ExtendedDatabase) db;
+    public void initDB(){
         graphDBService = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
         registerShutdownHook(graphDBService);
+        inited = true;
+    }
+
+    public void shutDownDB(){
+        graphDBService.shutdown();
+        inited = false;
     }
 
 
     public void buildDBFromImpressDB() {
+        if(this.db == null) {
+            try {
+                throw new Exception("ImpressDB nincs megadva a gráfépítéshez!");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        System.out.println("GraphDB epites kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         loadMetaWordsToGraphDB();
         loadItemsWithMetaWordsToGraphDB();
         loadUsersToGraphDB();
         createIndexes();
         loadEventRelationshipsToGraphDB();
+        System.out.println("GraphDB epites kesz!:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         listGraphDBInfo();
     }
 
     private void createIndexes() {
         Transaction tx;
 
-        //Cypherrel indexeles:
+        //region Cypherrel indexeles:
 
 //        tx = graphDBService.beginTx();
 //        graphDBService.execute("CREATE INDEX ON :Item(itemID)");
@@ -110,6 +112,8 @@ public class GraphDB {
 //        graphDBService.execute("CREATE INDEX ON :Meta(mword)");
 //        tx.success();
 //        tx.close();
+
+        //endregion
 
         //Javaval indexeles
 
@@ -128,8 +132,8 @@ public class GraphDB {
             tx.close();
             tx = graphDBService.beginTx();
         }
-        if(!checkForIndex(schema.getIndexes(Labels.Meta),Labels.Meta.getPropertyName())) {
-            schema.indexFor(Labels.Meta).on(Labels.Meta.getPropertyName()).create();
+        if(!checkForIndex(schema.getIndexes(Labels.VOD),Labels.VOD.getPropertyName())) {
+            schema.indexFor(Labels.VOD).on(Labels.VOD.getPropertyName()).create();
             tx.success();
             tx.close();
             tx = graphDBService.beginTx();
@@ -168,14 +172,14 @@ public class GraphDB {
         System.out.println(mwCNT);
 
         Transaction tx = graphDBService.beginTx();
-        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta, graphDBService);
+        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.VOD, graphDBService);
 
         //Metawordok feltöltése a gráfba
         Iterator<String> iterator = allUniqueMetaWords.iterator();
         int j = 0;
         while(iterator.hasNext()) {
             String mW = iterator.next();
-            mWordFactory.getOrCreate(Labels.Meta.getPropertyName(),mW);
+            mWordFactory.getOrCreate(Labels.VOD.getPropertyName(),mW);
             j++;
             if (j % 100 == 0) {
                 tx.success();
@@ -257,7 +261,7 @@ public class GraphDB {
         Transaction tx = graphDBService.beginTx();
 
         UniqueFactory<Node> itemFactory = createUniqueNodeFactory(Labels.Item, graphDBService);
-        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.Meta, graphDBService);
+        UniqueFactory<Node> mWordFactory = createUniqueNodeFactory(Labels.VOD, graphDBService);
 
         //Itemek feltöltése a gráfba
         for (Database.Item i : db.items(null)) {
@@ -267,8 +271,8 @@ public class GraphDB {
             //Item mWord node-ok letrehoza
             HashSet<String> itemMWords = getUniqueItemMetaWordsByKey(iIdx, "VodMenuDirect", "[^\\p{L}0-9:_ ]");
             for (String mW : itemMWords) {
-                metaWNode = mWordFactory.getOrCreate(Labels.Meta.getPropertyName(), mW);
-                createUniqueRelationship(Relationships.VOD.getPropertyName(), iIdx + "_" + mW, Relationships.VOD, itemNode, metaWNode);
+                metaWNode = mWordFactory.getOrCreate(Labels.VOD.getPropertyName(), mW);
+                createUniqueRelationship(Relationships.HAS_META.getPropertyName(), iIdx + "_" + mW, Relationships.HAS_META, itemNode, metaWNode);
             }
             j++;
             if (j % 100 == 0) {
@@ -365,61 +369,7 @@ public class GraphDB {
         tx.close();
     }
 
-    public void computeItemToItemSims() {
-        Transaction tx = graphDBService.beginTx();
-            ArrayList<Node> nodeList = new ArrayList<>();
-
-        TraversalDescription simNodeFinder = graphDBService.traversalDescription()
-                .depthFirst()
-                .relationships(Relationships.SEEN)
-                .evaluator(Evaluators.atDepth(2));
-
-
-        ResourceIterator<Node> itemNodes = graphDBService.findNodes(Labels.Item);
-        while (itemNodes.hasNext()) {
-            Node n = itemNodes.next();
-//            if(Integer.parseInt((String)n.getProperty("id")) < 100) nodeList.add(n);
-            nodeList.add(n);
-        }
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        System.out.println("Szamitas kezdese:" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
-        int uncommittedChanges = 0;
-        for(Node item : nodeList) {
-            uncommittedChanges = uncommittedChanges + computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, Relationships.ITEM_SIM);
-            if(uncommittedChanges > 1000) {
-                System.out.println("Commit");
-                uncommittedChanges = 0;
-                tx.success();
-                tx.close();
-                tx = graphDBService.beginTx();
-            }
-        }
-        tx.success();
-        tx.close();
-
-
-//        try {
-//            PrintWriter out = new PrintWriter("similarity.txt");
-//            TObjectDoubleIterator<Pair> iterator = itemToItemSimilarities.iterator();
-//            i = 0;
-//            while(iterator.hasNext()){
-//                iterator.advance();
-//                Pair p = iterator.key();
-//                out.println(p.iIdx1 + "\t" + p.iIdx2 + "\t" + iterator.value());
-//                i++;
-//                if(i > 1000) {
-//                    out.flush();
-//                    i = 0;
-//                }
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
-    }
-
-    public HashSet<Long> getNeighbors(Node node, Relationships rel){
+    public HashSet<Long> getAllNeighborsByRel(Node node, Relationships rel){
         HashSet<Long> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
             neighbors.add(relationship.getOtherNode(node).getId());
@@ -427,41 +377,39 @@ public class GraphDB {
         return neighbors;
     }
 
-    public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                          Relationships existingRelType, Relationships newRelType){
-        int changeCounter = 0;
-        HashSet<Long> computedSimNodes = getNeighbors(nodeA,newRelType);   //a már kiszámolt item szomszédok
-        TObjectIntHashMap<Node> friendNodes = new TObjectIntHashMap<>();
-        TObjectIntHashMap<Long> suppABForAllB = new TObjectIntHashMap<>();
-
-        int suppA = nodeA.getDegree(existingRelType);
-
-        for(Path path : description.traverse(nodeA)) {
-            Node friendNode = path.endNode();
-            long id = friendNode.getId();
-            if (!computedSimNodes.contains(id)) {                   //ha még nem lett kiszámolva a hasonlóságuk
-                friendNodes.put(friendNode,friendNode.getDegree(existingRelType));      //suppB
-                suppABForAllB.adjustOrPutValue(id,1,1);                    //suppAB növelés
-            }
+    public HashSet<Long> getAllNeighborsBySim(Node node, Similarities rel){
+        HashSet<Long> neighbors = new HashSet<>();
+        for( Relationship relationship : node.getRelationships(rel)){
+            neighbors.add(relationship.getOtherNode(node).getId());
         }
+        return neighbors;
+    }
 
-        TObjectIntIterator<Node> friends = friendNodes.iterator();
-        while(friends.hasNext()){
-            friends.advance();
-            Node friend = friends.key();
-            int suppB = friends.value();
-            double suppAB = (double) suppABForAllB.get(friend.getId());
-
-            double sim = suppAB / (suppA * suppB);
-//            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
-            Relationship newRel = nodeA.createRelationshipTo(friend,newRelType);
-            newRel.setProperty(newRelType.getPropertyName(),sim);
-            changeCounter++;
-//            System.out.println(sim);
-
+    public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN){
+        HashMap<Node,Double> neighbors = new HashMap<>();
+        for( Relationship relationship : node.getRelationships(sim)){
+            neighbors.put(relationship.getOtherNode(node),(Double) relationship.getProperty(sim.getPropertyName()));
         }
-//        System.out.println("Kész: " + nodeA.getProperty("id"));
-        return changeCounter;
+        if(topN != -1){
+
+            Stream<Map.Entry<Node,Double>> sorted = neighbors.entrySet().stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+            return sorted.limit(topN).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+        return neighbors;
+    }
+
+
+    public ArrayList<Node> getNodesByLabel(Labels l){
+        Transaction tx = graphDBService.beginTx();
+        ArrayList<Node> nodesByLabel = new ArrayList<>();
+        ResourceIterator<Node> nodes = this.graphDBService.findNodes(l);
+        while(nodes.hasNext()){
+            nodesByLabel.add(nodes.next());
+        }
+        tx.success();
+        tx.close();
+        return nodesByLabel;
     }
 
 }

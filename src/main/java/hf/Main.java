@@ -97,7 +97,7 @@ public class Main {
 		Util.saveObject(db, getDatabaseFullFilename());
 	
 		System.out.println("Splitting database...");
-		Database db2 = (ExtendedDatabase) db.splitByTime("2013-11-15 00:00:00", "2:5000", "2:14");
+		Database db2 = db.splitByTime("2013-11-15 00:00:00", "2:5000", "2:14");
 		System.out.println("Statistics about train database:");
 		new DatabaseStats(db).printSummary();
 		System.out.println("Statistics about test database:");
@@ -111,10 +111,6 @@ public class Main {
 		
 	public static Predictor[] trainPredictors(Database dbTrain) throws Exception {
 		System.out.println("TRAINING PREDICTORS...");
-
-        GraphDBPredictor pGraphPredictor = new GraphDBPredictor();
-        pGraphPredictor.setParameters(dbTrain);
-        pGraphPredictor.train();
 
 //        System.out.println("Training WordBased Predictor ...");
 //        Predictor pWordBased = new WordBasedPredictor();
@@ -133,7 +129,9 @@ public class Main {
 //        pItemBasedCollab.setParameters(ExamplePredictor.META_KEYS + "=LAMBDA:10");
 //        pItemBasedCollab.train(dbTrain, null);
 //        System.out.println("");
-		
+
+		//region Default predictors
+
 //		System.out.println("Training Pop Predictor 1...");
 //		Predictor pPop1 = new PopPredictor();
 //		pPop1.setParameters(PopPredictor.E_WINDOW + "=*:180");
@@ -169,6 +167,8 @@ public class Main {
 //		pCosine2.setParameters(FastCosineSimilarityPredictor.META_KEYS + "=VodMenuDirect:1 Actor:0.2 IsAdult:0.1");
 //		pCosine2.train(dbTrain, null);
 //		System.out.println("");
+
+		//endregion
 		
 		System.out.println("Returning the list of predictors.");
 		return new Predictor[]{
@@ -224,23 +224,49 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		System.out.println("Futas kezdese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
+
+		//region OldPredictorProcess
+
 //		System.out.println("\nSTEP 1: Importing, building and saving database:");
 //		buildDatabaseAndSave();
-		
+
 //		System.out.println("\nSTEP 2: Loading binary databases from file:");
-		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+//		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
 //		Database[] dbs = new Database[]{new Database()};
 
-		System.out.println("\nSTEP 3: Predictor training:");
-		Predictor[] preds = trainPredictors(dbs[0]);
-		
-//		System.out.println("\nExample for predictor saving:");
+//		System.out.println("\nSTEP 3: Predictor training:");
+//		Predictor[] preds = trainPredictors(dbs[0]);
+
+		//		System.out.println("\nExample for predictor saving:");
 //		Util.savePredictor(preds[0], DIR + "p1.pr");
 //		Predictor p1 = Util.loadPredictor(DIR + "p1.pr", dbs[0]);
 //		Predictor[] preds = new Predictor[]{p1};
-		
-		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
+
+//		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
 //		testPredictors(preds, dbs[0], dbs[1]);
+
+		//endregion
+
+
+//        //ha a node és relationship csv-ket létre kell hozni az import-toolhoz:
+//
+//        Reader r = new Reader(db);
+//        r.createAllCSVs();
+
+		//      C:/Users/ufnagyi/Documents/Neo4J_Database
+		//      C:/Users/ufnagyi/Documents/TestDB
+		//      F:/Dokumentumok/Neo4j
+
+		GraphDB graphDB = new GraphDB("C:/Users/ufnagyi/Documents/Neo4J_Database");
+
+
+		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
+		cfGraphPredictor.setParameters(graphDB);
+		cfGraphPredictor.train();
+		cfGraphPredictor.computeItemToItemSims();
+
+
+
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 	}
 }
