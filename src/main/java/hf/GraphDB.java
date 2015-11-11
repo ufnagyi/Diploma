@@ -1,6 +1,7 @@
 package hf;
 
 import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
@@ -10,8 +11,11 @@ import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.tooling.GlobalGraphOperations;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -386,6 +390,7 @@ public class GraphDB {
     }
 
     public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN){
+        Transaction tx = graphDBService.beginTx();
         HashMap<Node,Double> neighbors = new HashMap<>();
         for( Relationship relationship : node.getRelationships(sim)){
             neighbors.put(relationship.getOtherNode(node),(Double) relationship.getProperty(sim.getPropertyName()));
@@ -396,6 +401,8 @@ public class GraphDB {
                     .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
             return sorted.limit(topN).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
+        tx.success();
+        tx.close();
         return neighbors;
     }
 
@@ -411,5 +418,28 @@ public class GraphDB {
         tx.close();
         return nodesByLabel;
     }
+
+    /**
+     * Tranzakció és ellenőrzés nélküli hasonlósági kapcsolatok gráfdb-be szúrása
+     * @param sims
+     */
+    public void batchInsertSimilarities(List<SimLink> sims, Similarities simLabel){
+        BatchInserter batchInserter = null;
+        try {
+            batchInserter = BatchInserters.inserter(this.dbFolder.getAbsoluteFile());
+            for(SimLink s : sims){
+                Map<String, Object> simProperty = ImmutableMap.of(simLabel.getPropertyName(), s.similarity);
+                batchInserter.createRelationship(s.startNode,s.endNode,simLabel,simProperty);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if ( batchInserter != null )
+            {
+                batchInserter.shutdown();
+            }
+        }
+    }
+
 
 }
