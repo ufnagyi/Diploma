@@ -9,6 +9,6 @@ public enum LogHelper {
     INSTANCE;
     private static final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     public void log(String s) {
-        System.out.println(s + "\t" + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
+        System.out.println(s + "  " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 }

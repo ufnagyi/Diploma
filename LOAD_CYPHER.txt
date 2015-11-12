@@ -110,6 +110,13 @@ IMPORT DONE in 29s 819ms. Imported:
   370444 nodes
   4604207 relationships
   397479 properties
+  
+------ UNIQUE EVENT LISTÁVAL:
+
+IMPORT DONE in 12s 355ms. Imported:
+  370444 nodes
+  4099728 relationships
+  397479 properties
 
 --INDEXELÉS:
 --színészek és rendezők lehetnek többen is ugyanazzal a névvel

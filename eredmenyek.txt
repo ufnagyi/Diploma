@@ -1,0 +1,107 @@
+--összes együtt nézett itempárok közti hasonlóságok:
+Start CFSim! 2015/11/12 00:13:46
+Num of computed sims: 16306925
+Stop CFSim!	2015/11/12 00:15:59
+Max sim: 1.0000000000000002
+Min sim: 2.4387700808410975E-4
+Avg sim: 0.01779500673825625
+Median sim: 0.008456300554913527
+1st decile sim: 0.0025453451610707085
+2st decile sim: 0.0037568375028746636
+
+--legalább két user által együtt nézett (suppAB>1) itempárok közti hasonlóságok:
+Start CFSim! 2015/11/12 00:08:46
+Num of computed sims: 8435178
+Stop CFSim!	2015/11/12 00:11:07
+Upload computed similarities to DB:	2015/11/12 00:40:22
+Upload computed similarities to DB Done! 2015/11/12 00:40:45
+Max sim: 1.0000000000000002
+Min sim: 4.47618369569082E-4
+Avg sim: 0.022493219744037656
+Median sim: 0.012041203246045852
+1st decile sim: 0.004115409290411666
+2st decile sim: 0.005860336361444506
+
+--suppAB > 1 hasonlóságok feltöltése az adatbázisba:
+~156 MiB --> 774.13 MiB
+
+TopN list for Insaisissable: 
+1. World War Z, v.fr.  0.27492224323056647
+2. Iron Man 3, v.fr.  0.24065561144574893
+3. Coup musclé  0.23259860641318061
+4. Assaut sur la Maison-Blanche  0.2281715042918278
+5. Après la terre  0.22530245130963025
+6. Lendemain de veille 3  0.22256588616884518
+7. G.I. Joe : Les représailles  0.21490231075600155
+8. Star Trek: Vers les ténèbres  0.2143716155942918
+9. R.I.P. Département  0.2004979969379123
+10. Un Duo infernal  0.199786020237142
+TopN list for Downton Abbey - Season 2 - Episode Two: 
+1. Downton Abbey - Season 2 - Episode Three  0.8241633836921342
+2. Downton Abbey - Season 2 - Episode One  0.6157454690707401
+3. Downton Abbey - Season 2 - Episode Five  0.5536930229999479
+4. Downton Abbey - Season 2 - Episode Four  0.5401080324108037
+5. Downton Abbey - Season 2 - Episode Six  0.5248906591678238
+6. Downton Abbey - Season 2 - Episode Eight  0.5111012519999519
+7. Downton Abbey - Season 1 - Episode Seven  0.4732779688921994
+8. Downton Abbey - Season 2 - Episode Nine - Christmas at Downton Abbey  0.46496039636008524
+9. Downton Abbey - Season 1 - Episode Six  0.4295942735311762
+10. Downton Abbey - Season 1 - Episode Five  0.37142857142857144
+TopN list for Days 03.01.2013: 
+1. Days 02.28.2013  0.6172133998483675
+2. Days 02.27.2013  0.5482304134858554
+3. Days 03.04.2013  0.49147976423081485
+4. Days 03.05.2013  0.38575837490522974
+5. Days 03.06.2013  0.32255048957416355
+6. Days 03.08.2013  0.31317056335050253
+7. Days 03.07.2013  0.31169593308162735
+8. Mar.26.2013 - Days Of Our Lives  0.2986578607168181
+9. Days 03.12.2013  0.2964322713736882
+10. Days 02.26.2013  0.2857142857142857
+TopN list for A Haunted House: 
+1. Mama  0.11579336952549787
+2. Texas Chainsaw 3D  0.1072799819350583
+3. Movie 43  0.1010201757106367
+4. Scary Movie 5  0.10034757739238262
+5. The Haunting in Connecticut 2: Ghosts of Georgia  0.09950293088209346
+6. A Haunted House - Coming Soon  0.09605346407585967
+7. 21 And Over  0.0943099427456418
+8. House Arrest  0.09024987517621529
+9. Evil Dead  0.08991919409462491
+10. Identity Thief  0.08839503114584997
+TopN list for Sex and the City - S1 Ep.8 - Three's Crowd: 
+TopN list for S.2 E.02 - Nashville: 
+1. S.2 E.03 - Nashville  0.514848084413245
+2. S.2 E.01 - Nashville  0.45926132353732585
+3. S.2 E.06 - Nashville  0.39416100395462084
+4. S.1 E.121 - Nashville  0.20054387716771505
+5. S.1 E.120 - Nashville  0.19513229576038008
+6. S.1 E.119 - Nashville  0.18441258602057492
+7. S.1 E.117 - Nashville  0.16473047434201574
+8. S.1 E.115 - Nashville  0.16310750548293376
+9. S.1 E.116 - Nashville  0.16231405074295058
+10. S.1 E.118 - Nashville  0.15045996961393215
+TopN list for S.2 E.2040 - Anderson Live: 
+TopN list for S.10 E.10134 - The Ellen DeGeneres Show: 
+1. S.18 E.10135 - The Ellen DeGeneres Show  0.33801699360556786
+2. S.10 E.10133 - The Ellen DeGeneres Show  0.30051251034912096
+3. S.10 E.10137 - The Ellen DeGeneres Show  0.29602250435738553
+4. S.10 E.10136 - The Ellen DeGeneres Show  0.2908554581422428
+5. S.10 E.10132 - The Ellen DeGeneres Show  0.282576394831354
+6. S.10 E.10138 - The Ellen DeGeneres Show  0.2768589170199692
+7. S.10 E.10131 - The Ellen DeGeneres Show  0.2610860812389409
+8. S.10 E.10139 - The Ellen DeGeneres Show  0.23220765626683876
+9. S.10 E.10130 - The Ellen DeGeneres Show  0.22949168381423599
+10. S.10 E.10142 - The Ellen DeGeneres Show  0.22880296123793206
+TopN list for L'Âge de glace: 
+1. L'Âge de glace 2: la fonte  0.22304986837273524
+2. Les 3 mousquetaires: Mickey, Donald et Dingo  0.09466030570784414
+3. Les Rebelles de la forêt 3  0.08451542547285165
+4. Alvin et les Chipmunks  0.07234636300623234
+5. Les Schtroumpfs , v.fr.  0.07032108464077431
+6. Mickey, la magie de Noël  0.06645930483723024
+7. Pokemon 5: Héros  0.06438227799796505
+8. Alpha et Oméga  0.0636445827340584
+9. Docteur Dolittle  0.06299407883487121
+10. Docteur Dolittle 2  0.06211299937499416
+TopN list for S.18 E.J18054 - The Daily Show with Jon Stewart: 

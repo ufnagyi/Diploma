@@ -2,6 +2,7 @@ package hf;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import gnu.trove.iterator.TIntObjectIterator;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -199,13 +200,29 @@ public class Reader {
         String outputName = "events_for_graphDB.csv";
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Event list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
+
+        TIntObjectHashMap<HashSet<Integer>> uniqueEvents = new TIntObjectHashMap<>();
+        for (Database.Event e : dbExt.events(null)) {
+            if (!uniqueEvents.containsKey(e.uIdx)) {
+                HashSet<Integer> hs = new HashSet<>();
+                hs.add(e.iIdx);
+                uniqueEvents.put(e.uIdx, hs);
+            } else {
+                uniqueEvents.get(e.uIdx).add(e.iIdx);
+            }
+        }
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
             bufferedWriter.write(":START_ID(User)" + defaultSeparator + ":END_ID(Item)");
             bufferedWriter.newLine();
-            for (Database.Event e : dbExt.events(null)) {
-                bufferedWriter.write(Integer.toString(e.uIdx) + defaultSeparator + Integer.toString(e.iIdx));
-                bufferedWriter.newLine();
+            TIntObjectIterator<HashSet<Integer>> iterator = uniqueEvents.iterator();
+            while(iterator.hasNext()){
+                iterator.advance();
+                String uIdx = Integer.toString(iterator.key());
+                for(int iIdx : iterator.value()) {
+                    bufferedWriter.write(uIdx + defaultSeparator + Integer.toString(iIdx));
+                    bufferedWriter.newLine();
+                }
             }
             bufferedWriter.close();
         } catch (IOException e) {

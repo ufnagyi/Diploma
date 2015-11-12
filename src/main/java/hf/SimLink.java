@@ -87,6 +87,7 @@ public class SimLink {
 
     }
 
+
     @Override
     public int hashCode() {
         return (startNode + "; " + endNode).hashCode();

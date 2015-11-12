@@ -1,6 +1,5 @@
 package hf;
 
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import onlab.core.Database;
@@ -10,7 +9,6 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.UniqueFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 
@@ -19,8 +17,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GraphDB {
     public GraphDatabaseService graphDBService = null;
@@ -29,11 +25,7 @@ public class GraphDB {
     private File dbFolder;
     private boolean inited = false;
 
-    public boolean isInited() {
-        return inited;
-    }
-
-    public GraphDB(Database db, String newDBFolder){
+    public GraphDB(Database db, String newDBFolder) {
         this.db = db;
         this.dbExt = (ExtendedDatabase) db;
         setDbFolder(newDBFolder);
@@ -41,6 +33,22 @@ public class GraphDB {
 
     public GraphDB(String oldDBFolder){
         setDbFolder(oldDBFolder);
+    }
+
+    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
+        // Registers a shutdown hook for the Neo4j instance so that it
+        // shuts down nicely when the VM exits (even if you "Ctrl-C" the
+        // running application).
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                graphDb.shutdown();
+            }
+        });
+    }
+
+    public boolean isInited() {
+        return inited;
     }
 
     public File getDbFolder() {
@@ -51,21 +59,6 @@ public class GraphDB {
         this.dbFolder = new File(dbFolder);
     }
 
-    private static void registerShutdownHook( final GraphDatabaseService graphDb )
-    {
-        // Registers a shutdown hook for the Neo4j instance so that it
-        // shuts down nicely when the VM exits (even if you "Ctrl-C" the
-        // running application).
-        Runtime.getRuntime().addShutdownHook( new Thread()
-        {
-            @Override
-            public void run()
-            {
-                graphDb.shutdown();
-            }
-        } );
-    }
-
     public void initDB(){
         graphDBService = new GraphDatabaseFactory().newEmbeddedDatabase(dbFolder);
         registerShutdownHook(graphDBService);
@@ -73,7 +66,8 @@ public class GraphDB {
     }
 
     public void shutDownDB(){
-        graphDBService.shutdown();
+        if (inited)
+            graphDBService.shutdown();
         inited = false;
     }
 
@@ -293,7 +287,7 @@ public class GraphDB {
     }
 
     private UniqueFactory<Node> createUniqueNodeFactory(final Labels nodeType, GraphDatabaseService graphDb) {
-         return new UniqueFactory.UniqueNodeFactory(graphDb, nodeType.name()) {
+        return new UniqueFactory.UniqueNodeFactory(graphDb, nodeType.name()) {
             @Override
             protected void initialize(Node createdNode, Map<String, Object> properties) {
                 createdNode.addLabel(nodeType);
@@ -303,7 +297,7 @@ public class GraphDB {
     }
 
     private Relationship createUniqueRelationship(String indexableKey, final String indexableValue,
-                                                 final RelationshipType type, final Node start, final Node end) {
+                                                  final RelationshipType type, final Node start, final Node end) {
 
         UniqueFactory<Relationship> factory = new UniqueFactory.UniqueRelationshipFactory(graphDBService, indexableKey) {
             @Override
@@ -389,21 +383,40 @@ public class GraphDB {
         return neighbors;
     }
 
-    public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN){
+    /**
+     * @param node StartNode
+     * @param sim  Mely hasonlosagot vizsgalja
+     * @param topN N leghasonlobb szomszed! Ha N = -1 -> osszes szomszed
+     * @return Szomszed es a hozza tartozo hasonlosag.
+     */
+    public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN) {
         Transaction tx = graphDBService.beginTx();
-        HashMap<Node,Double> neighbors = new HashMap<>();
-        for( Relationship relationship : node.getRelationships(sim)){
-            neighbors.put(relationship.getOtherNode(node),(Double) relationship.getProperty(sim.getPropertyName()));
+        HashMap<Node, Double> neighbors = new LinkedHashMap<>();
+        Map<Node, Double> result = new LinkedHashMap<>();
+        for (Relationship relationship : node.getRelationships(sim)) {
+            neighbors.put(relationship.getOtherNode(node), (Double) relationship.getProperty(sim.getPropertyName()));
         }
-        if(topN != -1){
 
-            Stream<Map.Entry<Node,Double>> sorted = neighbors.entrySet().stream()
-                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-            return sorted.limit(topN).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        ArrayList<Map.Entry<Node, Double>> list = new ArrayList<>(neighbors.entrySet());
+        List<Map.Entry<Node, Double>> entries;
+        if (topN != -1) {
+            entries = Ordering.from(this.getComparator()).greatestOf(list, topN);
+            for (Map.Entry<Node, Double> entry : entries) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        } else {
+            Collections.sort(list, this.getComparator().reversed());
+            for (Map.Entry<Node, Double> entry : list) {
+                result.put(entry.getKey(), entry.getValue());
+            }
         }
         tx.success();
         tx.close();
-        return neighbors;
+        return result;
+    }
+
+    public Comparator<Map.Entry<Node, Double>> getComparator() {
+        return (o1, o2) -> (o1.getValue()).compareTo(o2.getValue());
     }
 
 
@@ -421,9 +434,11 @@ public class GraphDB {
 
     /**
      * Tranzakció és ellenőrzés nélküli hasonlósági kapcsolatok gráfdb-be szúrása
-     * @param sims
+     * @param sims Kiszamolt hasonlosagok
+     * @param simLabel Hasonlosagok relaciotipusa
      */
-    public void batchInsertSimilarities(List<SimLink> sims, Similarities simLabel){
+    public void batchInsertSimilarities(HashSet<SimLink> sims, Similarities simLabel) {
+        this.shutDownDB();
         BatchInserter batchInserter = null;
         try {
             batchInserter = BatchInserters.inserter(this.dbFolder.getAbsoluteFile());
