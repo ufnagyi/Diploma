@@ -367,7 +367,7 @@ public class GraphDB {
         tx.close();
     }
 
-    public HashSet<Long> getAllNeighborsByRel(Node node, Relationships rel){
+    public HashSet<Long> getAllNeighborIDsByRel(Node node, Relationships rel){
         HashSet<Long> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
             neighbors.add(relationship.getOtherNode(node).getId());
@@ -375,15 +375,33 @@ public class GraphDB {
         return neighbors;
     }
 
-    public HashSet<Long> getAllNeighborsBySim(Node node, Similarities rel){
-        HashSet<Long> neighbors = new HashSet<>();
+    public HashSet<Node> getAllNeighborsByRel(Node node, Relationships rel){
+        HashSet<Node> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
-            neighbors.add(relationship.getOtherNode(node).getId());
+            neighbors.add(relationship.getOtherNode(node));
         }
         return neighbors;
     }
 
-    /**
+
+    public HashMap<Node,Double> getAllNeighborsBySim(Node node, Similarities sim){
+        HashMap<Node, Double> neighbors = new HashMap<>();
+        for (Relationship relationship : node.getRelationships(sim)) {
+            neighbors.put(relationship.getOtherNode(node), (Double) relationship.getProperty(sim.getPropertyName()));
+        }
+        return neighbors;
+    }
+
+    public HashMap<Long,Double> getAllNeighborIDsBySim(Node node, Similarities sim){
+        HashMap<Long, Double> neighbors = new HashMap<>();
+        for (Relationship relationship : node.getRelationships(sim)) {
+            neighbors.put(relationship.getOtherNode(node).getId(), (Double) relationship.getProperty(sim.getPropertyName()));
+        }
+        return neighbors;
+    }
+
+
+    /** Visszaadja a topN szomszed node-ot a parameterul kapott hasonlosagi eltipus alapjan
      * @param node StartNode
      * @param sim  Mely hasonlosagot vizsgalja
      * @param topN N leghasonlobb szomszed! Ha N = -1 -> osszes szomszed
@@ -391,11 +409,8 @@ public class GraphDB {
      */
     public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN) {
         Transaction tx = graphDBService.beginTx();
-        HashMap<Node, Double> neighbors = new LinkedHashMap<>();
+        HashMap<Node, Double> neighbors = getAllNeighborsBySim(node, sim);
         Map<Node, Double> result = new LinkedHashMap<>();
-        for (Relationship relationship : node.getRelationships(sim)) {
-            neighbors.put(relationship.getOtherNode(node), (Double) relationship.getProperty(sim.getPropertyName()));
-        }
 
         ArrayList<Map.Entry<Node, Double>> list = new ArrayList<>(neighbors.entrySet());
         List<Map.Entry<Node, Double>> entries;
@@ -419,7 +434,11 @@ public class GraphDB {
         return (o1, o2) -> (o1.getValue()).compareTo(o2.getValue());
     }
 
-
+    /**
+     * Adott l labellel rendelkezo osszes node-ot visszaadja
+     * @param l A Label tipus
+     * @return
+     */
     public ArrayList<Node> getNodesByLabel(Labels l){
         Transaction tx = graphDBService.beginTx();
         ArrayList<Node> nodesByLabel = new ArrayList<>();

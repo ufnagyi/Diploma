@@ -1,3 +1,9 @@
+------ DB ÉPÍTÉS UNIQUE EVENT LISTÁVAL:
+IMPORT DONE in 12s 355ms. Imported:
+  370444 nodes
+  4099728 relationships
+  397479 properties
+
 --összes együtt nézett itempárok közti hasonlóságok:
 Start CFSim! 2015/11/12 00:13:46
 Num of computed sims: 16306925
@@ -24,6 +30,7 @@ Median sim: 0.012041203246045852
 
 --suppAB > 1 hasonlóságok feltöltése az adatbázisba:
 ~156 MiB --> 774.13 MiB
+időtartam: 23 másodperc
 
 TopN list for Insaisissable: 
 1. World War Z, v.fr.  0.27492224323056647
@@ -36,6 +43,7 @@ TopN list for Insaisissable:
 8. Star Trek: Vers les ténèbres  0.2143716155942918
 9. R.I.P. Département  0.2004979969379123
 10. Un Duo infernal  0.199786020237142
+
 TopN list for Downton Abbey - Season 2 - Episode Two: 
 1. Downton Abbey - Season 2 - Episode Three  0.8241633836921342
 2. Downton Abbey - Season 2 - Episode One  0.6157454690707401
@@ -47,6 +55,7 @@ TopN list for Downton Abbey - Season 2 - Episode Two:
 8. Downton Abbey - Season 2 - Episode Nine - Christmas at Downton Abbey  0.46496039636008524
 9. Downton Abbey - Season 1 - Episode Six  0.4295942735311762
 10. Downton Abbey - Season 1 - Episode Five  0.37142857142857144
+
 TopN list for Days 03.01.2013: 
 1. Days 02.28.2013  0.6172133998483675
 2. Days 02.27.2013  0.5482304134858554
@@ -58,6 +67,7 @@ TopN list for Days 03.01.2013:
 8. Mar.26.2013 - Days Of Our Lives  0.2986578607168181
 9. Days 03.12.2013  0.2964322713736882
 10. Days 02.26.2013  0.2857142857142857
+
 TopN list for A Haunted House: 
 1. Mama  0.11579336952549787
 2. Texas Chainsaw 3D  0.1072799819350583
@@ -69,7 +79,9 @@ TopN list for A Haunted House:
 8. House Arrest  0.09024987517621529
 9. Evil Dead  0.08991919409462491
 10. Identity Thief  0.08839503114584997
+
 TopN list for Sex and the City - S1 Ep.8 - Three's Crowd: 
+
 TopN list for S.2 E.02 - Nashville: 
 1. S.2 E.03 - Nashville  0.514848084413245
 2. S.2 E.01 - Nashville  0.45926132353732585
@@ -81,7 +93,9 @@ TopN list for S.2 E.02 - Nashville:
 8. S.1 E.115 - Nashville  0.16310750548293376
 9. S.1 E.116 - Nashville  0.16231405074295058
 10. S.1 E.118 - Nashville  0.15045996961393215
+
 TopN list for S.2 E.2040 - Anderson Live: 
+
 TopN list for S.10 E.10134 - The Ellen DeGeneres Show: 
 1. S.18 E.10135 - The Ellen DeGeneres Show  0.33801699360556786
 2. S.10 E.10133 - The Ellen DeGeneres Show  0.30051251034912096
@@ -93,6 +107,7 @@ TopN list for S.10 E.10134 - The Ellen DeGeneres Show:
 8. S.10 E.10139 - The Ellen DeGeneres Show  0.23220765626683876
 9. S.10 E.10130 - The Ellen DeGeneres Show  0.22949168381423599
 10. S.10 E.10142 - The Ellen DeGeneres Show  0.22880296123793206
+
 TopN list for L'Âge de glace: 
 1. L'Âge de glace 2: la fonte  0.22304986837273524
 2. Les 3 mousquetaires: Mickey, Donald et Dingo  0.09466030570784414
@@ -104,4 +119,5 @@ TopN list for L'Âge de glace:
 8. Alpha et Oméga  0.0636445827340584
 9. Docteur Dolittle  0.06299407883487121
 10. Docteur Dolittle 2  0.06211299937499416
+
 TopN list for S.18 E.J18054 - The Daily Show with Jon Stewart: 

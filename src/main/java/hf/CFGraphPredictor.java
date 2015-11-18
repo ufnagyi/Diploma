@@ -9,9 +9,7 @@ import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 
 public class CFGraphPredictor extends GraphDBPredictor {
@@ -115,6 +113,64 @@ public class CFGraphPredictor extends GraphDBPredictor {
         return computedSims;
     }
 
+
+
     public void test(){
+
+    }
+
+
+    int lastUser = -1;
+    HashSet<Long> itemsSeenByUser = new HashSet<>();
+    HashMap<Long, Double> simsForItem = new HashMap<>();
+
+    /**
+     * Prediktalasra. Arra felkeszitve, hogy a usereken megy sorba a kiertekeles, nem itemeken!
+     * @param uIdx userID
+     * @param iIdx itemID
+     * @return
+     */
+    public double predict(int uIdx, int iIdx, int method){
+        /*
+        Kétféle megközelítés:
+        A vizsgált item és a user által látott egyes itemek között levő sim értékek szummáját:
+        1) a User által látott összes film számával átlagolom --> prediction / user.getDegree(Relationships.SEEN)
+        2) a User által látott filmek közül az adott itemmel sim kapcsolatban állók számával átlagolom
+            --> prediction / matches
+         */
+        int matches =  0;
+        double prediction = 0;
+        Node user = graphDB.graphDBService.findNode(Labels.User, Labels.User.getIDName(), uIdx);
+        if( uIdx != lastUser) {
+            itemsSeenByUser = graphDB.getAllNeighborIDsByRel(user, Relationships.SEEN);
+        }
+
+        simsForItem = graphDB.getAllNeighborIDsBySim(graphDB.graphDBService.findNode(Labels.Item, Labels.Item.getIDName(),
+                iIdx),Similarities.CF_ISIM);
+        if(simsForItem.size() < itemsSeenByUser.size()) {
+            for (Map.Entry<Long, Double> entry : simsForItem.entrySet()) {
+                if (itemsSeenByUser.contains(entry.getKey())) {
+                    prediction += entry.getValue();
+                    matches++;
+                }
+
+            }
+        }
+        else {
+            for (Long l : itemsSeenByUser) {
+                if (simsForItem.containsKey(l)) {
+                    prediction += simsForItem.get(l);
+                    matches++;
+                }
+
+            }
+        }
+
+        if(method == 1)
+            prediction = prediction / user.getDegree(Relationships.SEEN);  //1-es módszer
+        else
+            prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
+
+        return prediction;
     }
 }
