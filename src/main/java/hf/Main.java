@@ -234,7 +234,7 @@ public class Main {
 //		buildDatabaseAndSave();
 
 //		System.out.println("\nSTEP 2: Loading binary databases from file:");
-		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTestFilename()}); //getDatabaseTrainFilename(), getDatabaseTestFilename()
+		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(),getDatabaseTestFilename()}); //getDatabaseTrainFilename(), getDatabaseTestFilename()
 //		Database[] dbs = new Database[]{new Database()};
 
 //		System.out.println("\nSTEP 3: Predictor training:");
@@ -260,8 +260,11 @@ public class Main {
 		//      C:/Nandi_diploma/Test_Database
 
 
-		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Test_Database");
+		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
 		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+
+		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
+		GraphDBBuilder.buildGraphDBFromImpressDB(testDB,dbs[1],true);
 
 //		graphDB.initDB();
 //

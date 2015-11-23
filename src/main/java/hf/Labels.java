@@ -26,5 +26,5 @@ public enum Labels implements Label {
         return idName;
     }
 
-    public String getUniqueName(){return this.idName.equals("") ? this.idName : this.property;}
+    public String getUniqueName(){return !this.idName.equals("") ? this.idName : this.property;}
 }
