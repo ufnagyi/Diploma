@@ -7,9 +7,7 @@ import org.neo4j.graphdb.Node;
  * 2 node közti similarity kapcsolat dobozolása
  * Fontos: NEM tud irányt megkülönböztetni!
  */
-public class SimLink {
-    public long startNode;
-    public long endNode;
+public class SimLink extends Link{
     public double similarity;
 
     public SimLink(long l, long l1, double sim) {

@@ -129,3 +129,54 @@ CREATE CONSTRAINT ON (vod:VOD) ASSERT vod.word IS UNIQUE;
 CREATE CONSTRAINT ON (item:Item) ASSERT item.ItemID IS UNIQUE;
 CREATE INDEX ON :Item(title);
 CREATE CONSTRAINT ON (user:User) ASSERT user.UserID IS UNIQUE;
+
+
+----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------
+JAVA kóddal GraphDB feltöltése ImpressDB-ből (TRAIN SET):
+
+GraphDB építés kezdése:   2015/11/23 00:45:07
+Item list keszitese:   2015/11/23 00:45:08
+Item list keszitese KESZ: 17001  2015/11/23 00:45:08
+User list keszitese:   2015/11/23 00:45:09
+User list keszitese KESZ: 343409  2015/11/23 00:45:11
+Actor list keszitese:   2015/11/23 00:45:11
+Actor list keszitese KESZ: 7479  2015/11/23 00:45:11
+Director list keszitese:   2015/11/23 00:45:11
+Director list keszitese KESZ: 1857  2015/11/23 00:45:11
+VOD list keszitese:   2015/11/23 00:45:11
+VOD list keszitese KESZ: 698  2015/11/23 00:45:11
+SEEN list keszitese:   2015/11/23 00:45:14
+SEEN list keszitese KESZ: 4471818  2015/11/23 00:45:54
+ACTS_IN list keszitese:   2015/11/23 00:45:54
+ACTS_IN list keszitese KESZ: 22137  2015/11/23 00:45:54
+DIR_BY list keszitese:   2015/11/23 00:45:54
+DIR_BY list keszitese KESZ: 4840  2015/11/23 00:45:54
+HAS_META list keszitese:   2015/11/23 00:45:54
+HAS_META list keszitese KESZ: 105412  2015/11/23 00:45:55
+GraphDB felépítve!  2015/11/23 00:46:05
+Futas vege: 2015/11/23 00:46:05
+
+TEST SET:
+
+GraphDB építés kezdése:   2015/11/23 00:52:48
+Item list keszitese:   2015/11/23 00:52:49
+Item list keszitese KESZ: 17001  2015/11/23 00:52:50
+User list keszitese:   2015/11/23 00:52:51
+User list keszitese KESZ: 343409  2015/11/23 00:52:52
+Actor list keszitese:   2015/11/23 00:52:52
+Actor list keszitese KESZ: 7479  2015/11/23 00:52:52
+Director list keszitese:   2015/11/23 00:52:52
+Director list keszitese KESZ: 1857  2015/11/23 00:52:52
+VOD list keszitese:   2015/11/23 00:52:52
+VOD list keszitese KESZ: 698  2015/11/23 00:52:52
+SEEN list keszitese:   2015/11/23 00:52:53
+SEEN list keszitese KESZ: 454573  2015/11/23 00:52:55
+ACTS_IN list keszitese:   2015/11/23 00:52:55
+ACTS_IN list keszitese KESZ: 22137  2015/11/23 00:52:55
+DIR_BY list keszitese:   2015/11/23 00:52:55
+DIR_BY list keszitese KESZ: 4840  2015/11/23 00:52:55
+HAS_META list keszitese:   2015/11/23 00:52:55
+HAS_META list keszitese KESZ: 105412  2015/11/23 00:52:55
+GraphDB felépítve!  2015/11/23 00:53:05
+Futas vege: 2015/11/23 00:53:05

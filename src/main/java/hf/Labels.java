@@ -4,7 +4,7 @@ import org.neo4j.graphdb.Label;
 
 
 public enum Labels implements Label {
-    Item("ItemID", "title"), User("UserID"), VOD("VodID", "word"), Actor("ActorID", "name"), Director("DirID", "name");
+    Item("ItemID", "title"), User("UserID"), VOD("", "word"), Actor("", "name"), Director("", "name");
     private String property;
     private String idName;
 
@@ -25,4 +25,6 @@ public enum Labels implements Label {
     public String getIDName() {
         return idName;
     }
+
+    public String getUniqueName(){return this.idName.equals("") ? this.idName : this.property;}
 }

@@ -4,16 +4,12 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import gnu.trove.iterator.TIntObjectIterator;
 import gnu.trove.iterator.TObjectIntIterator;
-import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import gnu.trove.set.hash.TIntHashSet;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,6 +21,7 @@ public class Reader {
     private Database db;
     private ExtendedDatabase dbExt;
     private final static char defaultSeparator = ';';
+    private final static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private TObjectIntHashMap actorIDs;
     private TObjectIntHashMap directorIDs;
     private TObjectIntHashMap vodIDs;
@@ -70,28 +67,27 @@ public class Reader {
 
     public void createAllCSVs(){
         //node CSV letrehozas:
-        this.createNewActorList();
-        this.createNewDirectorList();
-        this.createNewItemList();
-        this.createNewUserList();
-        this.createNewVODMenuList();
+        this.createNewActorListCSV();
+        this.createNewDirectorListCSV();
+        this.createNewItemListCSV();
+        this.createNewUserListCSV();
+        this.createNewVODMenuListCSV();
         //relacio CSV letrehozas:
-        this.createNewACTSINRelList();
-        this.createNewDIRBYRelList();
-        this.createNewSEENRelList();
-        this.createNewHASMETARelList();
+        this.createNewACTSINRelListCSV();
+        this.createNewDIRBYRelListCSV();
+        this.createNewSEENRelListCSV();
+        this.createNewHASMETARelListCSV();
     }
 
-    public void createNewItemList() {
+    public void createNewItemListCSV() {
         String outputName = "items_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Item list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
             bufferedWriter.write("ItemID:ID(Item)" + defaultSeparator + "title");
             bufferedWriter.newLine();
             for (Database.Item i : dbExt.items(null)) {
-                bufferedWriter.write(Integer.toString(i.idx) + defaultSeparator + "\"" + i.name.replace("\"","\\\"") + "\"");
+                bufferedWriter.write(Integer.toString(dbExt.getItemId(i.idx)) + defaultSeparator + "\"" + i.name.replace("\"","\\\"") + "\"");
                 bufferedWriter.newLine();
             }
             bufferedWriter.close();
@@ -102,9 +98,8 @@ public class Reader {
         System.out.println("Item list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewActorList() {
+    public void createNewActorListCSV() {
         String outputName = "actors_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Actor list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 
         Set<String> actors = new HashSet<>();
@@ -127,9 +122,8 @@ public class Reader {
             System.out.println("Actor list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewDirectorList() {
+    public void createNewDirectorListCSV() {
         String outputName = "directors_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Director list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 
         Set<String> directors = new HashSet<>();
@@ -152,9 +146,8 @@ public class Reader {
             System.out.println("Director list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewVODMenuList() {
+    public void createNewVODMenuListCSV() {
         String outputName = "vodmenu_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Vodmenu list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 
         Set<String> vodMenuWords = new HashSet<>();
@@ -176,16 +169,15 @@ public class Reader {
             System.out.println("Vodmenu list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewUserList() {
+    public void createNewUserListCSV() {
         String outputName = "users_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("User list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
             bufferedWriter.write("UserID:ID(User)");
             bufferedWriter.newLine();
             for (Database.User u : dbExt.users(null)) {
-                bufferedWriter.write(Integer.toString(u.idx));
+                bufferedWriter.write(Integer.toString(dbExt.getUserId(u.idx)));
                 bufferedWriter.newLine();
             }
             bufferedWriter.close();
@@ -196,19 +188,18 @@ public class Reader {
         System.out.println("User list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewSEENRelList() {
+    public void createNewSEENRelListCSV() {
         String outputName = "events_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Event list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
 
         TIntObjectHashMap<HashSet<Integer>> uniqueEvents = new TIntObjectHashMap<>();
         for (Database.Event e : dbExt.events(null)) {
-            if (!uniqueEvents.containsKey(e.uIdx)) {
+            if (!uniqueEvents.containsKey(dbExt.getUserId(e.uIdx))) {
                 HashSet<Integer> hs = new HashSet<>();
-                hs.add(e.iIdx);
-                uniqueEvents.put(e.uIdx, hs);
+                hs.add(dbExt.getItemId(e.iIdx));
+                uniqueEvents.put(dbExt.getUserId(e.uIdx), hs);
             } else {
-                uniqueEvents.get(e.uIdx).add(e.iIdx);
+                uniqueEvents.get(dbExt.getUserId(e.uIdx)).add(dbExt.getItemId(e.iIdx));
             }
         }
         try {
@@ -231,9 +222,8 @@ public class Reader {
         System.out.println("Event list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewACTSINRelList() {
+    public void createNewACTSINRelListCSV() {
         String outputName = "acts_in_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Acts_in list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
@@ -243,7 +233,7 @@ public class Reader {
                 for (String actor : dbExt.getItemKeyValue(i.idx, "Actor").split("\f")) {
                     if (!actor.equals("") && !actor.equals("NA") && !actor.equals("na") && !actor.equals("n/a") && !actor.equals("N\\A") && !actor.equals("N/A")) {
                         int actorID = actorIDs.get(actor);
-                        bufferedWriter.write(Integer.toString(actorID) + defaultSeparator + Integer.toString(i.idx));
+                        bufferedWriter.write(Integer.toString(actorID) + defaultSeparator + Integer.toString(dbExt.getItemId(i.idx)));
                         bufferedWriter.newLine();
                     }
                 }
@@ -255,9 +245,8 @@ public class Reader {
         System.out.println("Acts_in list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewDIRBYRelList() {
+    public void createNewDIRBYRelListCSV() {
         String outputName = "dir_by_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Dir_by list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
@@ -267,7 +256,7 @@ public class Reader {
                 for (String director : dbExt.getItemKeyValue(i.idx, "Director").split("\f")) {
                     if (!director.equals("") && !director.equals("NA") && !director.equals("na") && !director.equals("n/a") && !director.equals("N\\A") && !director.equals("N/A") && !director.equals("n/d")) {
                         int directorID = directorIDs.get(director);
-                        bufferedWriter.write(Integer.toString(i.idx) + defaultSeparator + Integer.toString(directorID));
+                        bufferedWriter.write(Integer.toString(dbExt.getItemId(i.idx)) + defaultSeparator + Integer.toString(directorID));
                         bufferedWriter.newLine();
                     }
                 }
@@ -279,9 +268,8 @@ public class Reader {
         System.out.println("Dir_by list CSV keszitese KESZ: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
     }
 
-    public void createNewHASMETARelList() {
+    public void createNewHASMETARelListCSV() {
         String outputName = "has_meta_for_graphDB.csv";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         System.out.println("Has_meta list CSV keszitese: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
@@ -291,7 +279,7 @@ public class Reader {
                 HashSet<String> mWords = getUniqueItemMetaWordsByKey(i.idx, "VodMenuDirect", "[\f/]");
                 for (String mW : mWords) {
                     int mWID = vodIDs.get(mW);
-                    bufferedWriter.write(Integer.toString(i.idx) + defaultSeparator + Integer.toString(mWID));
+                    bufferedWriter.write(Integer.toString(dbExt.getItemId(i.idx)) + defaultSeparator + Integer.toString(mWID));
                     bufferedWriter.newLine();
                 }
             }

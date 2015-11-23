@@ -7,6 +7,7 @@ import onlab.core.evaluation.SimpleRecallMeasurement;
 import onlab.core.predictor.Predictor;
 import onlab.core.util.PredictorUtil;
 import onlab.core.util.Util;
+import org.neo4j.graphdb.Transaction;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -233,7 +234,7 @@ public class Main {
 //		buildDatabaseAndSave();
 
 //		System.out.println("\nSTEP 2: Loading binary databases from file:");
-//		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTestFilename()}); //getDatabaseTrainFilename(), getDatabaseTestFilename()
 //		Database[] dbs = new Database[]{new Database()};
 
 //		System.out.println("\nSTEP 3: Predictor training:");
@@ -252,21 +253,25 @@ public class Main {
 
 //        //ha a node és relationship csv-ket létre kell hozni az import-toolhoz:
 //
-//        Reader r = new Reader(db);
+//        Reader r = new Reader(dbs[0]);
 //        r.createAllCSVs();
 
-		//      C:/Users/ufnagyi/Documents/Neo4J_Database
-		//      C:/Users/ufnagyi/Documents/TestDB
-		//      F:/Dokumentumok/Neo4j
-
-		GraphDB graphDB = new GraphDB("C:/Users/ufnagyi/Documents/Neo4J_Database");
+		//      C:/Nandi_diploma/Neo4J_Database
+		//      C:/Nandi_diploma/Test_Database
 
 
-		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-		cfGraphPredictor.setParameters(graphDB);
-		cfGraphPredictor.train();
-//		cfGraphPredictor.computeItemToItemSims(true);
-		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
+		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Test_Database");
+		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+
+//		graphDB.initDB();
+//
+
+
+//		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
+//		cfGraphPredictor.setParameters(graphDB);
+//		cfGraphPredictor.train();
+////		cfGraphPredictor.computeItemToItemSims(true);
+//		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
 
 
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));
