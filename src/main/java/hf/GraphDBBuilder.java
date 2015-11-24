@@ -163,15 +163,21 @@ public class GraphDBBuilder {
     }
 
     private static ArrayList<Link> getSEENRelationships() {
-        ArrayList<Link> events = new ArrayList<>(dbExt.numEvents());
+        HashSet<Link> uniqueEvents = new HashSet<>(dbExt.numEvents());
         HashMap<Object,Long> userIDToIDPairs = IDToIDs.get(Labels.User);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Event e : dbExt.events(null)) {
             long userGraphDBID = userIDToIDPairs.get(dbExt.getUserId(e.uIdx));
             long itemGraphDBID = itemIDToIDPairs.get(dbExt.getItemId(e.iIdx));
-            events.add(new Link(userGraphDBID,itemGraphDBID));
+            uniqueEvents.add(new Link(userGraphDBID,itemGraphDBID));
         }
         IDToIDs.remove(Labels.User);    //betöltve minden, ami hozzájuk kapcsolódik, ezért törlöm
+
+        ArrayList<Link> events = new ArrayList<>(uniqueEvents.size());
+        for(Link l : uniqueEvents){
+            events.add(l);
+        }
+
         return events;
     }
 

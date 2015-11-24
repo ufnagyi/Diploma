@@ -2,8 +2,11 @@ package hf;
 
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import onlab.core.Database;
+import onlab.core.evaluation.Evaluation;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -14,9 +17,23 @@ import java.util.*;
 
 public class CFGraphPredictor extends GraphDBPredictor {
 
+    private int method;
+
     public void train(){
         super.train();
     }
+
+    /**
+     *
+     * @param graphDB A grafDB, amire epitkezik
+     * @param method Prediction szamitasi modszer 1-es: /összes, 2-es: /match
+     */
+    public void setParameters(GraphDB graphDB, int method){
+        this.graphDB = graphDB;
+        this.method = method;
+    }
+
+    public void train(Database db, Evaluation eval){}
 
     public void computeItemToItemSims(boolean uploadResultIntoDB) {
         LogHelper.INSTANCE.log("Start CFSim!");
@@ -24,7 +41,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
         HashSet<SimLink> sims = new HashSet<>();
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
 
-        Transaction tx = graphDB.graphDBService.beginTx();
+        Transaction tx = graphDB.startTransaction();
 
         TraversalDescription simNodeFinder = graphDB.graphDBService.traversalDescription()
                 .depthFirst()
@@ -38,22 +55,20 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
 //        1 node teszteléséhez:
 //        ArrayList<Node> nodeList = new ArrayList<>();
-//        nodeList.add(graphDB.graphDBService.getNodeById(79));
+//        nodeList.add(graphDB.graphDBService.getNodeById(8));
 
         for (Node item : nodeList) {
             int changes = computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, sims);
             numOfComputedSims += changes;
             changeCounter1 += changes;
             if(changeCounter1 > 50000){
-                tx.success();
-                tx.close();
-                tx = graphDB.graphDBService.beginTx();
+                graphDB.endTransaction(tx);
+                tx = graphDB.startTransaction();
                 changeCounter1 = 0;
                 System.out.println(numOfComputedSims);
             }
         }
-        tx.success();
-        tx.close();
+        graphDB.endTransaction(tx);
         System.out.println("Num of computed sims: " + numOfComputedSims);
         LogHelper.INSTANCE.log("Stop CFSim!");
 
@@ -114,23 +129,18 @@ public class CFGraphPredictor extends GraphDBPredictor {
     }
 
 
-
-    public void test(){
-
-    }
-
-
-    int lastUser = -1;
-    HashSet<Long> itemsSeenByUser = new HashSet<>();
-    HashMap<Long, Double> simsForItem = new HashMap<>();
+    private int lastUser = -1;
+    private Node user = null;
+    private HashSet<Long> itemsSeenByUser = new HashSet<>();
+    private HashMap<Long, Double> simsForItem = new HashMap<>();
 
     /**
      * Prediktalasra. Arra felkeszitve, hogy a usereken megy sorba a kiertekeles, nem itemeken!
-     * @param uIdx userID
-     * @param iIdx itemID
+     * @param uID userID
+     * @param iID itemID
      * @return
      */
-    public double predict(int uIdx, int iIdx, int method){
+    public double predict(int uID, int iID, long time){
         /*
         Kétféle megközelítés:
         A vizsgált item és a user által látott egyes itemek között levő sim értékek szummáját:
@@ -139,14 +149,14 @@ public class CFGraphPredictor extends GraphDBPredictor {
             --> prediction / matches
          */
         int matches =  0;
-        double prediction = 0;
-        Node user = graphDB.graphDBService.findNode(Labels.User, Labels.User.getIDName(), uIdx);
-        if( uIdx != lastUser) {
+        double prediction = 0.0;
+        if( uID != lastUser) {
+            user = graphDB.graphDBService.findNode(Labels.User, Labels.User.getIDName(), uID);
             itemsSeenByUser = graphDB.getAllNeighborIDsByRel(user, Relationships.SEEN);
         }
 
         simsForItem = graphDB.getAllNeighborIDsBySim(graphDB.graphDBService.findNode(Labels.Item, Labels.Item.getIDName(),
-                iIdx),Similarities.CF_ISIM);
+                iID),Similarities.CF_ISIM);
         if(simsForItem.size() < itemsSeenByUser.size()) {
             for (Map.Entry<Long, Double> entry : simsForItem.entrySet()) {
                 if (itemsSeenByUser.contains(entry.getKey())) {
@@ -166,8 +176,10 @@ public class CFGraphPredictor extends GraphDBPredictor {
             }
         }
 
-        if(method == 1)
-            prediction = prediction / user.getDegree(Relationships.SEEN);  //1-es módszer
+        if(method == 1) {
+            int userRelDegree = user.getDegree(Relationships.SEEN);
+            prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
+        }
         else
             prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
 

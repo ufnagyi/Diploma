@@ -3,6 +3,8 @@ package hf;
 
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import onlab.core.Database;
+import onlab.core.evaluation.Evaluation;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
@@ -14,6 +16,8 @@ import java.util.*;
 
 public class WordCoSimGraphPredictor extends GraphDBPredictor {
 
+
+    public void train(Database db, Evaluation e){}
 
     public void train() {
         super.train();
@@ -44,7 +48,7 @@ public class WordCoSimGraphPredictor extends GraphDBPredictor {
      * @param iIdx
      * @return
      */
-    public double predict(int uIdx, int iIdx, int method) {
+    public double predict(int uIdx, int iIdx, long time) {
         return 0.0;
     }
 

@@ -62,6 +62,15 @@ public class GraphDB {
         inited = true;
     }
 
+    public Transaction startTransaction(){
+        return this.graphDBService.beginTx();
+    }
+
+    public void endTransaction(Transaction tx){
+        tx.success();
+        tx.close();
+    }
+
     public void shutDownDB(){
         if (inited)
             graphDBService.shutdown();
@@ -71,7 +80,7 @@ public class GraphDB {
     public void listGraphDBInfo(){
         System.out.println("--------------------------------------");
         System.out.println("Adatbazis informaciok:");
-        Transaction tx = graphDBService.beginTx();
+        Transaction tx = this.startTransaction();
         Schema schema = graphDBService.schema();
         System.out.println("---Label schema indexek:");
         for (IndexDefinition definition : schema.getIndexes())
@@ -107,8 +116,7 @@ public class GraphDB {
         System.out.print("Item-Metaword legtobb kapcsolatu 5 Item: ");
         while(r.hasNext())
             System.out.println(r.next().toString());
-        tx.success();
-        tx.close();
+        this.endTransaction(tx);
     }
 
     public HashSet<Long> getAllNeighborIDsByRel(Node node, Relationships rel){
@@ -152,7 +160,7 @@ public class GraphDB {
      * @return Szomszed es a hozza tartozo hasonlosag.
      */
     public Map<Node, Double> getTopNNeighborsAndSims(Node node, Similarities sim, int topN) {
-        Transaction tx = graphDBService.beginTx();
+        Transaction tx = this.startTransaction();
         HashMap<Node, Double> neighbors = getAllNeighborsBySim(node, sim);
         Map<Node, Double> result = new LinkedHashMap<>();
 
@@ -169,8 +177,7 @@ public class GraphDB {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
-        tx.success();
-        tx.close();
+        this.endTransaction(tx);
         return result;
     }
 
@@ -184,15 +191,30 @@ public class GraphDB {
      * @return Node ArrayList
      */
     public ArrayList<Node> getNodesByLabel(Labels l){
-        Transaction tx = graphDBService.beginTx();
+        Transaction tx = this.startTransaction();
         ArrayList<Node> nodesByLabel = new ArrayList<>();
         ResourceIterator<Node> nodes = this.graphDBService.findNodes(l);
         while(nodes.hasNext()){
             nodesByLabel.add(nodes.next());
         }
-        tx.success();
-        tx.close();
+        this.endTransaction(tx);
         return nodesByLabel;
+    }
+
+    /**
+     * Adott l labellel rendelkezo osszes node-ot visszaadja
+     * @param l A Label tipus
+     * @return Node ArrayList
+     */
+    public long getMinNodeIDByLabel(Labels l){
+        Transaction tx = this.startTransaction();
+        ArrayList<Long> nodeIDsByLabel = new ArrayList<>();
+        ResourceIterator<Node> nodes = this.graphDBService.findNodes(l);
+        while(nodes.hasNext()){
+            nodeIDsByLabel.add(nodes.next().getId());
+        }
+        this.endTransaction(tx);
+        return Collections.min(nodeIDsByLabel);
     }
 
     /**
@@ -202,6 +224,7 @@ public class GraphDB {
      */
     public void batchInsertSimilarities(HashSet<SimLink> sims, Similarities simLabel) {
         this.shutDownDB();
+        this.inited = false;
         BatchInserter batchInserter = null;
         try {
             batchInserter = BatchInserters.inserter(this.dbFolder.getAbsoluteFile());

@@ -245,9 +245,6 @@ public class Main {
 //		Predictor p1 = Util.loadPredictor(DIR + "p1.pr", dbs[0]);
 //		Predictor[] preds = new Predictor[]{p1};
 
-//		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-//		testPredictors(preds, dbs[0], dbs[1]);
-
 		//endregion
 
 
@@ -260,21 +257,39 @@ public class Main {
 		//      C:/Nandi_diploma/Test_Database
 
 
-		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
-		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+		//train és test grafDB-k felépitésére
 
-		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
-		GraphDBBuilder.buildGraphDBFromImpressDB(testDB,dbs[1],true);
+//		ExtendedDatabase db = (ExtendedDatabase) dbs[0];
 
-//		graphDB.initDB();
+
+//		int itemIdx = db.getItemIndex(-2145744233);
 //
+//		for(Database.Event e : db.events(null)){
+//			if(e.iIdx == itemIdx)
+//				System.out.println(db.getUserId(e.uIdx));
+//		}
+
+		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
+//		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+//
+//		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
+//		GraphDBBuilder.buildGraphDBFromImpressDB(testDB,dbs[1],true);
+
+		graphDB.initDB();
 
 
-//		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-//		cfGraphPredictor.setParameters(graphDB);
+
+		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
+		cfGraphPredictor.setParameters(graphDB);
 //		cfGraphPredictor.train();
-////		cfGraphPredictor.computeItemToItemSims(true);
+//		cfGraphPredictor.computeItemToItemSims(true);
 //		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
+
+		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
+		Predictor[] preds = new Predictor[]{cfGraphPredictor};
+		Transaction transaction = graphDB.startTransaction();
+		testPredictors(preds, dbs[0], dbs[1]);
+		graphDB.endTransaction(transaction);
 
 
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));

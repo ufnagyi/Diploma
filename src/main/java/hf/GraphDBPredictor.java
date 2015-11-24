@@ -1,5 +1,6 @@
 package hf;
 
+import onlab.core.predictor.Predictor;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -10,7 +11,7 @@ import java.util.Map;
 /**
  * Created by ufnagyi
  */
-abstract public class GraphDBPredictor {
+abstract public class GraphDBPredictor extends Predictor {
     public GraphDB graphDB;
 
     public void setParameters(GraphDB gDB){
@@ -28,13 +29,17 @@ abstract public class GraphDBPredictor {
      * @param label      Mely node-ok kozott?
      */
     public void exampleSimilarityResults(int topNByNode, Similarities similarity, Labels label) {
-        Transaction tx = graphDB.graphDBService.beginTx();
+        if(!graphDB.isInited())
+            graphDB.initDB();
+        Transaction tx = graphDB.startTransaction();
         HashMap<Node, Map<Node, Double>> exampleNodes = new HashMap<>();
+
+        long minNodeIDByLabel = graphDB.getMinNodeIDByLabel(label);
 
         Calendar calendar = Calendar.getInstance();
         int step = calendar.get(Calendar.SECOND);
         for (int j = 0; j < 10; j++) {
-            exampleNodes.put(graphDB.graphDBService.findNode(label, label.getIDName(), Integer.toString(79 + j * step)), null);
+            exampleNodes.put(graphDB.graphDBService.getNodeById(minNodeIDByLabel + j * step),null);
         }
         for (Map.Entry<Node, Map<Node, Double>> cursor : exampleNodes.entrySet()) {
             cursor.setValue(graphDB.getTopNNeighborsAndSims(cursor.getKey(), similarity, topNByNode));
@@ -44,8 +49,7 @@ abstract public class GraphDBPredictor {
             System.out.println("TopN list for " + cursor.getKey().getProperty(label.getPropertyName()) + ": ");
             printTopN(topN, label);
         }
-        tx.success();
-        tx.close();
+        graphDB.endTransaction(tx);
     }
 
     private void printTopN(Map<Node, Double> topN, Labels l) {
@@ -56,7 +60,4 @@ abstract public class GraphDBPredictor {
         }
     }
 
-
-    //predictor teszteléséhez
-    public abstract void test();
 }
