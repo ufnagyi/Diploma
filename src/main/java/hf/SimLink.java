@@ -7,8 +7,13 @@ import org.neo4j.graphdb.Node;
  * 2 node közti similarity kapcsolat dobozolása
  * Fontos: NEM tud irányt megkülönböztetni!
  */
-public class SimLink<N extends Comparable<N>> extends Link{
+public class SimLink<N extends Comparable<N>> extends Link<N>{
     public double similarity;
+
+    public SimLink(N l, N l1){
+        super(l,l1);
+        similarity = 0.0;
+    }
 
     public SimLink(N l, N l1, double sim) {
         super(l, l1);
@@ -26,6 +31,13 @@ public class SimLink<N extends Comparable<N>> extends Link{
         return endNode == simLink.endNode;
 
     }
+
+    @Override
+    public int hashCode() {
+        return (startNode + "; " + endNode).hashCode();
+    }
+
+
 
     public String print(){
         return (startNode + ";" + endNode + ";" + similarity);

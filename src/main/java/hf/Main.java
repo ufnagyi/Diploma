@@ -1,5 +1,6 @@
 package hf;
 
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import onlab.core.*;
 import onlab.core.RecoPrinter.RecoPrinterBasic;
 import onlab.core.evaluation.Evaluation;
@@ -217,10 +218,10 @@ public class Main {
 			ItemRecommendation[] iRecs = Recommender.getItemRecommendationBulk(pr, userIdxsToPrint, time, 10, null);
 			rp.printItemRecs(iRecs, dbTrain, DIR + "iRec_" + System.currentTimeMillis() + "_p" + i + ".txt");
 
-			System.out.println("Printing item2item lists to file...");
-			Item2ItemList[] i2is = Recommender.getItem2ItemListBulk(pr, itemIdxsToPrint, time, 10, null);
-			rp.printItem2Items(i2is, dbTrain, DIR + "i2i_" + System.currentTimeMillis() + "_p" + i + ".txt");
-			System.out.println("");
+//			System.out.println("Printing item2item lists to file...");
+//			Item2ItemList[] i2is = Recommender.getItem2ItemListBulk(pr, itemIdxsToPrint, time, 10, null);
+//			rp.printItem2Items(i2is, dbTrain, DIR + "i2i_" + System.currentTimeMillis() + "_p" + i + ".txt");
+//			System.out.println("");
 		}
 	}
 
@@ -280,16 +281,17 @@ public class Main {
 
 
 		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-		cfGraphPredictor.setParameters(graphDB);
+		cfGraphPredictor.setParameters(graphDB,2);
 //		cfGraphPredictor.train();
 //		cfGraphPredictor.computeSims(true);
 //		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
 
 		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
 		Predictor[] preds = new Predictor[]{cfGraphPredictor};
-		Transaction transaction = graphDB.startTransaction();
+		cfGraphPredictor.trainFromGraphDB();
+//		Transaction transaction = graphDB.startTransaction();
 		testPredictors(preds, dbs[0], dbs[1]);
-		graphDB.endTransaction(transaction);
+//		graphDB.endTransaction(transaction);
 
 
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));

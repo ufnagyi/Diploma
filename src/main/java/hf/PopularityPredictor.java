@@ -10,12 +10,16 @@ public class PopularityPredictor extends GraphDBPredictor {
 
 
     public void computePopularity(Node startNode, Relationships relationship) {
-        HashSet<Long> allNeighborsByRel = graphDB.getAllNeighborIDsByRel(startNode, relationship);
+
     }
 
-    public void train(Database db, Evaluation e){}
+    @Override
+    public void trainFromGraphDB() {
 
-    public void test() {
+    }
+
+    @Override
+    public void computeSims(boolean uploadResultIntoDB) {
 
     }
 

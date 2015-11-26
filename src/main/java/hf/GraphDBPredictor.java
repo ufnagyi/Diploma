@@ -6,6 +6,9 @@ import onlab.core.predictor.Predictor;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +41,8 @@ abstract public class GraphDBPredictor extends Predictor {
      * @param label      Mely node-ok kozott?
      */
     public void exampleSimilarityResults(int topNByNode, Similarities similarity, Labels label) {
+        LogHelper.INSTANCE.log("i2i Recommender List nyotmatása fájlba:");
+
         if(!graphDB.isInited())
             graphDB.initDB();
         Transaction tx = graphDB.startTransaction();
@@ -53,20 +58,34 @@ abstract public class GraphDBPredictor extends Predictor {
         for (Map.Entry<Node, Map<Node, Double>> cursor : exampleNodes.entrySet()) {
             cursor.setValue(graphDB.getTopNNeighborsAndSims(cursor.getKey(), similarity, topNByNode));
         }
-        for (Map.Entry<Node, Map<Node, Double>> cursor : exampleNodes.entrySet()) {
-            Map<Node, Double> topN = cursor.getValue();
-            System.out.println("TopN list for " + cursor.getKey().getProperty(label.getPropertyName()) + ": ");
-            printTopN(topN, label);
+
+        String outputName = "data/impresstv_vod_dataset/" + "i2i_Reco" + calendar.getTimeInMillis() + ".txt";
+        try {
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputName));
+
+            for (Map.Entry<Node, Map<Node, Double>> cursor : exampleNodes.entrySet()) {
+                Map<Node, Double> topN = cursor.getValue();
+                bufferedWriter.write("TopN list for " + cursor.getKey().getProperty(label.getPropertyName()) + ": ");
+                bufferedWriter.newLine();
+                printTopN(topN, label, bufferedWriter);
+            }
+            bufferedWriter.close();
+        } catch (IOException e) {
+            System.err.println("Caught IOException:" + e.getMessage());
+            return;
         }
         graphDB.endTransaction(tx);
+        LogHelper.INSTANCE.log("i2i Recommender List nyotmatása fájlba KÉSZ!");
     }
 
-    private void printTopN(Map<Node, Double> topN, Labels l) {
+    private void printTopN(Map<Node, Double> topN, Labels l, BufferedWriter bufferedWriter) throws IOException {
         int i = 1;
         for (Map.Entry<Node, Double> cursor : topN.entrySet()) {
-            System.out.println(i + ". " + cursor.getKey().getProperty(l.getPropertyName()) + "  " + cursor.getValue());
+            bufferedWriter.write(i + ". " + cursor.getKey().getProperty(l.getPropertyName()) + "  " + cursor.getValue());
+            bufferedWriter.newLine();
             i++;
         }
+        bufferedWriter.newLine();
     }
 
 }

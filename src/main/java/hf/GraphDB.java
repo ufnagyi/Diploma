@@ -2,9 +2,13 @@ package hf;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import gnu.trove.impl.hash.TIntDoubleHash;
+import gnu.trove.impl.hash.TObjectHash;
+import gnu.trove.map.hash.*;
+import gnu.trove.set.hash.TIntHashSet;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
+import org.neo4j.cypher.internal.compiler.v2_2.executionplan.builders.GlobalStrategy;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
@@ -121,7 +125,13 @@ public class GraphDB {
         this.endTransaction(tx);
     }
 
-    public HashSet<Long> getAllNeighborIDsByRel(Node node, Relationships rel){
+    /**
+     * Adott node osszes szomszedjanak DB-beli(!) ID-ja rel menten
+     * @param node
+     * @param rel
+     * @return
+     */
+    public HashSet<Long> getAllNeighborDBIDsByRel(Node node, Relationships rel){
         HashSet<Long> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
             neighbors.add(relationship.getOtherNode(node).getId());
@@ -129,10 +139,17 @@ public class GraphDB {
         return neighbors;
     }
 
-    public HashSet<Node> getAllNeighborsByRel(Node node, Relationships rel){
-        HashSet<Node> neighbors = new HashSet<>();
+    /**
+     * Adott node osszes szomszedjanak ID-ja rel menten
+     * @param label A node cimkeje
+     * @param node A node
+     * @param rel Relaciotipus, ami menten keresunk
+     * @return
+     */
+    public HashSet<Integer> getAllNeighborIDsByRel(Labels label, Node node, Relationships rel){
+        HashSet<Integer> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
-            neighbors.add(relationship.getOtherNode(node));
+            neighbors.add((int)relationship.getOtherNode(node).getProperty(label.getIDName()));
         }
         return neighbors;
     }
@@ -155,22 +172,34 @@ public class GraphDB {
     }
 
     /**
-     *
+     * Node-ok kozti hasonlosagok
      * @param l A Similarity kiindulo node-janak cimkeje
      * @param sim milyen Similarityt keresunk
      * @return
      */
-    public HashSet<SimLink> getAllSimilarities(Labels l,Similarities sim){
-        HashSet<SimLink> similarities = new HashSet<>();
+    public TIntObjectHashMap<TIntDoubleHashMap> getAllSimilaritiesBySim(Labels l, Similarities sim) {
+        TIntObjectHashMap<TIntDoubleHashMap> similarities = new TIntObjectHashMap<>();
+        int simNUM = 0;
         Transaction tx = this.startTransaction();
         Iterable<Relationship> allRelationships = GlobalGraphOperations.at(graphDBService).getAllRelationships();
-        for(Relationship relationship : allRelationships)
-        {
-            if (relationship.isType(sim))
-            {
-                System.out.println(relationship.getStartNode().getProperty(l.getIDName()).getClass().getTypeName());
+        for (Relationship relationship : allRelationships) {
+            if (relationship.isType(sim)) {
+                int startNodeID = (int) relationship.getStartNode().getProperty(l.getIDName());
+                int endNodeID = (int) relationship.getEndNode().getProperty(l.getIDName());
+                double similarity = (double) relationship.getProperty(sim.getPropertyName());
+                Link<Integer> link = new Link<>(startNodeID,endNodeID);
+                if (similarities.containsKey(link.startNode))
+                    similarities.get(link.startNode).put(link.endNode, similarity);
+                else {
+                    TIntDoubleHashMap asd = new TIntDoubleHashMap();
+                    asd.put(link.endNode, similarity);
+                    similarities.put(link.startNode, asd);
+                }
+                simNUM++;
             }
         }
+        this.endTransaction(tx);
+        System.out.println(simNUM);
         return similarities;
     }
 
@@ -244,7 +273,7 @@ public class GraphDB {
      * @param sims Kiszamolt hasonlosagok
      * @param simLabel Hasonlosagok relaciotipusa
      */
-    public void batchInsertSimilarities(HashSet<SimLink> sims, Similarities simLabel) {
+    public void batchInsertSimilarities(HashSet<SimLink<Long>> sims, Similarities simLabel) {
         this.shutDownDB();
         this.inited = false;
         BatchInserter batchInserter = null;
@@ -252,7 +281,7 @@ public class GraphDB {
             batchInserter = BatchInserters.inserter(this.dbFolder.getAbsoluteFile());
             for(SimLink<Long> s : sims){
                 Map<String, Object> simProperty = ImmutableMap.of(simLabel.getPropertyName(), s.similarity);
-                batchInserter.createRelationship((long) s.startNode, (long)s.endNode,simLabel,simProperty);
+                batchInserter.createRelationship(s.startNode, s.endNode,simLabel,simProperty);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -265,4 +294,26 @@ public class GraphDB {
     }
 
 
+    public TIntObjectHashMap<HashSet<Integer>> getAllUserItems() {
+        Transaction tx = this.startTransaction();
+        ArrayList<Node> users = this.getNodesByLabel(Labels.User);
+        int count = users.size();
+        int percent1 = count / 100;
+        int percent = 0;
+        int percent_act = 1;
+        TIntObjectHashMap<HashSet<Integer>> userItems = new TIntObjectHashMap<>(count);
+        count = 0;
+        for(Node user : users){
+            int userID = (int) user.getProperty(Labels.User.getIDName());
+            userItems.put(userID, this.getAllNeighborIDsByRel(Labels.Item, user, Relationships.SEEN));
+            if(++count > percent){
+                percent = percent + percent1;
+                System.out.print(percent_act + "% ");
+                percent_act++;
+            }
+        }
+        this.endTransaction(tx);
+        System.out.println();
+        return userItems;
+    }
 }

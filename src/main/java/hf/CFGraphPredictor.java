@@ -1,12 +1,12 @@
 package hf;
 
 import gnu.trove.iterator.TObjectIntIterator;
+import gnu.trove.map.hash.TIntDoubleHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import onlab.core.Database;
-import onlab.core.evaluation.Evaluation;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -17,7 +17,8 @@ import java.util.*;
 
 public class CFGraphPredictor extends GraphDBPredictor {
 
-    private HashSet<SimLink> sims;
+    private TIntObjectHashMap<TIntDoubleHashMap> itemSimilarities;
+    private TIntObjectHashMap<HashSet<Integer>> userItems;
     private int method;
 
     /**
@@ -31,15 +32,21 @@ public class CFGraphPredictor extends GraphDBPredictor {
     }
 
     public void trainFromGraphDB(){
-
-        Transaction tx = graphDB.startTransaction();
-        sims = graphDB.getAllSimilarities(Labels.Item, Similarities.CF_ISIM);
+        LogHelper.INSTANCE.log("Adatok betöltése a gráfból:");
+        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból:");
+        itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, Similarities.CF_ISIM);
+        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból KÉSZ! " + itemSimilarities.size() + " sim betöltve!");
+        LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból:");
+        userItems = graphDB.getAllUserItems();
+        LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!" );
+        LogHelper.INSTANCE.log("Adatok betöltése a gráfból KÉSZ!");
+        graphDB.shutDownDB();
     }
 
     public void computeSims(boolean uploadResultIntoDB) {
         LogHelper.INSTANCE.log("Start CFSim!");
 
-        sims = new HashSet<>();
+        HashSet<SimLink<Long>> simLinks = new HashSet<>();
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
 
         Transaction tx = graphDB.startTransaction();
@@ -59,7 +66,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
 //        nodeList.add(graphDB.graphDBService.getNodeById(8));
 
         for (Node item : nodeList) {
-            int changes = computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, sims);
+            int changes = computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, simLinks);
             numOfComputedSims += changes;
             changeCounter1 += changes;
             if(changeCounter1 > 50000){
@@ -75,17 +82,17 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
         if (uploadResultIntoDB) {
             LogHelper.INSTANCE.log("Upload computed similarities to DB:");
-            graphDB.batchInsertSimilarities(sims, Similarities.CF_ISIM);
+            graphDB.batchInsertSimilarities(simLinks, Similarities.CF_ISIM);
             LogHelper.INSTANCE.log("Upload computed similarities to DB Done!");
         }
 
-        ArrayList<Double> vals = new ArrayList<>(sims.size());
+        ArrayList<Double> vals = new ArrayList<>(simLinks.size());
         double sum = 0.0;
-        for (SimLink s : sims) {
+        for (SimLink s : simLinks) {
             sum += s.similarity;
             vals.add(s.similarity);
         }
-        double avg = sum / sims.size();
+        double avg = sum / simLinks.size();
         Collections.sort(vals);
         System.out.println("Max sim: " + vals.get(vals.size()-1));
         System.out.println("Min sim: " + vals.get(0));
@@ -96,7 +103,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
     }
 
     public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                       Relationships existingRelType, HashSet<SimLink> similarities) {
+                                       Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
 
         int computedSims = 0;
 
@@ -109,7 +116,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
             long friendNodeId = friendNode.getId();
-            if (!similarities.contains(new SimLink(startNodeID, friendNodeId,0.0))) {        //ha még nem lett kiszámolva a hasonlóságuk
+            if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
                 friendNodes.put(friendNodeId, friendNode.getDegree(existingRelType));      //suppB
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
             }
@@ -121,7 +128,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
             if (friends.value() > 1.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
                 computedSims++;     //hány hasonlóságot számoltunk ki
                 int suppB = friendNodes.get(friends.key());
-                double sim = friends.value() / (Math.sqrt(suppA) * Math.sqrt(suppB));
+                double sim = friends.value() / (Math.sqrt(suppA * suppB));
                 similarities.add(new SimLink(startNodeID, friends.key(), sim));
 //            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
             }
@@ -131,9 +138,9 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
 
     private int lastUser = -1;
+    private int userRelDegree = 0;
     private Node user = null;
-    private HashSet<Long> itemsSeenByUser = new HashSet<>();
-    private HashMap<Long, Double> simsForItem = new HashMap<>();
+    private HashSet<Integer> itemsSeenByUser = new HashSet<>();
     private int numUser = 0;
 
     /**
@@ -153,8 +160,53 @@ public class CFGraphPredictor extends GraphDBPredictor {
         int matches =  0;
         double prediction = 0.0;
         if( uID != lastUser) {
+            itemsSeenByUser = userItems.get(uID);
+            userRelDegree = itemsSeenByUser.size();
+            lastUser = uID;
+            numUser++;
+            if(numUser % 1000 == 0)
+                System.out.println(numUser);
+        }
+
+        for(int i : itemsSeenByUser) {
+            double d;
+            Link<Integer> l = new Link(i,iID);
+            TIntDoubleHashMap itemSims = itemSimilarities.get(l.startNode);
+            d = itemSims == null ? 0.0 : itemSims.get(l.endNode);
+            if (d > 0.0) {
+                prediction += d;
+                matches++;
+            }
+        }
+
+
+        if(method == 1) {
+            prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
+        }
+        else
+            prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
+
+        return prediction;
+    }
+
+
+    private HashSet<Long> itemsSeenByUserDB = new HashSet<>();
+    private HashMap<Long, Double> simsForItem = new HashMap<>();
+
+    /**
+     * Prediktalasra. Arra felkeszitve, hogy a usereken megy sorba a kiertekeles, nem itemeken!
+     * GrafDB-bol keri le a user altal latott filmeket, adott itemhez hasonlosagi item listat
+     * Tul sok disk muvelet -> lassu
+     * @param uID userID
+     * @param iID itemID
+     * @return
+     */
+    public double predictFromDBDirectly(int uID, int iID, long time){
+        int matches =  0;
+        double prediction = 0.0;
+        if( uID != lastUser) {
             user = graphDB.graphDBService.findNode(Labels.User, Labels.User.getIDName(), uID);
-            itemsSeenByUser = graphDB.getAllNeighborIDsByRel(user, Relationships.SEEN);
+            itemsSeenByUserDB = graphDB.getAllNeighborDBIDsByRel(user, Relationships.SEEN);
             lastUser = uID;
             numUser++;
             if(numUser % 10 == 0)
@@ -173,7 +225,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
             }
         }
         else {
-            for (Long l : itemsSeenByUser) {
+            for (Long l : itemsSeenByUserDB) {
                 if (simsForItem.containsKey(l)) {
                     prediction += simsForItem.get(l);
                     matches++;
