@@ -1,5 +1,7 @@
 package hf;
 
+import onlab.core.Database;
+import onlab.core.evaluation.Evaluation;
 import onlab.core.predictor.Predictor;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -18,10 +20,17 @@ abstract public class GraphDBPredictor extends Predictor {
         graphDB = gDB;
     }
 
-    public void train() {
+    public void train(boolean uploadResultIntoDB) {
         if (!this.graphDB.isInited())
             graphDB.initDB();
+        this.computeSims(uploadResultIntoDB);
     }
+
+    public abstract void computeSims(boolean uploadResultIntoDB);
+
+    public abstract void trainFromGraphDB();
+
+    public void train(Database db, Evaluation eval){}
 
     /**
      * @param topNByNode Az elso N elem megkeresese

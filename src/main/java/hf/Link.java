@@ -1,14 +1,25 @@
 package hf;
 
-public class Link {
-    public long startNode;
-    public long endNode;
+public class Link<N extends Comparable<N>> {
+    public N startNode;
+    public N endNode;
 
     public Link(){}
 
-    public Link(long st, long en){
-        startNode = st;
-        endNode = en;
+    public Link(N l, N l1){
+        if (l == l1) {
+            System.out.println("Egyforma indexek: " + l);
+            throw new ExceptionInInitializerError();
+        }
+        if (l.compareTo(l1) < 1) {
+            this.startNode = l;
+            this.endNode = l1;
+        } else {
+            this.startNode = l1;
+            this.endNode = l;
+        }
+        startNode = l;
+        endNode = l1;
     }
 
     @Override

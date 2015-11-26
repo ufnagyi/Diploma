@@ -1,29 +1,20 @@
 package hf;
 
 
-import gnu.trove.iterator.TObjectIntIterator;
-import gnu.trove.map.hash.TObjectIntHashMap;
-import onlab.core.Database;
-import onlab.core.evaluation.Evaluation;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.graphdb.traversal.Uniqueness;
 
-import java.util.*;
+import java.util.HashSet;
 
 public class WordCoSimGraphPredictor extends GraphDBPredictor {
 
 
-    public void train(Database db, Evaluation e){}
+    @Override
+    public void trainFromGraphDB() {
 
-    public void train() {
-        super.train();
     }
 
-    public void computeWordToWordSims(boolean uploadResultIntoDB) {
+    public void computeSims(boolean uploadResultIntoDB) {
 
     }
 

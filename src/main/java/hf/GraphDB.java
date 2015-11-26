@@ -2,12 +2,14 @@ package hf;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 
@@ -152,6 +154,26 @@ public class GraphDB {
         return neighbors;
     }
 
+    /**
+     *
+     * @param l A Similarity kiindulo node-janak cimkeje
+     * @param sim milyen Similarityt keresunk
+     * @return
+     */
+    public HashSet<SimLink> getAllSimilarities(Labels l,Similarities sim){
+        HashSet<SimLink> similarities = new HashSet<>();
+        Transaction tx = this.startTransaction();
+        Iterable<Relationship> allRelationships = GlobalGraphOperations.at(graphDBService).getAllRelationships();
+        for(Relationship relationship : allRelationships)
+        {
+            if (relationship.isType(sim))
+            {
+                System.out.println(relationship.getStartNode().getProperty(l.getIDName()).getClass().getTypeName());
+            }
+        }
+        return similarities;
+    }
+
 
     /** Visszaadja a topN szomszed node-ot a parameterul kapott hasonlosagi eltipus alapjan
      * @param node StartNode
@@ -228,9 +250,9 @@ public class GraphDB {
         BatchInserter batchInserter = null;
         try {
             batchInserter = BatchInserters.inserter(this.dbFolder.getAbsoluteFile());
-            for(SimLink s : sims){
+            for(SimLink<Long> s : sims){
                 Map<String, Object> simProperty = ImmutableMap.of(simLabel.getPropertyName(), s.similarity);
-                batchInserter.createRelationship(s.startNode,s.endNode,simLabel,simProperty);
+                batchInserter.createRelationship((long) s.startNode, (long)s.endNode,simLabel,simProperty);
             }
         } catch (IOException e) {
             e.printStackTrace();

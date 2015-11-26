@@ -152,18 +152,18 @@ public class GraphDBBuilder {
         return info;
     }
 
-    private static void insertRelationshipsWithoutProperties(Relationships rel, ArrayList<Link> links){
+    private static void insertRelationshipsWithoutProperties(Relationships rel, ArrayList<Link<Long>> links){
         LogHelper.INSTANCE.log(rel.name() + " list keszitese: ");
         int num = 0;
-        for(Link l : links){
+        for(Link<Long> l : links){
             batchInserter.createRelationship(l.startNode,l.endNode,rel,null);
             num++;
         }
         LogHelper.INSTANCE.log(rel.name() +" list keszitese KESZ: " + num);
     }
 
-    private static ArrayList<Link> getSEENRelationships() {
-        HashSet<Link> uniqueEvents = new HashSet<>(dbExt.numEvents());
+    private static ArrayList<Link<Long>> getSEENRelationships() {
+        HashSet<Link<Long>> uniqueEvents = new HashSet<>(dbExt.numEvents());
         HashMap<Object,Long> userIDToIDPairs = IDToIDs.get(Labels.User);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Event e : dbExt.events(null)) {
@@ -173,7 +173,7 @@ public class GraphDBBuilder {
         }
         IDToIDs.remove(Labels.User);    //betöltve minden, ami hozzájuk kapcsolódik, ezért törlöm
 
-        ArrayList<Link> events = new ArrayList<>(uniqueEvents.size());
+        ArrayList<Link<Long>> events = new ArrayList<>(uniqueEvents.size());
         for(Link l : uniqueEvents){
             events.add(l);
         }
@@ -181,8 +181,8 @@ public class GraphDBBuilder {
         return events;
     }
 
-    private static ArrayList<Link> getACTSINRelationships() {
-        ArrayList<Link> acts = new ArrayList<>(dbExt.numItems());
+    private static ArrayList<Link<Long>> getACTSINRelationships() {
+        ArrayList<Link<Long>> acts = new ArrayList<>(dbExt.numItems());
         HashMap<Object,Long> actorIDToIDPairs = IDToIDs.get(Labels.Actor);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Item i : dbExt.items(null)) {
@@ -202,8 +202,8 @@ public class GraphDBBuilder {
         return acts;
     }
 
-    private static ArrayList<Link> getDIRBYRelationships() {
-        ArrayList<Link> directs = new ArrayList<>(dbExt.numItems() * 2);
+    private static ArrayList<Link<Long>> getDIRBYRelationships() {
+        ArrayList<Link<Long>> directs = new ArrayList<>(dbExt.numItems() * 2);
         HashMap<Object,Long> directorIDToIDPairs = IDToIDs.get(Labels.Director);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Item i : dbExt.items(null)) {
@@ -222,8 +222,8 @@ public class GraphDBBuilder {
         return directs;
     }
 
-    private static ArrayList<Link> getHASMETARelationships() {
-        ArrayList<Link> meta = new ArrayList<>(dbExt.numItems() * 10);
+    private static ArrayList<Link<Long>> getHASMETARelationships() {
+        ArrayList<Link<Long>> meta = new ArrayList<>(dbExt.numItems() * 10);
         HashMap<Object,Long> vodIDToIDPairs = IDToIDs.get(Labels.VOD);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Item i : dbExt.items(null)) {

@@ -17,11 +17,8 @@ import java.util.*;
 
 public class CFGraphPredictor extends GraphDBPredictor {
 
+    private HashSet<SimLink> sims;
     private int method;
-
-    public void train(){
-        super.train();
-    }
 
     /**
      *
@@ -33,12 +30,16 @@ public class CFGraphPredictor extends GraphDBPredictor {
         this.method = method;
     }
 
-    public void train(Database db, Evaluation eval){}
+    public void trainFromGraphDB(){
 
-    public void computeItemToItemSims(boolean uploadResultIntoDB) {
+        Transaction tx = graphDB.startTransaction();
+        sims = graphDB.getAllSimilarities(Labels.Item, Similarities.CF_ISIM);
+    }
+
+    public void computeSims(boolean uploadResultIntoDB) {
         LogHelper.INSTANCE.log("Start CFSim!");
 
-        HashSet<SimLink> sims = new HashSet<>();
+        sims = new HashSet<>();
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
 
         Transaction tx = graphDB.startTransaction();
@@ -108,7 +109,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
             long friendNodeId = friendNode.getId();
-            if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
+            if (!similarities.contains(new SimLink(startNodeID, friendNodeId,0.0))) {        //ha még nem lett kiszámolva a hasonlóságuk
                 friendNodes.put(friendNodeId, friendNode.getDegree(existingRelType));      //suppB
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
             }
@@ -133,6 +134,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
     private Node user = null;
     private HashSet<Long> itemsSeenByUser = new HashSet<>();
     private HashMap<Long, Double> simsForItem = new HashMap<>();
+    private int numUser = 0;
 
     /**
      * Prediktalasra. Arra felkeszitve, hogy a usereken megy sorba a kiertekeles, nem itemeken!
@@ -153,6 +155,10 @@ public class CFGraphPredictor extends GraphDBPredictor {
         if( uID != lastUser) {
             user = graphDB.graphDBService.findNode(Labels.User, Labels.User.getIDName(), uID);
             itemsSeenByUser = graphDB.getAllNeighborIDsByRel(user, Relationships.SEEN);
+            lastUser = uID;
+            numUser++;
+            if(numUser % 10 == 0)
+                System.out.println(numUser);
         }
 
         simsForItem = graphDB.getAllNeighborIDsBySim(graphDB.graphDBService.findNode(Labels.Item, Labels.Item.getIDName(),

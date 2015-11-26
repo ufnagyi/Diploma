@@ -282,7 +282,7 @@ public class Main {
 		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
 		cfGraphPredictor.setParameters(graphDB);
 //		cfGraphPredictor.train();
-//		cfGraphPredictor.computeItemToItemSims(true);
+//		cfGraphPredictor.computeSims(true);
 //		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
 
 		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
