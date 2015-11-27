@@ -139,6 +139,7 @@ public class GraphDB {
         return neighbors;
     }
 
+
     /**
      * Adott node osszes szomszedjanak ID-ja rel menten
      * @param label A node cimkeje

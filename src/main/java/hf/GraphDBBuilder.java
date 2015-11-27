@@ -240,7 +240,7 @@ public class GraphDBBuilder {
         return meta;
     }
 
-    private static HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator) {
+    public static HashSet<String> getUniqueItemMetaWordsByKey(int iIdx, String key, String key_value_separator) {
         HashSet<String> itemMetaWords = new HashSet<>();
         String keyAll = dbExt.getItemKeyValue(iIdx, key);
         String[] values = keyAll.split(key_value_separator);
@@ -251,6 +251,21 @@ public class GraphDBBuilder {
         }
         return itemMetaWords;
     }
+
+    public static HashSet<String> getUniqueItemMetaWordsByKey(Database db, int iID, String key, String key_value_separator) {
+        ExtendedDatabase dbExt = (ExtendedDatabase) db;
+        HashSet<String> itemMetaWords = new HashSet<>();
+        String keyAll = dbExt.getItemKeyValue(dbExt.getItemIndex(iID), key);
+        String[] values = keyAll.split(key_value_separator);
+
+        for (String val : values) {
+            if (!val.equals("") && val.length() > 2)
+                itemMetaWords.add(val);
+        }
+        return itemMetaWords;
+    }
+
+
 
 
 

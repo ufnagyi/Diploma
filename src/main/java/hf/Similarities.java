@@ -4,7 +4,7 @@ import org.neo4j.graphdb.RelationshipType;
 
 
 public enum Similarities implements RelationshipType {
-    CF_ISIM("sim");
+    CF_ISIM("sim"), CBF_SIM("sim");
     private String property;
 
     Similarities(String str) {

@@ -280,17 +280,20 @@ public class Main {
 
 
 
-		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-		cfGraphPredictor.setParameters(graphDB,2);
-//		cfGraphPredictor.train();
-//		cfGraphPredictor.computeSims(true);
+//		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
+//		cfGraphPredictor.setParameters(graphDB,2);
+//		cfGraphPredictor.train(true);
 //		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
 
+		WordCoSimGraphPredictor wordCoSimGraphPredictor = new WordCoSimGraphPredictor();
+		wordCoSimGraphPredictor.setParameters(graphDB);
+		wordCoSimGraphPredictor.train(true);
+
 		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-		Predictor[] preds = new Predictor[]{cfGraphPredictor};
-		cfGraphPredictor.trainFromGraphDB();
-//		Transaction transaction = graphDB.startTransaction();
-		testPredictors(preds, dbs[0], dbs[1]);
+//		Predictor[] preds = new Predictor[]{cfGraphPredictor};
+//		cfGraphPredictor.trainFromGraphDB();
+////		Transaction transaction = graphDB.startTransaction();
+//		testPredictors(preds, dbs[0], dbs[1]);
 //		graphDB.endTransaction(transaction);
 
 
