@@ -13,6 +13,7 @@ import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
+import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
@@ -172,6 +173,55 @@ public class GraphDB {
         return neighbors;
     }
 
+    public void computeAndUploadIDFValues(Labels l, Relationships rel){
+        LogHelper.INSTANCE.log(l.name() + " node-ok IDF értékeinek számitása és feltöltése:");
+        Transaction tx = this.startTransaction();
+        double numOfItems = (double) IteratorUtil.count(graphDBService.findNodes(Labels.Item));
+        ArrayList<Node> nodeList = this.getNodesByLabel(l);
+        for(Node n : nodeList){
+            n.setProperty("idf", Math.log(numOfItems / n.getDegree(rel)));
+        }
+        this.endTransaction(tx);
+        LogHelper.INSTANCE.log(nodeList.size() + " érték feltöltve!");
+    }
+
+    //TODO legyen labelenkent kulon map?
+    public TLongDoubleHashMap getIDFValues(Labels[] labels){
+        Transaction tx = this.startTransaction();
+        TLongDoubleHashMap wordIDFs = new TLongDoubleHashMap();
+        for(Labels l : labels){
+            ArrayList<Node> nodeList = this.getNodesByLabel(l);
+            for(Node n : nodeList)
+                wordIDFs.put(n.getId(), (double) n.getProperty("idf"));
+        }
+        this.endTransaction(tx);
+        return wordIDFs;
+    }
+
+    public void deleteSimilaritiesByType(Similarities sim){
+        LogHelper.INSTANCE.log(sim.name() + " hasonlóságok törlése!");
+        Transaction tx = this.startTransaction();
+        long deletedSims = 0;
+        long deletedSims2 = 0;
+        Iterable<Relationship> allRelationships = GlobalGraphOperations.at(graphDBService).getAllRelationships();
+        for (Relationship relationship : allRelationships) {
+            if (relationship.isType(sim)) {
+                relationship.delete();
+                deletedSims2++;
+            }
+            if(deletedSims2 > 100000){
+                this.endTransaction(tx);
+                tx = this.startTransaction();
+                deletedSims += deletedSims2;
+                deletedSims2 = 0;
+                System.out.println(deletedSims);
+            }
+        }
+        this.endTransaction(tx);
+        deletedSims += deletedSims2;
+        System.out.println("Törölt hasonlóságok száma: " + deletedSims + "!");
+    }
+
     /**
      * Node-ok kozti hasonlosagok
      * @param l A Similarity kiindulo node-janak cimkeje
@@ -292,6 +342,18 @@ public class GraphDB {
                 batchInserter.shutdown();
             }
         }
+    }
+
+    /**
+     * Adott node elszama a relaciotipusok menten
+     * @return
+     */
+    public static int getSumOfDegreesByRelationships(Node node, Relationships[] relationships){
+        int degree = 0;
+        for(Relationships r : relationships){
+            degree += node.getDegree(r);
+        }
+        return degree;
     }
 
 

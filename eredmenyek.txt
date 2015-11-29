@@ -121,3 +121,163 @@ TopN list for L'Âge de glace:
 10. Docteur Dolittle 2  0.06211299937499416
 
 TopN list for S.18 E.J18054 - The Daily Show with Jon Stewart: 
+
+
+---------------------------------------------------------------------------
+
+CBF SIM számítás, top1000 hasonlóság eltárolása 780MB --> 1.77GB, CSAK VOD node-ok használata
+
+Futas kezdese: 2015/11/27 18:27:44
+Start CBFSim!  2015/11/27 18:27:46
+Num of computed sims: 14435033
+Stop CBFSim!  2015/11/27 18:36:54
+Upload computed similarities to DB:  2015/11/27 18:36:54
+Upload computed similarities to DB Done!  2015/11/27 18:37:40
+Max sim: 1.0
+Min sim: 0.3481553119113957
+Avg sim: 0.7906513333743912
+Median sim: 0.8333333333333334
+1st decile sim: 0.6666666666666666
+2st decile sim: 0.7142857142857143
+
+
+CBF item2item példák:
+
+TopN list for S.4 E.13 - Community: 
+1. S.4 E.08 - Community  1.0
+2. S.4 E.03 - Community  1.0
+3. S.4 E.11 - Community  1.0
+4. S.4 E.06 - Community  1.0
+5. S.4 E.04 - Community  1.0
+6. S.4 E.09 - Community  1.0
+7. S.4 E.10 - Community  1.0
+8. S.4 E.05 - Community  1.0
+9. S.4 E.01 - Community  1.0
+10. S.4 E.02 - Community  1.0
+
+TopN list for S.1 E.19 - The Mindy Project: 
+1. S.1 E.11 - The Mindy Project  1.0
+2. S.2 E.10 - The Mindy Project  1.0
+3. S.1 E.17 - The Mindy Project  1.0
+4. S.2 E.09 - The Mindy Project  1.0
+5. S.1 E.21 - The Mindy Project  1.0
+6. S.2 E.04 - The Mindy Project  1.0
+7. S.1 E.24 - The Mindy Project  1.0
+8. S.1 E.12 - The Mindy Project  1.0
+9. S.1 E.16 - The Mindy Project  1.0
+10. S.2 E.08 - The Mindy Project  1.0
+
+TopN list for Just For Laughs Galas E02: 
+1. Just For Laughs Galas E03  1.0
+2. CBC WINNIPEG COMEDY FESTIVAL E04  0.8333333333333334
+3. Still Life - A Three Pines Mystery E01  0.8333333333333334
+4. William & Kate: A Royal Arrival  0.8333333333333334
+5. Arctic Air S02 E11  0.7715167498104595
+6. Murdoch Mysteries S06 E12  0.7715167498104595
+7. Heartland S06 E05  0.7715167498104595
+8. Republic of Doyle S05 E04  0.7715167498104595
+9. Heartland S07 E08  0.7715167498104595
+10. Dragons' Den S08 E05  0.7715167498104595
+
+TopN list for The Hangover Part III: 
+1. The Internship  1.0
+2. Kevin Hart: Let Me Explain  1.0
+3. The Heat  1.0
+4. Grown Ups 2  1.0
+5. Here Comes the Boom  0.9486832980505138
+6. The Kings of Summer  0.9428090415820635
+7. A Glimpse Inside the Mind of Charles Swan III  0.9428090415820635
+8. Girl Most Likely  0.9428090415820635
+9. It's a Disaster  0.9428090415820635
+10. Girl Walks into a Bar  0.9428090415820635
+
+TopN list for The Daily Show with Jon Stewart S19 E1002: 
+1. The Daily Show with Jon Stewart S19 EJ19002  1.0
+2. S.18 E.J18115 - The Daily Show with Jon Stewart  1.0
+3. S.18 E.J18088 - The Daily Show with Jon Stewart  1.0
+4. The Daily Show with Jon Stewart S19 E17  1.0
+5. S.18 E.J18053 - The Daily Show with Jon Stewart  1.0
+6. S.18 E.J18044 - The Daily Show with Jon Stewart  1.0
+7. S.18 E.J18060 - The Daily Show with Jon Stewart  1.0
+8. S.18 E.J18137 - The Daily Show with Jon Stewart  1.0
+9. S.18 E.J18122 - The Daily Show with Jon Stewart  1.0
+10. The Daily Show with Jon Stewart S19 E27  1.0
+
+TopN list for P'tite vite: Gouines et Fraîches: 
+1. Petite Vite:Q noir à l'attaque  1.0
+2. P'tite vite:Lesbiennes en furie  1.0
+3. Petite Vite:Masseuses perverse  1.0
+4. Petite Vite: filles en folie  1.0
+5. P'tite vite:XXX pic Nic à QC  1.0
+6. P'tite vite:Les crosseuses  1.0
+7. P'tite vite: 3 lesbiennes  1.0
+8. P'tite vite:baise Amylee  1.0
+9. P'tite vite:An*l a laval  1.0
+10. P'tite vite:bien remplis  1.0
+
+TopN list for S.15 E.18 - Big Brother: 
+1. S.15 E.3 - Big Brother  1.0
+2. S.15 E.17 - Big Brother  1.0
+3. S.15 E.6 - Big Brother  1.0
+4. S.15 E.32 - Big Brother  1.0
+5. S.15 E.7 - Big Brother  1.0
+6. S.15 E.24 - Big Brother  1.0
+7. S.15 E.26 - Big Brother  1.0
+8. S.15 E.13 - Big Brother  1.0
+9. S.15 E.30 - Big Brother  1.0
+10. S.15 E.29 - Big Brother  1.0
+
+TopN list for Le show caché 2 - Louis-José Houde 2013: Ép. 01: 
+1. Rolling Stones 50ième Anniversary: Concert  1.0
+2. Mike Ward: S'eXpose - Sortie avant DVD  1.0
+3. Étienne Langevin - C'est à mon tour  1.0
+4. Cathy Gauthier: Décoiffe  1.0
+5. Philippe Bond - Sortie avant DVD  1.0
+6. Led Zeppelin: Jour de celebration  1.0
+7. Rolling Stones 50ième: Aperçu gratuit!  0.8944271909999159
+8. Le Retour de nos idoles 2013  0.8944271909999159
+9. Philippe Laprise: Sortie avant DVD!  0.8944271909999159
+10. Céline Dion: une seule fois...  0.8944271909999159
+
+TopN list for BYE BYE 2012: Coulisse du tournage: 
+1. BYE BYE 2011  1.0
+2. BYE BYE 2010-2011: Coulisse du tournage  1.0
+3. BYE BYE 2010  1.0
+4. BYE BYE 2012  1.0
+5. Mike Ward: S'eXpose - Sortie avant DVD  0.7559289460184544
+6. Le show caché 2 - Louis-José Houde 2013: Ép. 01  0.7559289460184544
+7. Philippe Bond - Sortie avant DVD  0.7559289460184544
+8. Led Zeppelin: Jour de celebration  0.7559289460184544
+9. Cathy Gauthier: Décoiffe  0.7559289460184544
+10. Rolling Stones 50ième Anniversary: Concert  0.7559289460184544
+
+TopN list for Office S.9 E.9: 
+1. Office S.9 E.12  1.0
+2. S.9 E.16 - The Office  1.0
+3. S.9 E.19 - The Office  1.0
+4. Office S.9 E.13  1.0
+5. S.9 E.20 - The Office  1.0
+6. Office S.9 E.14  1.0
+7. Office S.9 E.15  1.0
+8. S.9 E.17 - The Office  1.0
+9. Office S.9 E.7  1.0
+10. Office S.9 E.10  1.0
+
+CBF SIM-ek betöltése: 32 másodperc
+CBF ajánlás: kereken 5 perc
+
+----------------------------------------------------------------------------------------
+CBF_SIM2 ACTOR,DIRECTOR és VOD node-okra, súlyozás nélkül:
+Start CBFSim!  2015/11/29 01:45:44
+Num of computed sims: 14452011
+Stop CBFSim!  2015/11/29 01:52:53
+Max sim: 1.0
+Min sim: 0.19069251784911848
+Avg sim: 0.7063902359405995
+Median sim: 0.7715167498104595
+1st decile sim: 0.4364357804719848
+2st decile sim: 0.5103103630798288
+Futas vege: 2015/11/29 01:52:56
+
+----------------------------------------------------------------------------------------
+CBF_SIM3 ACTOR,DIRECTOR és VOD node-okra, súlyozás 2,2,1:

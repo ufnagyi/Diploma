@@ -257,19 +257,6 @@ public class Main {
 		//      C:/Nandi_diploma/Neo4J_Database
 		//      C:/Nandi_diploma/Test_Database
 
-
-		//train és test grafDB-k felépitésére
-
-//		ExtendedDatabase db = (ExtendedDatabase) dbs[0];
-
-
-//		int itemIdx = db.getItemIndex(-2145744233);
-//
-//		for(Database.Event e : db.events(null)){
-//			if(e.iIdx == itemIdx)
-//				System.out.println(db.getUserId(e.uIdx));
-//		}
-
 		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
 //		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
 //
@@ -278,23 +265,36 @@ public class Main {
 
 		graphDB.initDB();
 
+//		graphDB.computeAndUploadIDFValues(Labels.VOD,Relationships.HAS_META);
+
+//		graphDB.deleteSimilaritiesByType(Similarities.CBF_SIM2);
+
+//		ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
+//		exampleSimilarityPrinter.printExampleSimilarityResults(10,Similarities.CBF_SIM,Labels.Item);
 
 
 //		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-//		cfGraphPredictor.setParameters(graphDB,2);
+//		cfGraphPredictor.setParameters(graphDB, dbs[0], 2);
 //		cfGraphPredictor.train(true);
-//		cfGraphPredictor.exampleSimilarityResults(10, Similarities.CF_ISIM, Labels.Item);
 
-		WordCoSimGraphPredictor wordCoSimGraphPredictor = new WordCoSimGraphPredictor();
-		wordCoSimGraphPredictor.setParameters(graphDB);
-		wordCoSimGraphPredictor.train(true);
+		HashMap<String,Double> weights = new HashMap<>(3);
+		weights.put(Relationships.HAS_META.name(),1.0);
+		weights.put(Relationships.ACTS_IN.name(),2.0);
+		weights.put(Relationships.DIR_BY.name(),2.0);
+		Relationships[] relTypes = new Relationships[3];
+		relTypes[0] = Relationships.HAS_META;
+		relTypes[1] = Relationships.ACTS_IN;
+		relTypes[2] = Relationships.DIR_BY;
 
-		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-//		Predictor[] preds = new Predictor[]{cfGraphPredictor};
-//		cfGraphPredictor.trainFromGraphDB();
-////		Transaction transaction = graphDB.startTransaction();
+//		WordCoSimGraphPredictor wordCoSimGraphPredictor = new WordCoSimGraphPredictor();
+//		wordCoSimGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM3, 2, weights, relTypes);
+//		wordCoSimGraphPredictor.train(true);
+
+//		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
+//		Predictor[] preds = new Predictor[]{wordCoSimGraphPredictor};  //cfGraphPredictor, wordCoSimGraphPredictor
+//		wordCoSimGraphPredictor.trainFromGraphDB();
+//////		cfGraphPredictor.trainFromGraphDB();
 //		testPredictors(preds, dbs[0], dbs[1]);
-//		graphDB.endTransaction(transaction);
 
 
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));

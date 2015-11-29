@@ -1,10 +1,9 @@
 package hf;
 
+import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.iterator.TObjectIntIterator;
-import gnu.trove.map.hash.TIntDoubleHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.map.hash.TObjectDoubleHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.map.hash.*;
+import onlab.core.Database;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
@@ -26,16 +25,16 @@ public class CFGraphPredictor extends GraphDBPredictor {
      * @param graphDB A grafDB, amire epitkezik
      * @param method Prediction szamitasi modszer 1-es: /összes, 2-es: /match
      */
-    public void setParameters(GraphDB graphDB, int method){
-        this.graphDB = graphDB;
+    public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method){
+        super.setParameters(graphDB,db, sim);
         this.method = method;
     }
 
     public void trainFromGraphDB(){
         LogHelper.INSTANCE.log("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból:");
-        itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, Similarities.CF_ISIM);
-        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból KÉSZ! " + itemSimilarities.size() + " sim betöltve!");
+        itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
+        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból KÉSZ!");
         LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból:");
         userItems = graphDB.getAllUserItems();
         LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!" );
@@ -44,7 +43,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
     }
 
     public void computeSims(boolean uploadResultIntoDB) {
-        LogHelper.INSTANCE.log("Start CFSim!");
+        LogHelper.INSTANCE.log("Start " + sim.name() + "!");
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
@@ -78,11 +77,11 @@ public class CFGraphPredictor extends GraphDBPredictor {
         }
         graphDB.endTransaction(tx);
         System.out.println("Num of computed sims: " + numOfComputedSims);
-        LogHelper.INSTANCE.log("Stop CFSim!");
+        LogHelper.INSTANCE.log("Stop " + sim.name() + "!");
 
         if (uploadResultIntoDB) {
             LogHelper.INSTANCE.log("Upload computed similarities to DB:");
-            graphDB.batchInsertSimilarities(simLinks, Similarities.CF_ISIM);
+            graphDB.batchInsertSimilarities(simLinks, sim);
             LogHelper.INSTANCE.log("Upload computed similarities to DB Done!");
         }
 
@@ -107,8 +106,8 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
         int computedSims = 0;
 
-        TObjectIntHashMap<Long> friendNodes = new TObjectIntHashMap<>();    //friendNode_B --> suppB
-        TObjectIntHashMap<Long> suppABForAllB = new TObjectIntHashMap<>();  //friendNode_B --> suppAB
+        TLongIntHashMap friendNodes = new TLongIntHashMap();    //friendNode_B --> suppB
+        TLongIntHashMap suppABForAllB = new TLongIntHashMap();  //friendNode_B --> suppAB
 
         long startNodeID = nodeA.getId();
         int suppA = nodeA.getDegree(existingRelType);
@@ -117,12 +116,13 @@ public class CFGraphPredictor extends GraphDBPredictor {
             Node friendNode = path.endNode();
             long friendNodeId = friendNode.getId();
             if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
-                friendNodes.put(friendNodeId, friendNode.getDegree(existingRelType));      //suppB
+                if(!friendNodes.contains(friendNodeId))
+                    friendNodes.put(friendNodeId, friendNode.getDegree(existingRelType));      //suppB
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
             }
         }
 
-        TObjectIntIterator<Long> friends = suppABForAllB.iterator();
+        TLongIntIterator friends = suppABForAllB.iterator();
         while (friends.hasNext()) {
             friends.advance();
             if (friends.value() > 1.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
