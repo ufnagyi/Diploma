@@ -1,12 +1,13 @@
-package hf;
+package hf.GraphUtils;
 
 import org.neo4j.graphdb.RelationshipType;
 
-public enum Relationships implements RelationshipType {
-    SEEN("buy"), HAS_META("tag"), DIR_BY("dir"), ACTS_IN("act");
+
+public enum Similarities implements RelationshipType {
+    CF_ISIM("sim"), CBF_SIM("sim"), CBF_SIM2("sim"), CBF_SIM3("sim");
     private String property;
 
-    Relationships(String str) {
+    Similarities(String str) {
         this.property = str;
     }
 

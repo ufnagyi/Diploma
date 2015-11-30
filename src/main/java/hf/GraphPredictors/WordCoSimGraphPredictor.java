@@ -1,22 +1,25 @@
-package hf;
+package hf.GraphPredictors;
 
 
 import com.google.common.collect.Ordering;
 import gnu.trove.iterator.TLongDoubleIterator;
-import gnu.trove.iterator.TLongIntIterator;
-import gnu.trove.iterator.TObjectIntIterator;
-import gnu.trove.map.hash.*;
+import gnu.trove.map.hash.TIntDoubleHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongDoubleHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
+import hf.GraphUtils.*;
 import onlab.core.Database;
-import org.neo4j.cypher.internal.compiler.v2_2.functions.Str;
-import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.traversal.*;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class WordCoSimGraphPredictor extends GraphDBPredictor {
 
-    private TObjectLongHashMap VOD_IDs;
     private TIntObjectHashMap<TIntDoubleHashMap> itemSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;
     private int method;
@@ -35,7 +38,8 @@ public class WordCoSimGraphPredictor extends GraphDBPredictor {
      */
     public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method,
                               HashMap<String,Double> _weights, Relationships[] rel_types){
-        super.setParameters(graphDB,db,sim);
+        super.setParameters(graphDB,db);
+        this.sim = sim;
         this.method = method;
         metaWeights = _weights;
         this.relTypes = rel_types;
@@ -52,64 +56,6 @@ public class WordCoSimGraphPredictor extends GraphDBPredictor {
         LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!" );
         LogHelper.INSTANCE.log("Adatok betöltése a gráfból KÉSZ!");
         graphDB.shutDownDB();
-    }
-
-    public void buildUserProfiles(){
-        LogHelper.INSTANCE.log("CBFSim with UserProfile");
-        Transaction tx = graphDB.startTransaction();
-        ArrayList<Node> itemList = graphDB.getNodesByLabel(Labels.Item);
-        double numOfItems = (double) itemList.size();
-        ArrayList<Node> userList = graphDB.getNodesByLabel(Labels.User);
-        ArrayList<Node> VODList = graphDB.getNodesByLabel(Labels.VOD);
-        ArrayList<Node> ActorList = graphDB.getNodesByLabel(Labels.Actor);
-        ArrayList<Node> DirectorList = graphDB.getNodesByLabel(Labels.Director);
-
-        VOD_IDs = new TObjectLongHashMap();
-
-        // word_IDF = numOfItems / numOfItemsContainingTheWord
-        TLongDoubleHashMap wordIDF = new TLongDoubleHashMap();
-        for(Node n : VODList){
-            wordIDF.put(n.getId(), Math.log(numOfItems / n.getDegree(Relationships.HAS_META)));
-            VOD_IDs.put(n.getProperty(Labels.VOD.getPropertyName()),n.getId());
-        }
-        for(Node n : ActorList){
-            wordIDF.put(n.getId(), Math.log(numOfItems / n.getDegree(Relationships.ACTS_IN)));
-            VOD_IDs.put(n.getProperty(Labels.Actor.getPropertyName()),n.getId());
-        }
-        for(Node n : DirectorList){
-            wordIDF.put(n.getId(), Math.log(numOfItems / n.getDegree(Relationships.DIR_BY)));
-            VOD_IDs.put(n.getProperty(Labels.Director.getPropertyName()),n.getId());
-        }
-        TraversalDescription VODsOfItemsSeenByUser = graphDB.graphDBService.traversalDescription()
-                .depthFirst()
-                .expand( new PathExpander<Object>() {
-                    @Override
-                    public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
-                        int depth = path.length();
-                        if( depth == 0 ) {
-                            return path.endNode().getRelationships(
-                                    Relationships.SEEN );
-                        }
-                        else {
-                            return path.endNode().getRelationships(
-                                    Relationships.HAS_META, Relationships.ACTS_IN, Relationships.DIR_BY );
-                        }
-                    }
-                    @Override
-                    public PathExpander<Object> reverse() {
-                        return null;
-                    }
-                })
-                .evaluator( Evaluators.atDepth( 2 ) );
-//                .evaluator(path -> {
-//                    if( path.endNode().hasLabel( Labels.VOD ) ) {
-//                        return Evaluation.INCLUDE_AND_CONTINUE;
-//                    }
-//                    return Evaluation.EXCLUDE_AND_CONTINUE;
-//                });
-
-        graphDB.endTransaction(tx);
-        LogHelper.INSTANCE.log("CBSim with UserProfile KESZ");
     }
 
 
@@ -235,13 +181,6 @@ public class WordCoSimGraphPredictor extends GraphDBPredictor {
      *
      */
     public double predict(int uID, int iID, long time) {
-//        HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, "VodMenuDirect", "[\f/]");
-//        long[] itemWordIDs = new long[itemWords.size()];
-//        int i = 0;
-//        for(String word : itemWords){
-//            itemWordIDs[i] = VOD_IDs.get(word);
-//            i++;
-//        }
 
         /*
         Kétféle megközelítés:

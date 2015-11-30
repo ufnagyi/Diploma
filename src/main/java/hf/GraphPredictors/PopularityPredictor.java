@@ -1,10 +1,7 @@
-package hf;
+package hf.GraphPredictors;
 
-import onlab.core.Database;
-import onlab.core.evaluation.Evaluation;
+import hf.GraphUtils.Relationships;
 import org.neo4j.graphdb.Node;
-
-import java.util.HashSet;
 
 public class PopularityPredictor extends GraphDBPredictor {
 

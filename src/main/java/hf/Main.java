@@ -1,6 +1,10 @@
 package hf;
 
-import gnu.trove.map.hash.TObjectDoubleHashMap;
+import hf.GraphPredictors.UserProfileBasedCBFPredictor;
+import hf.GraphUtils.GraphDB;
+import hf.GraphUtils.GraphDBBuilder;
+import hf.GraphUtils.Labels;
+import hf.GraphUtils.Relationships;
 import onlab.core.*;
 import onlab.core.RecoPrinter.RecoPrinterBasic;
 import onlab.core.evaluation.Evaluation;
@@ -8,7 +12,6 @@ import onlab.core.evaluation.SimpleRecallMeasurement;
 import onlab.core.predictor.Predictor;
 import onlab.core.util.PredictorUtil;
 import onlab.core.util.Util;
-import org.neo4j.graphdb.Transaction;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -236,7 +239,7 @@ public class Main {
 
 //		System.out.println("\nSTEP 2: Loading binary databases from file:");
 		Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(),getDatabaseTestFilename()}); //getDatabaseTrainFilename(), getDatabaseTestFilename()
-//		Database[] dbs = new Database[]{new Database()};
+
 
 //		System.out.println("\nSTEP 3: Predictor training:");
 //		Predictor[] preds = trainPredictors(dbs[0]);
@@ -249,25 +252,31 @@ public class Main {
 		//endregion
 
 
+//		------------------------------------------------------------------------
 //        //ha a node és relationship csv-ket létre kell hozni az import-toolhoz:
-//
 //        Reader r = new Reader(dbs[0]);
 //        r.createAllCSVs();
-
+//		-------------------------------------------------------------------------
 		//      C:/Nandi_diploma/Neo4J_Database
 		//      C:/Nandi_diploma/Test_Database
 
 		GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
-//		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
-//
+
+//		-------------------------------------------------------------------------
+		//GraphDB epites:
+
+		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+
+		//TestDB:
 //		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
 //		GraphDBBuilder.buildGraphDBFromImpressDB(testDB,dbs[1],true);
 
-		graphDB.initDB();
-
-//		graphDB.computeAndUploadIDFValues(Labels.VOD,Relationships.HAS_META);
-
+		//Létrehozott hasonlóság törléséhez:
 //		graphDB.deleteSimilaritiesByType(Similarities.CBF_SIM2);
+
+//		-------------------------------------------------------------------------
+//		graphDB.initDB();
+
 
 //		ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
 //		exampleSimilarityPrinter.printExampleSimilarityResults(10,Similarities.CBF_SIM,Labels.Item);
@@ -276,24 +285,40 @@ public class Main {
 //		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
 //		cfGraphPredictor.setParameters(graphDB, dbs[0], 2);
 //		cfGraphPredictor.train(true);
+//		cfGraphPredictor.trainFromGraphDB();
 
-		HashMap<String,Double> weights = new HashMap<>(3);
-		weights.put(Relationships.HAS_META.name(),1.0);
-		weights.put(Relationships.ACTS_IN.name(),2.0);
-		weights.put(Relationships.DIR_BY.name(),2.0);
-		Relationships[] relTypes = new Relationships[3];
-		relTypes[0] = Relationships.HAS_META;
-		relTypes[1] = Relationships.ACTS_IN;
-		relTypes[2] = Relationships.DIR_BY;
+//		HashMap<String,Double> weights = new HashMap<>(3);
+//		weights.put(Relationships.HAS_META.name(),1.0);
+//		weights.put(Relationships.ACTS_IN.name(),2.0);
+//		weights.put(Relationships.DIR_BY.name(),2.0);
+//		Relationships[] relTypes = new Relationships[3];
+//		relTypes[0] = Relationships.HAS_META;
+//		relTypes[1] = Relationships.ACTS_IN;
+//		relTypes[2] = Relationships.DIR_BY;
+//		Labels[] labelTypes = new Labels[3];
+//		labelTypes[0] = Labels.VOD;
+//		labelTypes[1] = Labels.Actor;
+//		labelTypes[2] = Labels.Director;
+//		String[] keyValueTypes = new String[3];
+//		keyValueTypes[0] = "VodMenuDirect";
+//		keyValueTypes[1] = "Actor";
+//		keyValueTypes[2] = "Director";
+
 
 //		WordCoSimGraphPredictor wordCoSimGraphPredictor = new WordCoSimGraphPredictor();
 //		wordCoSimGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM3, 2, weights, relTypes);
 //		wordCoSimGraphPredictor.train(true);
+//		wordCoSimGraphPredictor.trainFromGraphDB();
+
+//		UserProfileBasedCBFPredictor userProfileBasedCBFPredictor = new UserProfileBasedCBFPredictor();
+//		userProfileBasedCBFPredictor.setParameters(graphDB,dbs[0],2,weights,relTypes,keyValueTypes,labelTypes);
+////		userProfileBasedCBFPredictor.train(false);
+//		userProfileBasedCBFPredictor.trainFromGraphDB();
 
 //		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-//		Predictor[] preds = new Predictor[]{wordCoSimGraphPredictor};  //cfGraphPredictor, wordCoSimGraphPredictor
-//		wordCoSimGraphPredictor.trainFromGraphDB();
-//////		cfGraphPredictor.trainFromGraphDB();
+//		Predictor[] preds = new Predictor[]{wordCoSimGraphPredictor};  //cfGraphPredictor, wordCoSimGraphPredictor, userProfileBasedCBFPredictor
+
+
 //		testPredictors(preds, dbs[0], dbs[1]);
 
 

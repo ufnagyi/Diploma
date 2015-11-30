@@ -281,3 +281,15 @@ Futas vege: 2015/11/29 01:52:56
 
 ----------------------------------------------------------------------------------------
 CBF_SIM3 ACTOR,DIRECTOR és VOD node-okra, súlyozás 2,2,1:
+Start CBF_SIM3!  2015/11/29 03:21:34
+Num of computed sims: 14453704
+Stop CBF_SIM3!  2015/11/29 03:29:06
+Upload computed similarities to DB:  2015/11/29 03:29:06
+Upload computed similarities to DB Done!  2015/11/29 03:30:12
+Max sim: 1.2
+Min sim: 0.19069251784911848
+Avg sim: 0.70704214780005
+Median sim: 0.7715167498104595
+1st decile sim: 0.43852900965351466
+2st decile sim: 0.5103103630798288
+Futas vege: 2015/11/29 03:30:15

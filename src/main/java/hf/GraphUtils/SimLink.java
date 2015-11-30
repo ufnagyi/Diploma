@@ -1,13 +1,11 @@
-package hf;
+package hf.GraphUtils;
 
-
-import org.neo4j.graphdb.Node;
 
 /**
  * 2 node közti similarity kapcsolat dobozolása
  * Fontos: NEM tud irányt megkülönböztetni!
  */
-public class SimLink<N extends Comparable<N>> extends Link<N>{
+public class SimLink<N extends Comparable<N>> extends Link<N> {
     public double similarity;
 
     public SimLink(N l, N l1){

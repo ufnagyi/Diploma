@@ -1,9 +1,11 @@
-package hf;
+package hf.JavaPredictors;
 
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.*;
 import gnu.trove.set.hash.TIntHashSet;
+import hf.JavaUtils.Pair;
+import hf.JavaUtils.WordPair;
 import hu.szaladas.botools.Counter;
 import onlab.core.Database;
 import onlab.core.Database.Event;

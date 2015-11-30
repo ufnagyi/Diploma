@@ -1,8 +1,8 @@
-package hf;
+package hf.GraphPredictors;
 
 import gnu.trove.iterator.TLongIntIterator;
-import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.*;
+import hf.GraphUtils.*;
 import onlab.core.Database;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -26,7 +26,8 @@ public class CFGraphPredictor extends GraphDBPredictor {
      * @param method Prediction szamitasi modszer 1-es: /összes, 2-es: /match
      */
     public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method){
-        super.setParameters(graphDB,db, sim);
+        super.setParameters(graphDB,db);
+        this.sim = sim;
         this.method = method;
     }
 

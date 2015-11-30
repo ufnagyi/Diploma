@@ -1,4 +1,4 @@
-package hf;
+package hf.GraphUtils;
 
 public class Link<N extends Comparable<N>> {
     public N startNode;
