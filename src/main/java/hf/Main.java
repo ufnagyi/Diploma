@@ -1,10 +1,10 @@
 package hf;
 
-import hf.GraphPredictors.UserProfileBasedCBFPredictor;
-import hf.GraphUtils.GraphDB;
-import hf.GraphUtils.GraphDBBuilder;
-import hf.GraphUtils.Labels;
-import hf.GraphUtils.Relationships;
+import hf.GraphPredictors.CFGraphPredictor;
+import hf.GraphPredictors.UserProfileBasedCoSimCBFPredictor;
+import hf.GraphPredictors.UserProfileBasedTFiDF_CBFPredictor;
+import hf.GraphPredictors.WordBasedCoSimCBFGraphPredictor;
+import hf.GraphUtils.*;
 import onlab.core.*;
 import onlab.core.RecoPrinter.RecoPrinterBasic;
 import onlab.core.evaluation.Evaluation;
@@ -265,7 +265,7 @@ public class Main {
 //		-------------------------------------------------------------------------
 		//GraphDB epites:
 
-		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true);
+		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true,false);
 
 		//TestDB:
 //		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
@@ -283,43 +283,47 @@ public class Main {
 
 
 //		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-//		cfGraphPredictor.setParameters(graphDB, dbs[0], 2);
+//		cfGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CF_ISIM, 2, true);
 //		cfGraphPredictor.train(true);
 //		cfGraphPredictor.trainFromGraphDB();
 
-//		HashMap<String,Double> weights = new HashMap<>(3);
-//		weights.put(Relationships.HAS_META.name(),1.0);
-//		weights.put(Relationships.ACTS_IN.name(),2.0);
-//		weights.put(Relationships.DIR_BY.name(),2.0);
-//		Relationships[] relTypes = new Relationships[3];
-//		relTypes[0] = Relationships.HAS_META;
-//		relTypes[1] = Relationships.ACTS_IN;
-//		relTypes[2] = Relationships.DIR_BY;
-//		Labels[] labelTypes = new Labels[3];
-//		labelTypes[0] = Labels.VOD;
-//		labelTypes[1] = Labels.Actor;
-//		labelTypes[2] = Labels.Director;
-//		String[] keyValueTypes = new String[3];
-//		keyValueTypes[0] = "VodMenuDirect";
-//		keyValueTypes[1] = "Actor";
-//		keyValueTypes[2] = "Director";
+		HashMap<String,Double> weights = new HashMap<>(3);
+		weights.put(Relationships.HAS_META.name(),1.0);
+		weights.put(Relationships.ACTS_IN.name(),2.0);
+		weights.put(Relationships.DIR_BY.name(),2.0);
+		Relationships[] relTypes = new Relationships[3];
+		relTypes[0] = Relationships.HAS_META;
+		relTypes[1] = Relationships.ACTS_IN;
+		relTypes[2] = Relationships.DIR_BY;
+		Labels[] labelTypes = new Labels[3];
+		labelTypes[0] = Labels.VOD;
+		labelTypes[1] = Labels.Actor;
+		labelTypes[2] = Labels.Director;
+		String[] keyValueTypes = new String[3];
+		keyValueTypes[0] = "VodMenuDirect";
+		keyValueTypes[1] = "Actor";
+		keyValueTypes[2] = "Director";
 
 
-//		WordCoSimGraphPredictor wordCoSimGraphPredictor = new WordCoSimGraphPredictor();
-//		wordCoSimGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM3, 2, weights, relTypes);
-//		wordCoSimGraphPredictor.train(true);
-//		wordCoSimGraphPredictor.trainFromGraphDB();
+//		WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
+//		wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM3, 2, weights, relTypes);
+//		wordBasedCoSimCBFGraphPredictor.train(true);
+//		wordBasedCoSimCBFGraphPredictor.trainFromGraphDB();
+//
+//		UserProfileBasedTFiDF_CBFPredictor userProfileBasedTFiDF_CBFPredictor = new UserProfileBasedTFiDF_CBFPredictor();
+//		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbs[0],2,relTypes,keyValueTypes,labelTypes);
+//		userProfileBasedTFiDF_CBFPredictor.train(false);
+////		userProfileBasedTFiDF_CBFPredictor.trainFromGraphDB();
 
-//		UserProfileBasedCBFPredictor userProfileBasedCBFPredictor = new UserProfileBasedCBFPredictor();
-//		userProfileBasedCBFPredictor.setParameters(graphDB,dbs[0],2,weights,relTypes,keyValueTypes,labelTypes);
-////		userProfileBasedCBFPredictor.train(false);
-//		userProfileBasedCBFPredictor.trainFromGraphDB();
+        UserProfileBasedCoSimCBFPredictor userProfileBasedCoSimCBFPredictor = new UserProfileBasedCoSimCBFPredictor();
+        userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbs[0],relTypes,labelTypes,keyValueTypes);
+        userProfileBasedCoSimCBFPredictor.train(false);
 
-//		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-//		Predictor[] preds = new Predictor[]{wordCoSimGraphPredictor};  //cfGraphPredictor, wordCoSimGraphPredictor, userProfileBasedCBFPredictor
+		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
+		//cfGraphPredictor, wordCoSimGraphPredictor, userProfileBasedTFiDF_CBFPredictor, userProfileBasedCoSimCBFPredictor
+		Predictor[] preds = new Predictor[]{userProfileBasedCoSimCBFPredictor};
 
-
-//		testPredictors(preds, dbs[0], dbs[1]);
+        testPredictors(preds, dbs[0], dbs[1]);
 
 
 		System.out.println("Futas vege: " + dateFormat.format(Calendar.getInstance().getTimeInMillis()));

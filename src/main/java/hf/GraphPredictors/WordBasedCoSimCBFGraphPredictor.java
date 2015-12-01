@@ -18,7 +18,7 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.*;
 
-public class WordCoSimGraphPredictor extends GraphDBPredictor {
+public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
     private TIntObjectHashMap<TIntDoubleHashMap> itemSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;

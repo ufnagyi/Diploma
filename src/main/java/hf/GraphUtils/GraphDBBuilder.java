@@ -24,7 +24,11 @@ public class GraphDBBuilder {
     private static final String act_dir_separator = "\f";
     private static final String vod_separator = "[\f/]";
 
-    public static void buildGraphDBFromImpressDB(GraphDB graphDB, Database db, boolean deleteIfExists) throws IOException {
+    public static void buildGraphDBFromImpressDB(GraphDB graphDB, Database db, boolean deleteIfExists, boolean onlyUniqueEvents) throws IOException {
+
+        if(graphDB.isInited())
+            graphDB.shutDownDB();
+
         LogHelper.INSTANCE.log("GraphDB építés kezdése: ");
 
         dbExt = (ExtendedDatabase) db;
@@ -62,7 +66,10 @@ public class GraphDBBuilder {
             //Relationships:
 
             //SEEN
-            insertRelationshipsWithoutProperties(Relationships.SEEN,getSEENRelationships());
+            if(onlyUniqueEvents)
+                insertRelationshipsWithoutProperties(Relationships.SEEN, getUniqueSEENRelationships());
+            else
+                insertRelationshipsWithoutProperties(Relationships.SEEN, getSEENRelationships());
             //ACTS_IN
             insertRelationshipsWithoutProperties(Relationships.ACTS_IN,
                     getMetaRelationships(actor,act_dir_separator,Labels.Actor));
@@ -147,7 +154,7 @@ public class GraphDBBuilder {
         LogHelper.INSTANCE.log(rel.name() +" list keszitese KESZ: " + num);
     }
 
-    private static ArrayList<DirectedLink<Long>> getSEENRelationships() {
+    private static ArrayList<DirectedLink<Long>> getUniqueSEENRelationships() {
         HashSet<DirectedLink<Long>> uniqueEvents = new HashSet<>(dbExt.numEvents());
         HashMap<Object,Long> userIDToIDPairs = IDToIDs.get(Labels.User);
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
@@ -162,6 +169,19 @@ public class GraphDBBuilder {
         for(DirectedLink l : uniqueEvents){
             events.add(l);
         }
+        return events;
+    }
+
+    private static ArrayList<DirectedLink<Long>> getSEENRelationships() {
+        ArrayList<DirectedLink<Long>> events = new ArrayList<>(dbExt.numEvents());
+        HashMap<Object,Long> userIDToIDPairs = IDToIDs.get(Labels.User);
+        HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
+        for (Database.Event e : dbExt.events(null)) {
+            long userGraphDBID = userIDToIDPairs.get(dbExt.getUserId(e.uIdx));
+            long itemGraphDBID = itemIDToIDPairs.get(dbExt.getItemId(e.iIdx));
+            events.add(new DirectedLink(userGraphDBID,itemGraphDBID));
+        }
+        IDToIDs.remove(Labels.User);    //betöltve minden, ami hozzájuk kapcsolódik, ezért törlöm
         return events;
     }
 

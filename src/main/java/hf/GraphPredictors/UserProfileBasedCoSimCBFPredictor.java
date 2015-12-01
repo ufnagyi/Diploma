@@ -5,7 +5,10 @@ import com.google.common.collect.HashBiMap;
 import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.list.array.TLongArrayList;
-import gnu.trove.map.hash.*;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongDoubleHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
 import hf.GraphUtils.*;
 import onlab.core.Database;
 import org.neo4j.graphdb.*;
@@ -18,38 +21,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class UserProfileBasedCBFPredictor extends GraphDBPredictor {
+public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
     private HashBiMap<String, Long> metaIDs;
-    private TIntObjectHashMap<TLongDoubleHashMap> userProfiles;
-    private HashMap<String, Double> metaWeights;
+    private TIntObjectHashMap<TLongIntHashMap> userProfiles;
+    private TIntIntHashMap userProfileSupports;
     private Relationships[] relTypes;
     private Labels[] labelTypes;
     private String[] keyValueTypes;
-    private TLongDoubleHashMap wordIDFs;
-    int method;
 
 
-    public void setParameters(GraphDB graphDB, Database db, int method,
-                              HashMap<String,Double> _weights, Relationships[] rel_types,
-                              String[] keyValueTypes_, Labels[] labelTypes){
+    public void setParameters(GraphDB graphDB, Database db,
+                              Relationships[] rel_types, Labels[] labelTypes,
+                              String[] keyValueTypes_){
         super.setParameters(graphDB,db);
-        this.method = method;
-        metaWeights = _weights;
         this.relTypes = rel_types;
         this.keyValueTypes = keyValueTypes_;
         this.labelTypes = labelTypes;
     }
 
     protected void computeSims(boolean uploadResultIntoDB){
-        for(int i = 0; i < labelTypes.length; i++)
-            graphDB.computeAndUploadIDFValues(labelTypes[i],relTypes[i]);
         populateMetaIDs();
         buildUserProfiles();
     }
 
-    public void trainFromGraphDB(){
-        populateMetaIDs();
-        buildUserProfiles();
+    public void trainFromGraphDB() {
+        this.computeSims(false);
     }
 
     /**
@@ -63,7 +59,7 @@ public class UserProfileBasedCBFPredictor extends GraphDBPredictor {
 
 
     private void buildUserProfiles(){
-        LogHelper.INSTANCE.log("Start CBFSim with UserProfile:");
+        LogHelper.INSTANCE.log("Start CoSimCBF with UserProfile:");
         Transaction tx = graphDB.startTransaction();
         ArrayList<Node> userList = graphDB.getNodesByLabel(Labels.User);
 
@@ -72,34 +68,10 @@ public class UserProfileBasedCBFPredictor extends GraphDBPredictor {
 //        userList.add(graphDB.graphDBService.getNodeById(17020));
 
 
-        // word_IDF = numOfItems / numOfItemsContainingTheWord
-        wordIDFs = graphDB.getMetaIDFValues(labelTypes);
-
         userProfiles = new TIntObjectHashMap<>(userList.size());
+        userProfileSupports = new TIntIntHashMap(userList.size());
 
-        TraversalDescription mWordsOfItemsSeenByUser = graphDB.graphDBService.traversalDescription()
-                .depthFirst()
-                .expand( new PathExpander<Object>() {
-                    @Override
-                    public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
-                        int depth = path.length();
-                        if( depth == 0 ) {
-                            return path.endNode().getRelationships(
-                                    Relationships.SEEN );
-                        }
-                        else {
-                            return path.endNode().getRelationships(relTypes);
-                        }
-                    }
-                    @Override
-                    public PathExpander<Object> reverse() {
-                        return null;
-                    }
-                })
-                .evaluator( Evaluators.atDepth( 2 ))
-                .uniqueness(Uniqueness.RELATIONSHIP_PATH);
-
-
+        TraversalDescription mWordsOfItemsSeenByUser = getNewMetaTraversalByUser(graphDB,relTypes);
 
         int numOfComputedUserProfiles = 0;
         int changeCounter1 = 0;
@@ -118,41 +90,48 @@ public class UserProfileBasedCBFPredictor extends GraphDBPredictor {
         numOfComputedUserProfiles += changeCounter1;
 
         graphDB.endTransaction(tx);
-        LogHelper.INSTANCE.log("CBFSim with UserProfile KÉSZ! " + numOfComputedUserProfiles);
+        LogHelper.INSTANCE.log("CoSimCBF with UserProfile KÉSZ! " + numOfComputedUserProfiles);
     }
 
     private void computeProfile(Node user, TraversalDescription description){
-
         int userID = (int) user.getProperty(Labels.User.getIDName());
+        int userProfileSupp = 0;
         TLongIntHashMap mWordFrequencies = new TLongIntHashMap();
-        int numOfMetaWords = 0;
-
         for (Path path : description.traverse(user)) {
-            Node mWord = path.endNode();
-            mWordFrequencies.adjustOrPutValue(mWord.getId(),1,1);
-            numOfMetaWords++;
-//            System.out.println(mWord.getAllProperties());
+            mWordFrequencies.adjustOrPutValue(path.endNode().getId(),1,1);
+            userProfileSupp++;
         }
-        TLongDoubleHashMap userProfile = new TLongDoubleHashMap(mWordFrequencies.size());
-        TLongIntIterator mWordFrequency = mWordFrequencies.iterator();
-        while(mWordFrequency.hasNext()){
-            mWordFrequency.advance();
-            long metaWord = mWordFrequency.key();
-            int wordFrequency = mWordFrequency.value();
-//            System.out.println(metaIDs.inverse().get(metaWord) + ": " + wordFrequency);
-            double relativeWordFrequency = (double) wordFrequency / numOfMetaWords;
-            double tf_iDF = relativeWordFrequency * wordIDFs.get(metaWord);
-            userProfile.put(metaWord,tf_iDF);
-        }
-        userProfiles.put(userID,userProfile);
+        userProfiles.put(userID,mWordFrequencies);
+        userProfileSupports.put(userID,userProfileSupp);
     }
 
-
+    public static TraversalDescription getNewMetaTraversalByUser(GraphDB graphDB_, Relationships[] relTypes_) {
+        return graphDB_.graphDBService.traversalDescription()
+                .depthFirst()
+                .expand(new PathExpander<Object>() {
+                    @Override
+                    public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
+                        int depth = path.length();
+                        if (depth == 0) {
+                            return path.endNode().getRelationships(
+                                    Relationships.SEEN);
+                        } else {
+                            return path.endNode().getRelationships(relTypes_);
+                        }
+                    }
+                    @Override
+                    public PathExpander<Object> reverse() {
+                        return null;
+                    }
+                })
+                .evaluator(Evaluators.atDepth(2))
+                .uniqueness(Uniqueness.RELATIONSHIP_PATH);
+    }
 
 
     private int lastUser = -1;
     private int userRelDegree = 0;
-    private TLongDoubleHashMap userProfile = new TLongDoubleHashMap();
+    private TLongIntHashMap userProfile = new TLongIntHashMap();
     private int numUser = 0;
 
     /**
@@ -169,35 +148,31 @@ public class UserProfileBasedCBFPredictor extends GraphDBPredictor {
         for (String keyValue : keyValueTypes) {
             HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue);
             for (String word : itemWords) {
-                itemMetaWordIDs.add(metaIDs.get(i + word));
+                Long metaID = metaIDs.get(i + "" + word);
+                if(metaID != null)
+                    itemMetaWordIDs.add(metaID.longValue());
             }
+            i++;
         }
-
-        int matches = 0;
 
         if( uID != lastUser) {
             userProfile = userProfiles.get(uID);
-            userRelDegree = userProfile.size();
+            userRelDegree = userProfileSupports.get(uID);
             lastUser = uID;
             numUser++;
             if(numUser % 1000 == 0)
                 System.out.println(numUser);
         }
+
+        int matches = 0;
+
         TLongIterator itemMetaWords = itemMetaWordIDs.iterator();
         while(itemMetaWords.hasNext()){
             long word = itemMetaWords.next();
-            double userIFIDFForWord = userProfile.get(word);
-            if (userIFIDFForWord > 0.0) {
-                prediction += userIFIDFForWord;
-                matches++;
-            }
+            matches += userProfile.get(word);
         }
 
-        if(method == 1) {
-            prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
-        }
-        else
-            prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
+        prediction = userRelDegree > 0 ? ((double) matches / userRelDegree) : 0.0;
 
         return prediction;
     }

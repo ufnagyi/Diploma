@@ -1,6 +1,8 @@
 package hf.GraphUtils;
 
 
+import com.google.common.base.Objects;
+
 /**
  * 2 node közti similarity kapcsolat dobozolása
  * Fontos: NEM tud irányt megkülönböztetni!
@@ -17,25 +19,6 @@ public class SimLink<N extends Comparable<N>> extends Link<N> {
         super(l, l1);
         similarity = sim;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SimLink simLink = (SimLink) o;
-
-        if (startNode != simLink.startNode) return false;
-        return endNode == simLink.endNode;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return (startNode + "; " + endNode).hashCode();
-    }
-
-
 
     public String print(){
         return (startNode + ";" + endNode + ";" + similarity);

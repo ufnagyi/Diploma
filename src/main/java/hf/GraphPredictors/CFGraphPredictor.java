@@ -4,9 +4,8 @@ import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.map.hash.*;
 import hf.GraphUtils.*;
 import onlab.core.Database;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.traversal.BranchState;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
@@ -19,16 +18,18 @@ public class CFGraphPredictor extends GraphDBPredictor {
     private TIntObjectHashMap<TIntDoubleHashMap> itemSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;
     private int method;
+    private boolean uniqueEvents;
 
     /**
      *
      * @param graphDB A grafDB, amire epitkezik
      * @param method Prediction szamitasi modszer 1-es: /összes, 2-es: /match
      */
-    public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method){
+    public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method, boolean uniqueEvents_){
         super.setParameters(graphDB,db);
         this.sim = sim;
         this.method = method;
+        this.uniqueEvents = uniqueEvents_;
     }
 
     public void trainFromGraphDB(){
@@ -51,22 +52,24 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
         Transaction tx = graphDB.startTransaction();
 
-        TraversalDescription simNodeFinder = graphDB.graphDBService.traversalDescription()
-                .depthFirst()
-                .relationships(Relationships.SEEN)
-                .evaluator(Evaluators.atDepth(2))
-                .uniqueness(Uniqueness.RELATIONSHIP_PATH)
-                .uniqueness(Uniqueness.NODE_PATH);
+        TraversalDescription simNodeFinder = getTraversalForActualEventList();
+
 
         long numOfComputedSims = 0;
         int changeCounter1 = 0;     //folyamat kiiratásához
 
 //        1 node teszteléséhez:
 //        ArrayList<Node> nodeList = new ArrayList<>();
-//        nodeList.add(graphDB.graphDBService.getNodeById(8));
+//        nodeList.add(graphDB.graphDBService.getNodeById(5680));
 
         for (Node item : nodeList) {
-            int changes = computeCosineSimilarity(item, simNodeFinder, Relationships.SEEN, simLinks);
+            int changes;
+            if(uniqueEvents){
+                changes = computeCosineSimilarityForUniqueEvents(item, simNodeFinder, Relationships.SEEN, simLinks);
+            }
+            else{
+                changes = computeCoSimForAllEvents(item, simNodeFinder, Relationships.SEEN, simLinks);
+            }
             numOfComputedSims += changes;
             changeCounter1 += changes;
             if(changeCounter1 > 50000){
@@ -102,8 +105,9 @@ public class CFGraphPredictor extends GraphDBPredictor {
         System.out.println("2st decile sim: " + vals.get((vals.size()/10*2)));
     }
 
-    public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                       Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
+    //Ha az event lista unique!
+    public int computeCosineSimilarityForUniqueEvents(Node nodeA, TraversalDescription description,
+                                                      Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
 
         int computedSims = 0;
 
@@ -137,6 +141,116 @@ public class CFGraphPredictor extends GraphDBPredictor {
         return computedSims;
     }
 
+    //Ha az event lista NEM unique!
+    //Alap grafbejarassal. A szurest itt vegzem el, nem a bejarasban
+    public int computeCoSimForAllEvents(Node nodeA, TraversalDescription description,
+                                        Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
+
+        int computedSims = 0;
+
+        TLongIntHashMap friendNodes = new TLongIntHashMap();    //friendNode_B --> suppB
+        TLongIntHashMap suppABForAllB = new TLongIntHashMap();  //friendNode_B --> suppAB
+
+        long startNodeID = nodeA.getId();
+        int suppA = GraphDB.getDistinctDegree(nodeA, existingRelType);
+
+        HashSet<DirectedLink<Long>> paths = new HashSet<>();
+        for (Path path : description.traverse(nodeA)) {
+            Iterator<Node> pathNodes = path.nodes().iterator();
+            pathNodes.next();           //kiindulasi pont
+            Node user = pathNodes.next();       //user
+            Node friendItem = pathNodes.next();     //masik item
+            long userID = user.getId();
+            long friendItemID = friendItem.getId();
+            DirectedLink<Long> link = new DirectedLink<>(userID, friendItemID);
+            if (!paths.contains(link)) {
+                paths.add(link);
+                if (!friendNodes.containsKey(friendItemID)) {
+                    friendNodes.put(friendItemID, GraphDB.getDistinctDegree(friendItem, Relationships.SEEN));     //suppB
+                }
+                suppABForAllB.adjustOrPutValue(friendItemID, 1, 1);     //suppAB++
+            }
+        }
+
+        TLongIntIterator friends = suppABForAllB.iterator();
+        while (friends.hasNext()) {
+            friends.advance();
+            if (friends.value() > 1.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
+                computedSims++;     //hány hasonlóságot számoltunk ki
+                int suppB = friendNodes.get(friends.key());
+                double sim = friends.value() / (Math.sqrt(suppA * suppB));
+                similarities.add(new SimLink(startNodeID, friends.key(), sim));
+//            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
+            }
+        }
+        return computedSims;
+    }
+
+
+    //Ha az event lista NEM unique!
+    //Grafbejarasnal relacioszures, hogy unique listat jarjunk be
+    public int computeCoSimForAllEvents2(Node nodeA, TraversalDescription description,
+                                         Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
+
+        int computedSims = 0;
+
+        TLongIntHashMap friendNodes = new TLongIntHashMap();    //friendNode_B --> suppB
+        TLongIntHashMap suppABForAllB = new TLongIntHashMap();  //friendNode_B --> suppAB
+
+        long startNodeID = nodeA.getId();
+        int suppA = GraphDB.getDistinctDegree(nodeA, existingRelType);
+
+        for (Path path : description.traverse(nodeA)) {
+            Node friendNode = path.endNode();
+            long friendNodeId = friendNode.getId();
+            if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
+                if(!friendNodes.contains(friendNodeId))
+                    friendNodes.put(friendNodeId, GraphDB.getDistinctDegree(friendNode, existingRelType));      //suppB
+                suppABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
+            }
+        }
+
+        TLongIntIterator friends = suppABForAllB.iterator();
+        while (friends.hasNext()) {
+            friends.advance();
+            if (friends.value() > 1.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
+                computedSims++;     //hány hasonlóságot számoltunk ki
+                int suppB = friendNodes.get(friends.key());
+                double sim = friends.value() / (Math.sqrt(suppA * suppB));
+                similarities.add(new SimLink(startNodeID, friends.key(), sim));
+//            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
+            }
+        }
+        return computedSims;
+    }
+
+    private TraversalDescription getTraversalForActualEventList() {
+        return uniqueEvents ?
+                graphDB.graphDBService.traversalDescription()
+                        .depthFirst()
+                        .relationships(Relationships.SEEN)
+                        .evaluator(Evaluators.atDepth(2))
+                        .uniqueness(Uniqueness.RELATIONSHIP_PATH)
+                        .uniqueness(Uniqueness.NODE_PATH)
+                :
+                //Lassu, de megoldas a unique relaciok lekerese:
+                graphDB.graphDBService.traversalDescription()
+                        .depthFirst()
+                        .expand(new PathExpander<Object>() {
+                            @Override
+                            public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
+                                return GraphDB.getDistinctRelationships(path.endNode(), Relationships.SEEN);
+                            }
+
+                            @Override
+                            public PathExpander<Object> reverse() {
+                                return null;
+                            }
+                        })
+                        .evaluator(Evaluators.atDepth(2))
+                        .uniqueness(Uniqueness.RELATIONSHIP_PATH)
+                        .uniqueness(Uniqueness.NODE_PATH);
+    }
 
     private int lastUser = -1;
     private int userRelDegree = 0;

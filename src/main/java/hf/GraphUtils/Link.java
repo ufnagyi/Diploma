@@ -1,5 +1,7 @@
 package hf.GraphUtils;
 
+import com.google.common.base.Objects;
+
 public class Link<N extends Comparable<N>> {
     public N startNode;
     public N endNode;
@@ -11,31 +13,29 @@ public class Link<N extends Comparable<N>> {
             System.out.println("Egyforma indexek: " + l);
             throw new ExceptionInInitializerError();
         }
-        if (l.compareTo(l1) < 1) {
+        if (l.compareTo(l1) < 0) {
             this.startNode = l;
             this.endNode = l1;
         } else {
             this.startNode = l1;
             this.endNode = l;
         }
-        startNode = l;
-        endNode = l1;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Link link = (Link) o;
-
-        if (startNode != link.startNode) return false;
-        return endNode == link.endNode;
-
-    }
+    public int hashCode() { return (startNode + "; " + endNode).hashCode();}
+    //    public int hashCode() {  return Objects.hashCode(startNode, endNode);  }
 
     @Override
-    public int hashCode() {
-        return (startNode + "; " + endNode).hashCode();
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        final Link other = (Link) obj;
+        return Objects.equal(this.startNode, other.startNode)
+                && Objects.equal(this.endNode, other.endNode);
     }
 }

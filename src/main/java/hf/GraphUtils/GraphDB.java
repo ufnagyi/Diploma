@@ -132,12 +132,27 @@ public class GraphDB {
      * @param rel
      * @return
      */
-    public HashSet<Long> getAllNeighborDBIDsByRel(Node node, Relationships rel){
+    public static HashSet<Long> getAllNeighborDBIDsByRel(Node node, Relationships rel){
         HashSet<Long> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
             neighbors.add(relationship.getOtherNode(node).getId());
         }
         return neighbors;
+    }
+
+    public static Iterable<Relationship> getDistinctRelationships(Node node, Relationships rel){
+        ArrayList<Relationship> distinctRelationships = new ArrayList<>();
+        Iterator<Relationship> iterator = node.getRelationships(rel).iterator();
+        HashSet<Long> nodes = new HashSet<>();
+        while(iterator.hasNext()){
+            Relationship rel_ = iterator.next();
+            long otherNode = rel_.getOtherNode(node).getId();
+            if(!nodes.contains(otherNode)){
+                nodes.add(otherNode);
+                distinctRelationships.add(rel_);
+            }
+        }
+        return distinctRelationships;
     }
 
 
@@ -148,7 +163,7 @@ public class GraphDB {
      * @param rel Relaciotipus, ami menten keresunk
      * @return
      */
-    public HashSet<Integer> getAllNeighborIDsByRel(Labels label, Node node, Relationships rel){
+    public static HashSet<Integer> getAllNeighborIDsByRel(Labels label, Node node, Relationships rel){
         HashSet<Integer> neighbors = new HashSet<>();
         for( Relationship relationship : node.getRelationships(rel)){
             neighbors.add((int)relationship.getOtherNode(node).getProperty(label.getIDName()));
@@ -156,8 +171,11 @@ public class GraphDB {
         return neighbors;
     }
 
+    public static int getDistinctDegree(Node node, Relationships rel){
+        return GraphDB.getAllNeighborDBIDsByRel(node,rel).size();
+    }
 
-    public HashMap<Node,Double> getAllNeighborsBySim(Node node, Similarities sim){
+    public static HashMap<Node,Double> getAllNeighborsBySim(Node node, Similarities sim){
         HashMap<Node, Double> neighbors = new HashMap<>();
         for (Relationship relationship : node.getRelationships(sim)) {
             neighbors.put(relationship.getOtherNode(node), (Double) relationship.getProperty(sim.getPropertyName()));
@@ -165,7 +183,7 @@ public class GraphDB {
         return neighbors;
     }
 
-    public HashMap<Long,Double> getAllNeighborIDsBySim(Node node, Similarities sim){
+    public static HashMap<Long,Double> getAllNeighborIDsBySim(Node node, Similarities sim){
         HashMap<Long, Double> neighbors = new HashMap<>();
         for (Relationship relationship : node.getRelationships(sim)) {
             neighbors.put(relationship.getOtherNode(node).getId(), (Double) relationship.getProperty(sim.getPropertyName()));
