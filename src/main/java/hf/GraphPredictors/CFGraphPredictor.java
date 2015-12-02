@@ -33,6 +33,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
     }
 
     public void trainFromGraphDB(){
+        graphDB.initDB();
         LogHelper.INSTANCE.log("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból:");
         itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
@@ -48,7 +49,9 @@ public class CFGraphPredictor extends GraphDBPredictor {
         LogHelper.INSTANCE.log("Start " + sim.name() + "!");
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
+
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
+        TLongIntHashMap nodeDegress = new TLongIntHashMap(nodeList.size());
 
         Transaction tx = graphDB.startTransaction();
 
@@ -68,7 +71,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
                 changes = computeCosineSimilarityForUniqueEvents(item, simNodeFinder, Relationships.SEEN, simLinks);
             }
             else{
-                changes = computeCoSimForAllEvents(item, simNodeFinder, Relationships.SEEN, simLinks);
+                changes = computeCoSimForAllEvents2(item, simNodeFinder, Relationships.SEEN, simLinks,nodeDegress);
             }
             numOfComputedSims += changes;
             changeCounter1 += changes;
@@ -144,7 +147,8 @@ public class CFGraphPredictor extends GraphDBPredictor {
     //Ha az event lista NEM unique!
     //Alap grafbejarassal. A szurest itt vegzem el, nem a bejarasban
     public int computeCoSimForAllEvents(Node nodeA, TraversalDescription description,
-                                        Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
+                                        Relationships existingRelType, HashSet<SimLink<Long>> similarities,
+                                        TLongIntHashMap nodeDegrees) {
 
         int computedSims = 0;
 
@@ -152,7 +156,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
         TLongIntHashMap suppABForAllB = new TLongIntHashMap();  //friendNode_B --> suppAB
 
         long startNodeID = nodeA.getId();
-        int suppA = GraphDB.getDistinctDegree(nodeA, existingRelType);
+        int suppA = getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,existingRelType);
 
         HashSet<DirectedLink<Long>> paths = new HashSet<>();
         for (Path path : description.traverse(nodeA)) {
@@ -166,7 +170,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
             if (!paths.contains(link)) {
                 paths.add(link);
                 if (!friendNodes.containsKey(friendItemID)) {
-                    friendNodes.put(friendItemID, GraphDB.getDistinctDegree(friendItem, Relationships.SEEN));     //suppB
+                    friendNodes.put(friendItemID, getNodeDegreeFromMap(friendItem,friendItemID,nodeDegrees,existingRelType));     //suppB
                 }
                 suppABForAllB.adjustOrPutValue(friendItemID, 1, 1);     //suppAB++
             }
@@ -190,7 +194,8 @@ public class CFGraphPredictor extends GraphDBPredictor {
     //Ha az event lista NEM unique!
     //Grafbejarasnal relacioszures, hogy unique listat jarjunk be
     public int computeCoSimForAllEvents2(Node nodeA, TraversalDescription description,
-                                         Relationships existingRelType, HashSet<SimLink<Long>> similarities) {
+                                         Relationships existingRelType, HashSet<SimLink<Long>> similarities,
+                                         TLongIntHashMap nodeDegrees) {
 
         int computedSims = 0;
 
@@ -198,14 +203,15 @@ public class CFGraphPredictor extends GraphDBPredictor {
         TLongIntHashMap suppABForAllB = new TLongIntHashMap();  //friendNode_B --> suppAB
 
         long startNodeID = nodeA.getId();
-        int suppA = GraphDB.getDistinctDegree(nodeA, existingRelType);
+        int suppA = getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,existingRelType);
+
 
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
             long friendNodeId = friendNode.getId();
             if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
                 if(!friendNodes.contains(friendNodeId))
-                    friendNodes.put(friendNodeId, GraphDB.getDistinctDegree(friendNode, existingRelType));      //suppB
+                    friendNodes.put(friendNodeId, getNodeDegreeFromMap(friendNode,friendNodeId,nodeDegrees,existingRelType));      //suppB
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
             }
         }
@@ -222,6 +228,17 @@ public class CFGraphPredictor extends GraphDBPredictor {
             }
         }
         return computedSims;
+    }
+
+    private int getNodeDegreeFromMap(Node node, long nodeID, TLongIntHashMap nodeDegrees, Relationships rel){
+        int suppNode;
+        if(nodeDegrees.containsKey(nodeID))
+            suppNode = nodeDegrees.get(nodeID);
+        else {
+            suppNode = GraphDB.getDistinctDegree(node, rel);
+            nodeDegrees.put(nodeID,suppNode);
+        }
+        return suppNode;
     }
 
     private TraversalDescription getTraversalForActualEventList() {

@@ -45,6 +45,7 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
     }
 
     public void trainFromGraphDB() {
+        graphDB.initDB();
         this.computeSims(false);
     }
 

@@ -48,6 +48,7 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
     }
 
     public void trainFromGraphDB(){
+        graphDB.initDB();
         populateMetaIDs();
         buildUserProfiles();
     }

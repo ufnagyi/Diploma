@@ -267,7 +267,7 @@ CBF SIM-ek betöltése: 32 másodperc
 CBF ajánlás: kereken 5 perc
 
 ----------------------------------------------------------------------------------------
-CBF_SIM2 ACTOR,DIRECTOR és VOD node-okra, súlyozás nélkül:
+CBF_SIM2 ACTOR,DIRECTOR és VOD node-okra, súlyozás nélkül:  suppAB > 3
 Start CBFSim!  2015/11/29 01:45:44
 Num of computed sims: 14452011
 Stop CBFSim!  2015/11/29 01:52:53
@@ -280,7 +280,7 @@ Median sim: 0.7715167498104595
 Futas vege: 2015/11/29 01:52:56
 
 ----------------------------------------------------------------------------------------
-CBF_SIM3 ACTOR,DIRECTOR és VOD node-okra, súlyozás 2,2,1:
+CBF_SIM3 ACTOR,DIRECTOR és VOD node-okra, súlyozás 2,2,1:  suppAB > 3
 Start CBF_SIM3!  2015/11/29 03:21:34
 Num of computed sims: 14453704
 Stop CBF_SIM3!  2015/11/29 03:29:06
@@ -295,7 +295,7 @@ Median sim: 0.7715167498104595
 Futas vege: 2015/11/29 03:30:15
 
 -----------------------------------------------------------------------------------------
-CBF_SIM unique event listával és long hash-sel:  ----> 17,5 perc
+CBF_SIM unique event listával és long hash-sel:  ----> 17,5 perc suppAB > 3
 Start CBF_SIM!  2015/11/30 21:02:35
 Num of computed sims: 13429481
 Stop CBF_SIM!  2015/11/30 21:20:04
@@ -309,7 +309,7 @@ Median sim: 0.7142857142857143
 2st decile sim: 0.4767312946227962
 
 -------------------------------------------------------------------------------------------
-CBF_SIM unique event listával és String hash-sel   ----> 7.5 perc
+CBF_SIM unique event listával és String hash-sel   ----> 7.5 perc suppAB > 3
 Start CBF_SIM2!  2015/11/30 21:56:28
 Num of computed sims: 13429513
 Stop CBF_SIM2!  2015/11/30 22:04:05
@@ -329,3 +329,20 @@ CBF_TFIDF userProfillal, unique event listával és String hashsel  profile ép�
 ------------------------------------------------------------------------------------------
 CBF_CoSim userProfillal, unique event listával és String hashsel  profile építés: < 30 sec
 
+------------------------------------------
+CBF_SIM suppAB > 1 korlát esetén 0,11-es Recallt adott (16,2 millió sim)
+-----------------------------------------------------------------------
+CBF_SIM suppAB > 4 korlát:
+
+Start CBF_SIM!  2015/12/02 05:38:59
+Num of computed sims: 9045917
+Stop CBF_SIM!  2015/12/02 05:42:11
+Upload computed similarities to DB:  2015/12/02 05:42:11
+Upload computed similarities to DB Done!  2015/12/02 05:42:50
+Max sim: 1.0
+Min sim: 0.12195121951219512
+Avg sim: 0.7333672551505552
+Median sim: 0.8333333333333334
+1st decile sim: 0.45454545454545453
+2st decile sim: 0.5833333333333334
+Futas vége:  2015/12/02 05:42:51

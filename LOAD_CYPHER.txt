@@ -157,6 +157,29 @@ HAS_META list keszitese KESZ: 105412  2015/11/30 20:07:52
 GraphDB felépítve!  2015/11/30 20:07:57
 Futas vege: 2015/11/30 20:07:57
 
+TRAIN SET MINDEN EVENTTEL:
+
+GraphDB építés kezdése:   2015/12/02 03:07:26
+Item list keszitese:   2015/12/02 03:07:27
+Item list keszitese KESZ: 17001  2015/12/02 03:07:27
+User list keszitese:   2015/12/02 03:07:28
+User list keszitese KESZ: 343409  2015/12/02 03:07:28
+Actor list keszitese:   2015/12/02 03:07:28
+Actor list keszitese KESZ: 7479  2015/12/02 03:07:28
+Director list keszitese:   2015/12/02 03:07:28
+Director list keszitese KESZ: 1857  2015/12/02 03:07:28
+VOD list keszitese:   2015/12/02 03:07:28
+VOD list keszitese KESZ: 698  2015/12/02 03:07:28
+SEEN list keszitese:   2015/12/02 03:07:29
+SEEN list keszitese KESZ: 4471818  2015/12/02 03:07:46
+ACTS_IN list keszitese:   2015/12/02 03:07:46
+ACTS_IN list keszitese KESZ: 22137  2015/12/02 03:07:46
+DIR_BY list keszitese:   2015/12/02 03:07:46
+DIR_BY list keszitese KESZ: 4840  2015/12/02 03:07:46
+HAS_META list keszitese:   2015/12/02 03:07:46
+HAS_META list keszitese KESZ: 105412  2015/12/02 03:07:47
+GraphDB felépítve!  2015/12/02 03:07:52
+
 TEST SET Unique Event listával:
 
 GraphDB építés kezdése:   2015/11/23 00:52:48

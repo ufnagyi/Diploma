@@ -9,9 +9,8 @@ import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hf.GraphUtils.*;
 import onlab.core.Database;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.traversal.BranchState;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
@@ -47,6 +46,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
     @Override
     public void trainFromGraphDB() {
+        graphDB.initDB();
         LogHelper.INSTANCE.log("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból:");
         itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
@@ -68,14 +68,24 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
         Transaction tx = graphDB.startTransaction();
         ArrayList<Node> itemList = graphDB.getNodesByLabel(Labels.Item);
+        TLongIntHashMap nodeDegrees = new TLongIntHashMap(itemList.size());
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
 
         TraversalDescription simNodeFinder = graphDB.graphDBService.traversalDescription()
                 .depthFirst()
-                .relationships(Relationships.HAS_META)
-                .relationships(Relationships.ACTS_IN)
-                .relationships(Relationships.DIR_BY)
+                .expand(new PathExpander<Object>() {
+                    @Override
+                    public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
+                        return path.endNode().getRelationships(relTypes);
+
+                    }
+
+                    @Override
+                    public PathExpander<Object> reverse() {
+                        return null;
+                    }
+                })
                 .evaluator(Evaluators.atDepth(2))
                 .uniqueness(Uniqueness.RELATIONSHIP_PATH)
                 .uniqueness(Uniqueness.NODE_PATH);
@@ -88,7 +98,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 //        nodeList.add(graphDB.graphDBService.getNodeById(8));
 
         for (Node item : itemList) {
-            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks);
+            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks, nodeDegrees);
             numOfComputedSims += changes;
             changeCounter1 += changes;
             if(changeCounter1 > 50000){
@@ -125,7 +135,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
     }
 
     public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                       HashSet<SimLink<Long>> similarities) {
+                                       HashSet<SimLink<Long>> similarities, TLongIntHashMap nodeDegrees) {
 
         int computedSims = 0;
 
@@ -133,7 +143,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
         TLongDoubleHashMap suppABForAllB = new TLongDoubleHashMap();  //friendNode_B --> suppAB
 
         long startNodeID = nodeA.getId();
-        int suppA = GraphDB.getSumOfDegreesByRelationships(nodeA, relTypes);
+        int suppA = getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,relTypes);
 
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
@@ -141,7 +151,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
             long friendNodeId = friendNode.getId();
             if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
                 if(!friendNodes.containsKey(friendNodeId))
-                    friendNodes.put(friendNodeId,GraphDB.getSumOfDegreesByRelationships(friendNode,relTypes)); //suppB rel alapjan
+                    friendNodes.put(friendNodeId,getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,relTypes)); //suppB rel alapjan
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, metaWeights.get(rel));                    //suppAB növelés
             }
         }
@@ -150,7 +160,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
         ArrayList nodeSims = new ArrayList<>();
         while (friends.hasNext()) {
             friends.advance();
-            if (friends.value() > 3.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
+            if (friends.value() > 4.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
                 int suppB = friendNodes.get(friends.key());
                 double sim = friends.value() / (Math.sqrt(suppA * suppB));
                 nodeSims.add(new SimLink(startNodeID, friends.key(), sim));
@@ -165,8 +175,19 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
         return computedSims;
     }
 
+    private int getNodeDegreeFromMap(Node node, long nodeID, TLongIntHashMap nodeDegrees, Relationships[] rels){
+        int suppNode;
+        if(nodeDegrees.containsKey(nodeID))
+            suppNode = nodeDegrees.get(nodeID);
+        else {
+            suppNode = GraphDB.getSumOfDegreesByRelationships(node, rels);
+            nodeDegrees.put(nodeID,suppNode);
+        }
+        return suppNode;
+    }
 
-    public Comparator<SimLink<Long>> getComparator() {
+
+    public static Comparator<SimLink<Long>> getComparator() {
         return (o1, o2) -> ((Double) o1.similarity).compareTo((Double) o2.similarity);
     }
 
