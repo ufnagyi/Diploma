@@ -15,13 +15,17 @@ import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
     private TIntObjectHashMap<TIntDoubleHashMap> itemSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;
     private int method;
+    private double minSuppAB;
 
     private HashMap<String, Double> metaWeights;
     private Relationships[] relTypes;
@@ -36,12 +40,13 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
      * @param rel_types Mely metawordoket hasznalja
      */
     public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method,
-                              HashMap<String,Double> _weights, Relationships[] rel_types){
+                              HashMap<String,Double> _weights, Relationships[] rel_types, double minSuppAB){
         super.setParameters(graphDB,db);
         this.sim = sim;
         this.method = method;
         metaWeights = _weights;
         this.relTypes = rel_types;
+        this.minSuppAB = minSuppAB;
     }
 
     @Override
@@ -61,16 +66,22 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
     /**
      * CosineSim alapu CBF
-     * @param uploadResultIntoDB
      */
     public void computeSims(boolean uploadResultIntoDB) {
         LogHelper.INSTANCE.log("Start " + sim.name() + "!");
 
         Transaction tx = graphDB.startTransaction();
         ArrayList<Node> itemList = graphDB.getNodesByLabel(Labels.Item);
-        TLongIntHashMap nodeDegrees = new TLongIntHashMap(itemList.size());
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
+
+        LogHelper.INSTANCE.log("Item SEEN supportok számítása:");
+        TLongIntHashMap nodeDegrees = new TLongIntHashMap(itemList.size());    //friendNode_B --> suppB(relTypes)
+        for(Node item : itemList) {
+            long nodeID = item.getId();
+            nodeDegrees.put(nodeID, GraphDB.getSumOfDegreesByRelationships(item, relTypes));
+        }
+        LogHelper.INSTANCE.log("Item SEEN supportok számítása KÉSZ!");
 
         TraversalDescription simNodeFinder = graphDB.graphDBService.traversalDescription()
                 .depthFirst()
@@ -78,7 +89,6 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
                     @Override
                     public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
                         return path.endNode().getRelationships(relTypes);
-
                     }
 
                     @Override
@@ -87,8 +97,8 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
                     }
                 })
                 .evaluator(Evaluators.atDepth(2))
-                .uniqueness(Uniqueness.RELATIONSHIP_PATH)
-                .uniqueness(Uniqueness.NODE_PATH);
+                .uniqueness(Uniqueness.RELATIONSHIP_PATH);  //mivel metaadatokra nincs relacioismetles,
+                                                            // így node uniqunessre nincs szukseg!
 
         long numOfComputedSims = 0;
         int changeCounter1 = 0;     //folyamat kiiratásához
@@ -109,29 +119,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
             }
         }
         graphDB.endTransaction(tx);
-        System.out.println("Num of computed sims: " + numOfComputedSims);
-        LogHelper.INSTANCE.log("Stop " + sim.name() + "!");
-
-        if (uploadResultIntoDB) {
-            LogHelper.INSTANCE.log("Upload computed similarities to DB:");
-            graphDB.batchInsertSimilarities(simLinks, sim);
-            LogHelper.INSTANCE.log("Upload computed similarities to DB Done!");
-        }
-
-        ArrayList<Double> vals = new ArrayList<>(simLinks.size());
-        double sum = 0.0;
-        for (SimLink s : simLinks) {
-            sum += s.similarity;
-            vals.add(s.similarity);
-        }
-        double avg = sum / simLinks.size();
-        Collections.sort(vals);
-        System.out.println("Max sim: " + vals.get(vals.size()-1));
-        System.out.println("Min sim: " + vals.get(0));
-        System.out.println("Avg sim: " + avg);
-        System.out.println("Median sim: " + vals.get((vals.size()/2)));
-        System.out.println("1st decile sim: " + vals.get((vals.size()/10)));
-        System.out.println("2st decile sim: " + vals.get((vals.size()/10*2)));
+        printComputedSimilarityResults(simLinks,uploadResultIntoDB);
     }
 
     public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
@@ -139,19 +127,16 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
         int computedSims = 0;
 
-        TLongIntHashMap friendNodes = new TLongIntHashMap();    //friendNode_B --> suppB
         TLongDoubleHashMap suppABForAllB = new TLongDoubleHashMap();  //friendNode_B --> suppAB
 
         long startNodeID = nodeA.getId();
-        int suppA = getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,relTypes);
+        int suppA = nodeDegrees.get(startNodeID);
 
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
             String rel = path.lastRelationship().getType().name();
             long friendNodeId = friendNode.getId();
-            if (!similarities.contains(new SimLink(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
-                if(!friendNodes.containsKey(friendNodeId))
-                    friendNodes.put(friendNodeId,getNodeDegreeFromMap(nodeA,startNodeID,nodeDegrees,relTypes)); //suppB rel alapjan
+            if (!similarities.contains(new SimLink<>(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
                 suppABForAllB.adjustOrPutValue(friendNodeId, 1, metaWeights.get(rel));                    //suppAB növelés
             }
         }
@@ -160,35 +145,19 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
         ArrayList nodeSims = new ArrayList<>();
         while (friends.hasNext()) {
             friends.advance();
-            if (friends.value() > 4.0) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
-                int suppB = friendNodes.get(friends.key());
+            if (friends.value() > minSuppAB) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
+                int suppB = nodeDegrees.get(friends.key());
                 double sim = friends.value() / (Math.sqrt(suppA * suppB));
-                nodeSims.add(new SimLink(startNodeID, friends.key(), sim));
+                nodeSims.add(new SimLink<>(startNodeID, friends.key(), sim));
 //            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
             }
         }
-        List<SimLink<Long>> simLinks = Ordering.from(this.getComparator()).greatestOf(nodeSims, 1000);
+        List<SimLink<Long>> simLinks = Ordering.from(SimLink.getComparator()).greatestOf(nodeSims, 1000);
         for(SimLink<Long> s : simLinks){
             similarities.add(s);
             computedSims++;     //hány hasonlóságot tárolunk el
         }
         return computedSims;
-    }
-
-    private int getNodeDegreeFromMap(Node node, long nodeID, TLongIntHashMap nodeDegrees, Relationships[] rels){
-        int suppNode;
-        if(nodeDegrees.containsKey(nodeID))
-            suppNode = nodeDegrees.get(nodeID);
-        else {
-            suppNode = GraphDB.getSumOfDegreesByRelationships(node, rels);
-            nodeDegrees.put(nodeID,suppNode);
-        }
-        return suppNode;
-    }
-
-
-    public static Comparator<SimLink<Long>> getComparator() {
-        return (o1, o2) -> ((Double) o1.similarity).compareTo((Double) o2.similarity);
     }
 
 
@@ -223,7 +192,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
         for(int i : itemsSeenByUser) {
             double d;
-            Link<Integer> l = new Link(i,iID);
+            Link<Integer> l = new Link<>(i,iID);
             TIntDoubleHashMap itemSims = itemSimilarities.get(l.startNode);
             d = itemSims == null ? 0.0 : itemSims.get(l.endNode);
             if (d > 0.0) {

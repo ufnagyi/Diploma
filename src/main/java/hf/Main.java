@@ -10,9 +10,6 @@ import onlab.core.predictor.Predictor;
 import onlab.core.util.PredictorUtil;
 import onlab.core.util.Util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
 
 /**
@@ -280,7 +277,7 @@ public class Main {
         boolean uniqueEvents = false;
 
 //		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-//		cfGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CF_ISIM, 1, uniqueEvents);
+//		cfGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CF_ISIM, 1, uniqueEvents, 1);
 //		cfGraphPredictor.train(true);
 //		cfGraphPredictor.trainFromGraphDB();
 
@@ -302,10 +299,10 @@ public class Main {
         keyValueTypes[2] = "Director";
 
 
-        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
-        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM, 2, weights, relTypes);
+//        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
+//        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM, 2, weights, relTypes, 4.0);
 //		wordBasedCoSimCBFGraphPredictor.train(true);
-        wordBasedCoSimCBFGraphPredictor.trainFromGraphDB();
+//        wordBasedCoSimCBFGraphPredictor.trainFromGraphDB();
 //
 //		UserProfileBasedTFiDF_CBFPredictor userProfileBasedTFiDF_CBFPredictor = new UserProfileBasedTFiDF_CBFPredictor();
 //		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbs[0],2,relTypes,keyValueTypes,labelTypes);
@@ -316,16 +313,22 @@ public class Main {
 //		userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbs[0],relTypes,labelTypes,keyValueTypes);
 //		userProfileBasedCoSimCBFPredictor.train(false);
 
-        CombinedHybridPredictor combinedHybridPredictor = new CombinedHybridPredictor();
-        combinedHybridPredictor.setParameters(graphDB,dbs[0],2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
-        combinedHybridPredictor.trainFromGraphDB();
+//        CombinedHybridPredictor combinedHybridPredictor = new CombinedHybridPredictor();
+//        combinedHybridPredictor.setParameters(graphDB,dbs[0],2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
+//        combinedHybridPredictor.trainFromGraphDB();
+
+        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
+        hybridComputedPredictor.setParameters(graphDB,dbs[0],Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
+        hybridComputedPredictor.train(false);
+//        hybridComputedPredictor.trainFromGraphDB();
+
 
 //		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
         //cfGraphPredictor, wordBasedCoSimCBFGraphPredictor, userProfileBasedTFiDF_CBFPredictor,
-        // userProfileBasedCoSimCBFPredictor, combinedHybridPredictor
-        Predictor[] preds = new Predictor[]{wordBasedCoSimCBFGraphPredictor};
+        // userProfileBasedCoSimCBFPredictor, combinedHybridPredictor, hybridComputedPredictor
+//        Predictor[] preds = new Predictor[]{hybridComputedPredictor};
 
-        testPredictors(preds, dbs[0], dbs[1]);
+//        testPredictors(preds, dbs[0], dbs[1]);
 
 
         LogHelper.INSTANCE.log("Futas vége:");

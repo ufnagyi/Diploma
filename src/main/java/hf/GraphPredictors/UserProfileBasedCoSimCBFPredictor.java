@@ -2,12 +2,10 @@ package hf.GraphPredictors;
 
 
 import com.google.common.collect.HashBiMap;
-import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hf.GraphUtils.*;
 import onlab.core.Database;
@@ -18,7 +16,6 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
@@ -126,7 +123,9 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
                     }
                 })
                 .evaluator(Evaluators.atDepth(2))
-                .uniqueness(Uniqueness.RELATIONSHIP_PATH);
+                .uniqueness(Uniqueness.RELATIONSHIP_PATH);      //eleg az el uniquness, mivel a melyseg alapu relaciotipus
+                                                                //lekeres garantalja, hogy ne legyen kor
+                                                                //nem unique event list eseten se
     }
 
 
@@ -142,7 +141,7 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
      * 2-es method: csak a matchelt metawordok szamaval atlagolva
      */
     public double predict(int uID, int iID, long time) {
-        double prediction = 0.0;
+        double prediction;
 
         TLongArrayList itemMetaWordIDs = new TLongArrayList();
         int i = 0;
@@ -151,7 +150,7 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
             for (String word : itemWords) {
                 Long metaID = metaIDs.get(i + "" + word);
                 if(metaID != null)
-                    itemMetaWordIDs.add(metaID.longValue());
+                    itemMetaWordIDs.add(metaID);
             }
             i++;
         }

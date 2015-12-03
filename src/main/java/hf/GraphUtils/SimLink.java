@@ -1,7 +1,7 @@
 package hf.GraphUtils;
 
 
-import com.google.common.base.Objects;
+import java.util.Comparator;
 
 /**
  * 2 node közti similarity kapcsolat dobozolása
@@ -18,6 +18,10 @@ public class SimLink<N extends Comparable<N>> extends Link<N> {
     public SimLink(N l, N l1, double sim) {
         super(l, l1);
         similarity = sim;
+    }
+
+    public static Comparator<SimLink<Long>> getComparator() {
+        return (o1, o2) -> ((Double) o1.similarity).compareTo((Double) o2.similarity);
     }
 
     public String print(){
