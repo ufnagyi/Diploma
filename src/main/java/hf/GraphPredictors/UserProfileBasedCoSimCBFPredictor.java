@@ -6,6 +6,7 @@ import gnu.trove.iterator.TLongIterator;
 import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import hf.GraphUtils.*;
 import onlab.core.Database;
@@ -16,24 +17,33 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
     private HashBiMap<String, Long> metaIDs;
-    private TIntObjectHashMap<TLongIntHashMap> userProfiles;
+    private TIntObjectHashMap<TLongDoubleHashMap> userProfiles;
     private TIntIntHashMap userProfileSupports;
     private Relationships[] relTypes;
     private Labels[] labelTypes;
     private String[] keyValueTypes;
+    private HashSet<String> stopWords;
+    private HashMap<String, Double> metaWeights;
+    private int method;  //prediktalasnal a match-ek szamaval, vagy a userprofil meretevel osztunk?
+    private int method2;    //userProfil merete osszes megtalalt szavak szama (1) vagy distinct megtalalt szavak szama (2)
 
 
-    public void setParameters(GraphDB graphDB, Database db,
-                              Relationships[] rel_types, Labels[] labelTypes,
-                              String[] keyValueTypes_){
+    public void setParameters(GraphDB graphDB, Database db, Relationships[] rel_types, Labels[] labelTypes,
+                              String[] keyValueTypes_, String stopWordsFileName, HashMap<String,Double> _weights,
+                              int method_, int method2_){
         super.setParameters(graphDB,db);
         this.relTypes = rel_types;
         this.keyValueTypes = keyValueTypes_;
         this.labelTypes = labelTypes;
+        this.stopWords = GraphDBBuilder.loadStopWordsFromFile(stopWordsFileName);
+        this.metaWeights = _weights;
+        this.method = method_;
+        this.method2 = method2_;
     }
 
     protected void computeSims(boolean uploadResultIntoDB){
@@ -94,13 +104,17 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
     private void computeProfile(Node user, TraversalDescription description){
         int userID = (int) user.getProperty(Labels.User.getIDName());
         int userProfileSupp = 0;
-        TLongIntHashMap mWordFrequencies = new TLongIntHashMap();
+        TLongDoubleHashMap mWordFrequencies = new TLongDoubleHashMap();
         for (Path path : description.traverse(user)) {
-            mWordFrequencies.adjustOrPutValue(path.endNode().getId(),1,1);
+            String rel = path.lastRelationship().getType().name();
+            mWordFrequencies.adjustOrPutValue(path.endNode().getId(),metaWeights.get(rel),metaWeights.get(rel));
             userProfileSupp++;
         }
         userProfiles.put(userID,mWordFrequencies);
-        userProfileSupports.put(userID,userProfileSupp);
+        if(method2 == 1)
+            userProfileSupports.put(userID,userProfileSupp);
+        else
+            userProfileSupports.put(userID,mWordFrequencies.size());
     }
 
     public static TraversalDescription getNewMetaTraversalByUser(GraphDB graphDB_, Relationships[] relTypes_) {
@@ -124,14 +138,14 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
                 })
                 .evaluator(Evaluators.atDepth(2))
                 .uniqueness(Uniqueness.RELATIONSHIP_PATH);      //eleg az el uniquness, mivel a melyseg alapu relaciotipus
-                                                                //lekeres garantalja, hogy ne legyen kor
-                                                                //nem unique event list eseten se
+        //lekeres garantalja, hogy ne legyen kor
+        //nem unique event list eseten se
     }
 
 
     private int lastUser = -1;
     private int userRelDegree = 0;
-    private TLongIntHashMap userProfile = new TLongIntHashMap();
+    private TLongDoubleHashMap userProfile = new TLongDoubleHashMap();
     private int numUser = 0;
 
     /**
@@ -141,12 +155,12 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
      * 2-es method: csak a matchelt metawordok szamaval atlagolva
      */
     public double predict(int uID, int iID, long time) {
-        double prediction;
+        double prediction = 0.0;
 
         TLongArrayList itemMetaWordIDs = new TLongArrayList();
         int i = 0;
         for (String keyValue : keyValueTypes) {
-            HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue);
+            HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue, stopWords);
             for (String word : itemWords) {
                 Long metaID = metaIDs.get(i + "" + word);
                 if(metaID != null)
@@ -169,10 +183,18 @@ public class UserProfileBasedCoSimCBFPredictor extends GraphDBPredictor {
         TLongIterator itemMetaWords = itemMetaWordIDs.iterator();
         while(itemMetaWords.hasNext()){
             long word = itemMetaWords.next();
-            matches += userProfile.get(word);
+            double d = userProfile.get(word);
+            if(d > 0.0) {
+                prediction += d;
+                matches++;
+            }
         }
 
-        prediction = userRelDegree > 0 ? ((double) matches / userRelDegree) : 0.0;
+        if(method == 1) {
+            prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
+        }
+        else
+            prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
 
         return prediction;
     }

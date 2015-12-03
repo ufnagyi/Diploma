@@ -6,11 +6,11 @@ import org.neo4j.io.fs.FileUtils;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.nio.file.Files;
+import java.util.*;
 
 
 public class GraphDBBuilder {
@@ -23,8 +23,10 @@ public class GraphDBBuilder {
     private static final String VOD = "VodMenuDirect";
     private static final String act_dir_separator = "\f";
     private static final String vod_separator = "[\f/]";
+    private static HashSet<String> stopWords;
 
-    public static void buildGraphDBFromImpressDB(GraphDB graphDB, Database db, boolean deleteIfExists, boolean onlyUniqueEvents) throws IOException {
+    public static void buildGraphDBFromImpressDB(GraphDB graphDB, Database db, boolean deleteIfExists,
+                                                 boolean onlyUniqueEvents, String stopWordsFileName) throws IOException {
 
         if(graphDB.isInited())
             graphDB.shutDownDB();
@@ -38,6 +40,9 @@ public class GraphDBBuilder {
         if(graphDB.getDbFolder().exists() && deleteIfExists)
             FileUtils.deleteRecursively(graphDB.getDbFolder());
 
+//        //VOD Stoplist
+        stopWords = loadStopWordsFromFile(stopWordsFileName);
+
         try {
             batchInserter = BatchInserters.inserter(graphDB.getDbFolder().getAbsoluteFile());
 
@@ -50,7 +55,6 @@ public class GraphDBBuilder {
             }
 
             //Nodes:
-
 
             //Items
             insertNodesAndSaveGraphIDs(Labels.Item,getItemsFromDB());
@@ -129,7 +133,7 @@ public class GraphDBBuilder {
     private static ArrayList<Map<String, Object>> getKeyValuesFromDB(String keyValueKEY, String splitPattern, Labels l) {
         HashSet<String> keyValues = new HashSet<>();
         for (Database.Item i : dbExt.items(null)) {
-            keyValues.addAll(GraphDBBuilder.getUniqueItemMetaWordsByKey(dbExt, dbExt.getItemId(i.idx), keyValueKEY));
+            keyValues.addAll(GraphDBBuilder.getUniqueItemMetaWordsByKey(dbExt, dbExt.getItemId(i.idx), keyValueKEY, stopWords));
         }
         return createMapListFromSet(l,keyValues);
     }
@@ -191,7 +195,7 @@ public class GraphDBBuilder {
         HashMap<Object,Long> itemIDToIDPairs = IDToIDs.get(Labels.Item);
         for (Database.Item i : dbExt.items(null)) {
             int iID = dbExt.getItemId(i.idx);
-            HashSet<String> metas = GraphDBBuilder.getUniqueItemMetaWordsByKey(dbExt, iID, keyValueKEY);
+            HashSet<String> metas = GraphDBBuilder.getUniqueItemMetaWordsByKey(dbExt, iID, keyValueKEY, stopWords);
             long itemGraphDBID = itemIDToIDPairs.get(iID);
             for(String s : metas){
                 long metaGraphDBID = metaIDToIDPairs.get(s);
@@ -202,14 +206,14 @@ public class GraphDBBuilder {
         return metaRel;
     }
 
-    public static HashSet<String> getUniqueItemMetaWordsByKey(Database db, int iID, String key) {
+    public static HashSet<String> getUniqueItemMetaWordsByKey(Database db, int iID, String key, HashSet<String> stopWords) {
         ExtendedDatabase dbExt = (ExtendedDatabase) db;
         HashSet<String> itemMetaWords = new HashSet<>();
         String keyAll =  dbExt.getItemKeyValue(dbExt.getItemIndex(iID) , key);
         String key_value_separator = (key.equals("VodMenuDirect")) ? vod_separator : act_dir_separator;
         String[] values = keyAll.split(key_value_separator);
         for (String val : values) {
-            if (checkCondition(val,key))
+            if (checkCondition(val, stopWords))
                 itemMetaWords.add(val);
         }
         return itemMetaWords;
@@ -218,20 +222,25 @@ public class GraphDBBuilder {
     /**
      * Grafba toltes elott metaword ellenorzese
      * @param word Ellenorizendo metaword
-     * @param metaType Metaword tipusa: Actor, Director, VOD
      * @return
      */
-    public static boolean checkCondition(String word, String metaType) {
-        if (metaType.equals(actor)) {
-            if (!word.equals("") && !word.equals("NA") && !word.equals("na") && !word.equals("n/a") && !word.equals("N\\A") && !word.equals("N/A"))
-                return true;
-        } else if (metaType.equals(director)) {
-            if (!word.equals("") && !word.equals("NA") && !word.equals("na") && !word.equals("n/a") && !word.equals("N\\A") && !word.equals("N/A") && !word.equals("n/d"))
-                return true;
-        } else if (metaType.equals(VOD)) {
-            if (!word.equals("") && word.length() > 2)
-                return true;
+    public static boolean checkCondition(String word, HashSet<String> stopWords) {
+        if (!word.equals("") && word.length() > 2 && !stopWords.contains(word)){
+            return true;
         }
         return false;
+    }
+
+    public static HashSet<String> loadStopWordsFromFile(String stopWordsFileName) {
+        HashSet<String> stopWords = new HashSet<>();
+        try {
+            Scanner stopFile = new Scanner(new FileReader(stopWordsFileName));
+            while(stopFile.hasNext()){
+                stopWords.add(stopFile.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return stopWords;
     }
 }

@@ -1,27 +1,25 @@
-SimpleRecallMeasurement: 0,313478
-Method1: 2 (csak match-ek átlagolása)
-Method2: 1 (sima átlagolás)
-Futási idő: 16 perc
-CBF_SIM: suppAB > 4, actor, director, VOD
-
-CF + CBF_SIM kombináció
-
+SimpleRecallMeasurement: 0,186866
+CF suppAB > 1, CFSIM suppAB > 4
+Method: 2
+Súlyozás: 1,1,1
+Actor, Director, VOD
+Futási idő: 4 perc
 
 idx=0	support=2
 	eType=2	ts=2013-05-26 01:49:41	idx=15705	support=4061	ItemId: 32110c7fc619a7b4b138c4551a9ac177	VodMenuDirect: English/Featured Content/Free/CTV/Criminal MindsEnglish/TV Shows/CTV/Criminal Minds	iName=S.8 E.823/824 - Criminal Minds
 	eType=2	ts=2013-05-26 01:50:32	idx=7038	support=3003	ItemId: 9da0ab57a7721760f05b76929e32c715	VodMenuDirect: English/TV Shows/CTV/Criminal MindsEnglish/Featured Content/Free/CTV/Criminal Minds	iName=S.8 E.822 - Criminal Minds
 
 nRecommendations=10
-	1:	0,416667	idx=16075	support=0	ItemId: 83ba466671535bfbda434610eb7bd800	VodMenuDirect: English/Featured Content/Free/CTV/ArrowEnglish/TV Shows/CTV/Arrow	iName=Arrow S2 E07
-	2:	0,416667	idx=16004	support=0	ItemId: 392e5cc8acdfb71279a649ed157085ba	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E401
-	3:	0,416667	idx=16367	support=0	ItemId: 40241d8b08191d8fc9b09f4fff916beb	VodMenuDirect: English/Featured Content/Free/CTV/Law & Order: SVUEnglish/TV Shows/CTV/Law & Order: SVU	iName=Law & Order: SVU S15 E8
-	4:	0,416667	idx=16744	support=0	ItemId: 932f6ab950f3e4a71fe7680635041663	VodMenuDirect: English/Featured Content/Free/CTV/Saving HopeEnglish/TV Shows/CTV/Saving Hope	iName=Saving Hope S2 E7
-	5:	0,416667	idx=16395	support=0	ItemId: 44b8780a106f648b53610c8647999683	VodMenuDirect: English/Featured Content/Free/CTV/Saving HopeEnglish/TV Shows/CTV/Saving Hope	iName=Saving Hope S2 E9
-	6:	0,416667	idx=16419	support=0	ItemId: b4cebf8e330dd9ceec47913a1330b000	VodMenuDirect: English/Featured Content/Free/CTV/The MentalistEnglish/TV Shows/CTV/The Mentalist	iName=The Mentalist S6 E5
-	7:	0,416667	idx=16845	support=0	ItemId: 0f482b27107f686e4331ac4a971db52c	VodMenuDirect: English/Featured Content/Free/CTV/Canada AM WeekendEnglish/TV Shows/CTV/Canada AM Weekend	iName=Canada AM Weekend S41 E1130
-	8:	0,416667	idx=16469	support=0	ItemId: d2afbbf114017997cf4139a12e2c6bee	VodMenuDirect: English/Featured Content/Free/CTV/PlayedEnglish/TV Shows/CTV/Played	iName=Played S1 E3
-	9:	0,416667	idx=15944	support=0	ItemId: 3dc9cc3f7426f644df0b14e9cdfe3e08	VodMenuDirect: English/Featured Content/Free/CTV/The Ellen DeGeneres ShowEnglish/TV Shows/CTV/The Ellen DeGeneres Show	iName=The Ellen DeGeneres Show S11 E58
-	10:	0,416667	idx=15965	support=0	ItemId: f1556488213fa44bbc30e73feef51081	VodMenuDirect: English/Featured Content/Free/CTV/The ViewEnglish/TV Shows/CTV/The View	iName=The View S17 E1127
+	1:	0,771517	idx=9978	support=0	ItemId: 0a7d8dae7d66061e8f5512abff8121bd	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E56
+	2:	0,771517	idx=8854	support=0	ItemId: 2a54c5da88cd95069851098a19ba010f	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E17
+	3:	0,771517	idx=15080	support=0	ItemId: ab9224e76cd80f4bcbd8c740f0f62835	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E69
+	4:	0,771517	idx=9122	support=0	ItemId: dae900d65b542a34c6a5ba8b4f4c2ef6	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E58
+	5:	0,771517	idx=12183	support=0	ItemId: 0fcb41b76babe022db4c494c7e21bc0d	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E57
+	6:	0,771517	idx=9976	support=0	ItemId: 0f697d3aeb3d9114b2bc3a4f78ad00e2	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E33
+	7:	0,771517	idx=12554	support=0	ItemId: e5cb4c0c9aca08d1dc408c408d49885b	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E59
+	8:	0,771517	idx=11463	support=0	ItemId: f337a0bb05e2dee27eec51870e57541b	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E47
+	9:	0,771517	idx=3612	support=0	ItemId: 209acd89501157d57c0726f80e0441ba	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E15B
+	10:	0,771517	idx=5471	support=0	ItemId: 6cba77bc3eed2d6dd17e5098cfc2f3b9	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E60
 
 
 idx=1	support=3
@@ -30,16 +28,16 @@ idx=1	support=3
 	eType=2	ts=2013-11-08 20:44:33	idx=14400	support=2950	ItemId: ebd8cfcc5ea11ceaf8164f9affef7f60	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 01
 
 nRecommendations=10
-	1:	0,597658	idx=15631	support=1317	ItemId: 29e4a1561142fb563d1e9e8c6ecb991c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 04
-	2:	0,578680	idx=8468	support=805	ItemId: 60b83c9bebbeadbb8b58486eeee17685	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 09
-	3:	0,566719	idx=15457	support=610	ItemId: e278931db9d849d9c104795ac66dd134	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 19
-	4:	0,566344	idx=16940	support=581	ItemId: c12323d6009ad286eb57984189c2a337	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 18
-	5:	0,564308	idx=14750	support=610	ItemId: 95e0271810c1ebfff26f3df5d658d3c1	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 21
-	6:	0,560043	idx=14848	support=546	ItemId: 1ab16921b727d81b1b7d01ccf3e33565	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 25
-	7:	0,553476	idx=15116	support=451	ItemId: 837e4c55274d7cf19d375ace9d47450b	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 30
-	8:	0,547979	idx=15759	support=432	ItemId: bb7f615a42550ab6fd7d51ad7cb951dd	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 35
-	9:	0,438865	idx=5444	support=1243	ItemId: 2369edf5a2ce549924f2277b97ae94e0	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 05
-	10:	0,434746	idx=2522	support=1575	ItemId: e902df24f53864856836f9c3d84f2729	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 07
+	1:	0,829156	idx=4801	support=0	ItemId: 6d0abcb63fc13b8b5bcd72b964bc47c1	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 40
+	2:	0,804400	idx=3399	support=0	ItemId: 9e98c8606964dde9d6ece3fa2e5762ac	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 41
+	3:	0,804400	idx=8680	support=0	ItemId: 2d5ee732e27d04c047c45daa712b0e92	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 47
+	4:	0,804400	idx=12919	support=0	ItemId: 2f4cf406aef7d67326a3292dec0684dc	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 45
+	5:	0,804400	idx=10366	support=0	ItemId: 41bdac4d71a9dad402cc2724cd24d4c2	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 42
+	6:	0,804400	idx=13087	support=0	ItemId: 9fb6be56a92a511bd4fef4cb6c096cb1	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 48
+	7:	0,781736	idx=4408	support=0	ItemId: 289ce99e3c4a9f2b2053dd1cf17625f3	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 46
+	8:	0,760886	idx=2727	support=0	ItemId: f1bc684ec7cbf026027edc1b5ac7eca8	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 43
+	9:	0,741620	idx=7368	support=0	ItemId: be6eb038d99ad79bf1662ec3416b104b	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 44
+	10:	0,603023	idx=14486	support=0	ItemId: 9b563be969d938618645be9a5aa0995b	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 11
 
 
 idx=2	support=0
@@ -66,16 +64,16 @@ idx=3	support=6
 	eType=2	ts=2013-05-11 18:29:47	idx=1132	support=406	ItemId: 2f45f9b07b3890ee7704be55b6d6965d	VodMenuDirect: English/Movies/By Genre/ComedyEnglish/Movies/Alphabetical/0-9	iName=17 Again
 
 nRecommendations=10
-	1:	0,357143	idx=63	support=36	ItemId: 9a4a15096f642dbe29a2ba4c894af364	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Documentary & Biography	iName=The Take
-	2:	0,340519	idx=10428	support=91	ItemId: 0b115a16a18450af3a241b0d10726ca5	VodMenuDirect: English/Movies/By Genre/Documentary & BiographyEnglish/Movies/Alphabetical/C-F	iName=The FIFA 2006 World Cup Film: The Grand Finale
-	3:	0,333333	idx=436	support=0	ItemId: ab7a05a18fd7f69c151654d2f0c63414	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Action & Adventure	iName=Marvel's Iron Man & Hulk: Heroes United
-	4:	0,323270	idx=12287	support=304	ItemId: 2f27ae657b7b38ff96f4a4f72ecb3f42	VodMenuDirect: English/Movies/By Genre/Family & KidsEnglish/Movies/Alphabetical/S-ZEnglish/Featured Content/Last Chance	iName=Scooby-Doo! Adventures: The Mystery Map
-	5:	0,322312	idx=15306	support=189	ItemId: c03cbe59e1b42d7805480b4f397e9515	VodMenuDirect: English/Movies/By Genre/Action & AdventureEnglish/Movies/Alphabetical/A-BEnglish/Featured Content/Last Chance	iName=Billy The Kid
-	6:	0,321313	idx=667	support=62	ItemId: 58ffe4bef7332bd7939e9dd718a7809d	VodMenuDirect: English/Movies/By Genre/Documentary & BiographyEnglish/Movies/Alphabetical/G-L	iName=An Inconvenient Truth
-	7:	0,319811	idx=4469	support=24	ItemId: 99f883dc9919c2f5fda2cfabf4f167a5	VodMenuDirect: English/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Documentary & Biography	iName=Let It Ride: The Craig Kelly Story
-	8:	0,318615	idx=9162	support=465	ItemId: 9ad6ab9c356275a282f8ca3865fe9f12	VodMenuDirect: English/Movies/By Genre/Action & AdventureEnglish/Movies/Alphabetical/G-LEnglish/Featured Content/Last Chance	iName=Killing Season
-	9:	0,316768	idx=3722	support=31	ItemId: d7977d50906e6524500fdc2a2f25b6ce	VodMenuDirect: English/Movies/Alphabetical/M-REnglish/Movies/By Genre/Family & Kids	iName=The Nutty Professor - Facing The Fear
-	10:	0,314530	idx=1966	support=107	ItemId: a1e707753be605340a0228b89555715f	VodMenuDirect: English/Movies/By Genre/ComedyEnglish/Movies/Alphabetical/C-F	iName=Eddie Murphy Raw
+	1:	0,646710	idx=436	support=0	ItemId: ab7a05a18fd7f69c151654d2f0c63414	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Action & Adventure	iName=Marvel's Iron Man & Hulk: Heroes United
+	2:	0,605323	idx=8878	support=0	ItemId: 77b345efb909e682074cfdc8814e5dc3	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Documentary & BiographyEnglish/Featured Content/Top Movies	iName=Jobs
+	3:	0,588802	idx=16497	support=0	ItemId: 8afc61541ba16a0c506a800911a81955	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Recently Added	iName=Strawberry Shortcake:Jammin
+	4:	0,586230	idx=9308	support=0	ItemId: 400d333aeb411e82bcffc408fb150858	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=Snow Queen
+	5:	0,584798	idx=11670	support=0	ItemId: 85fa2dfa216162a9617998919b5a69a7	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Action & AdventureEnglish/Featured Content/Top Movies	iName=Getaway
+	6:	0,584320	idx=11813	support=0	ItemId: 82c3e857a729a5e2bfedc914f1991b3b	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/M-REnglish/Movies/By Genre/Thriller & SuspenseEnglish/Featured Content/Top Movies	iName=Paranoia
+	7:	0,560067	idx=16786	support=0	ItemId: d3e240df3e63bb80f7bf2e0c87f5fc5a	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Musicals	iName=Led Zeppelin: Celebration Day
+	8:	0,560067	idx=2915	support=0	ItemId: 6f00b1f42379d923560ab5007f9b922b	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Thriller & Suspense	iName=Get Lucky
+	9:	0,543973	idx=16488	support=0	ItemId: 207029f14c8cf941117b074d5819fec3	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/M-REnglish/Movies/By Genre/Action & AdventureEnglish/Featured Content/Top Movies	iName=Red 2
+	10:	0,535152	idx=9017	support=0	ItemId: c53111af7628719c56deccfc0895452f	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=The Smurfs 2
 
 
 idx=4	support=0
@@ -103,16 +101,16 @@ idx=5	support=7
 	eType=2	ts=2013-06-25 06:41:38	idx=13906	support=635	ItemId: 34118c846b93d8f4d239096156c97dfa	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Par genre/DrameFrançais/Films/Par genre/Thriller et suspenseFrançais/Films/Alphabétique/C-F	iName=Éden
 
 nRecommendations=10
-	1:	0,397431	idx=15967	support=389	ItemId: 0fbb17e93e9364fc28da7917f735eee6	VodMenuDirect: Français/Films/Par genre/DrameFrançais/En vedette/NouveautésFrançais/Films/Alphabétique/C-F	iName=L'Empereur
-	2:	0,382654	idx=14867	support=519	ItemId: 43be3998d164be5d900e83aa2f2a0823	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Drame	iName=On ne cédera pas
-	3:	0,381076	idx=15041	support=3970	ItemId: ae64033f71a1e07e4f8e868b7bbf120b	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Par genre/Action et aventure	iName=World War Z, v.fr.
-	4:	0,376714	idx=15084	support=118	ItemId: 1b00548b2b4e8685d9ed461b403d35e8	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/S-ZFrançais/Films/Par genre/Drame	iName=Seul Dieu pardonne
-	5:	0,371036	idx=14892	support=1060	ItemId: cf16f69fdafa1b6fbff29cf7d7b6d5e4	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Par genre/Thriller et suspenseFrançais/Films/Alphabétique/S-ZFrançais/En vedette/Dernière chance	iName=Sous surveillance
-	6:	0,370575	idx=14637	support=2420	ItemId: 4a864e4ed0e871a45105c28cfc677355	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/ComédieFrançais/En vedette/Contenu Populaire	iName=Un Duo infernal
-	7:	0,367514	idx=14886	support=487	ItemId: a8bb22086ca73dd0183bd13df443998c	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Par genre/Famille et enfants	iName=Spirit : l'étalon des plaines
-	8:	0,366368	idx=15678	support=212	ItemId: 0f681c8f2d9c74111d5c11fba26dca0c	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Par genre/Action et aventure	iName=Tireur d'élite
-	9:	0,365945	idx=13815	support=21	ItemId: 24ee1a82cb7df6e3d3157ab8784250f7	VodMenuDirect: Français/Films/Par genre/Documentaire et biographieFrançais/Films/Alphabétique/S-Z	iName=Les Voleurs d'enfances
-	10:	0,365420	idx=16021	support=255	ItemId: f76401f70eb8fd3ac2afcdf88aebcfa3	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Par genre/Famille et enfants	iName=Sinbad: la légende des sept mers
+	1:	0,637456	idx=1739	support=0	ItemId: 4bd5298afe35a9c1dd39c0a6c16ad8bc	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/G-LFrançais/Films/Par genre/Action et aventure	iName=Iron Man et Hulk: Héros unis
+	2:	0,632884	idx=12608	support=0	ItemId: b798d1ad4f3dc6694de7fdc21a0fbfd8	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/A-BFrançais/Films/Par genre/DrameFrançais/Films/Par genre/Films d'ailleurs	iName=Adore, v.fr.
+	3:	0,614672	idx=832	support=0	ItemId: ee34a01b19ad411c1d18bf85d688ba95	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Thriller et suspense	iName=Fin de partie
+	4:	0,610258	idx=9455	support=0	ItemId: d7803a29de5effbaadc015fbd1d68753	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/A-BFrançais/Films/Par genre/Famille et enfantsFrançais/En vedette/Contenu Populaire	iName=Les Avions
+	5:	0,610258	idx=11332	support=0	ItemId: 25dde3b7bab197753615257a1773a89c	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/A-BFrançais/Films/Par genre/Famille et enfants	iName=Boule et Bill
+	6:	0,598634	idx=10664	support=0	ItemId: f6ecdec645f72fc82dc1b3d67f5bb8ff	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Famille et enfants	iName=Cody le Robosapien
+	7:	0,597614	idx=12880	support=0	ItemId: c87776396d6004777174a3a79894d42a	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Tom et Jerry: Paws for a Holiday
+	8:	0,590558	idx=1018	support=0	ItemId: 78c9dd3fd9a31a469641f7269e62def9	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Horreur	iName=Les Désosseurs
+	9:	0,589767	idx=16063	support=0	ItemId: c814f37455d7fb11e83e13c2c70bfe73	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Comédie	iName=Une Drôle de prof
+	10:	0,587209	idx=6614	support=0	ItemId: af7d3f18783c9481a038af08262083e8	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/G-LFrançais/Films/Par genre/DrameFrançais/Films/Par genre/Films Québécois	iName=Louis Cyr : L'Homme le plus fort du monde
 
 
 idx=6	support=23
@@ -141,16 +139,16 @@ idx=6	support=23
 	eType=2	ts=2013-11-09 03:39:28	idx=15759	support=432	ItemId: bb7f615a42550ab6fd7d51ad7cb951dd	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/30 vies/Saison 4	iName=30 vies 4: Ép. 35
 
 nRecommendations=10
-	1:	0,508132	idx=661	support=2690	ItemId: 470bdb1a30bc972aaa1078cac02da29c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 05
-	2:	0,500125	idx=9037	support=2261	ItemId: 62181a76b5a0ae59b4dd4e1c4fa1931c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 06
-	3:	0,498858	idx=1983	support=3061	ItemId: 8492b23a6bd93e6cb6af838199bb8e1d	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 03
-	4:	0,493832	idx=11823	support=2703	ItemId: 018555062a457d407b591d6f91580f82	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 04
-	5:	0,490949	idx=7330	support=3544	ItemId: b4cbaff3a75b03d3d2a94a75e9da534c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 02
-	6:	0,487198	idx=10351	support=5251	ItemId: 097aa6917347770a6e7fd2f0fed36cec	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 01
-	7:	0,486930	idx=12997	support=774	ItemId: 81ef51c94bb2c315558186dfce380a92	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 09
-	8:	0,476720	idx=14148	support=1075	ItemId: e854f38864154a2f7bd70f944d19499d	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 08
-	9:	0,472242	idx=9916	support=1344	ItemId: 7de51a5ad6f3b4cee15ba5ef048fe228	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 07
-	10:	0,429485	idx=15495	support=2535	ItemId: 15cf88894a88405150aa1417bf04433c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les Parent/Saison 6Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les Parent/Saison 6	iName=Les Parent 6: Ép. 01
+	1:	0,771517	idx=15351	support=0	ItemId: a8f496ba31d62ad8cd7160f7175382c7	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Trucs & cieFrançais/Émissions de télé/V sur demande/Trucs & cie	iName=Trucs & cie S3 E17
+	2:	0,754142	idx=14486	support=0	ItemId: 9b563be969d938618645be9a5aa0995b	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 11
+	3:	0,754142	idx=240	support=0	ItemId: ba2a4afa3b3233d5417440bfa09e9d87	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 12
+	4:	0,714286	idx=10212	support=0	ItemId: d98abfb8489c57d8c612668e2add6f9f	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Un souper presque parfait/Saison 5Français/Émissions de télé/V sur demande/Un souper presque parfait/Saison 5	iName=Un souper presque parfait S5 E51
+	5:	0,714286	idx=12164	support=0	ItemId: f2959da7d7ccb246ca8f52875c37baf0	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Les détestables/Saison 3Français/Émissions de télé/V sur demande/Les détestables/Saison 3	iName=Les détestables S3 E11
+	6:	0,714286	idx=12319	support=0	ItemId: 7deab4b58ca2cef7717e56f4c9af0b3e	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/La Guerre des clans/Saison 5Français/Émissions de télé/V sur demande/La Guerre des clans/Saison 5	iName=La Guerre des clans S5 E54
+	7:	0,714286	idx=10578	support=0	ItemId: 3d82525cb4ed0127eb4e32dd9ebd0292	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/RPM/Saison 15Français/Émissions de télé/V sur demande/RPM/Saison 15	iName=RPM S15 E9
+	8:	0,714286	idx=10980	support=0	ItemId: d32f94acece471cdcfc4cbfd7dc0fbe9	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Atomes Crochus/Saison 5Français/Émissions de télé/V sur demande/Atomes Crochus/Saison 5	iName=Atomes Crochus S5 E55
+	9:	0,714286	idx=14094	support=0	ItemId: 3bfbfc5d75758ced51a99549ddefc024	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Un souper presque parfait/Saison 5Français/Émissions de télé/V sur demande/Un souper presque parfait/Saison 5	iName=Un souper presque parfait S5 E55
+	10:	0,714286	idx=10613	support=0	ItemId: dcd08c266c5df4611957cb8842f047f8	VodMenuDirect: Français/En vedette/Gratuités/V sur demande/Le Mentaliste/Saison 5Français/Émissions de télé/V sur demande/Le Mentaliste/Saison 5	iName=Le Mentaliste S5 E11
 
 
 idx=7	support=10
@@ -166,16 +164,16 @@ idx=7	support=10
 	eType=2	ts=2013-11-14 23:39:07	idx=3803	support=507	ItemId: 75ed0ffd45a00dfa862277e571c965c4	VodMenuDirect: English/Featured Content/Free/Global/The BlacklistEnglish/TV Shows/Global/The Blacklist	iName=S.1 E.8 - The Blacklist
 
 nRecommendations=10
-	1:	0,482537	idx=3803	support=507	ItemId: 75ed0ffd45a00dfa862277e571c965c4	VodMenuDirect: English/Featured Content/Free/Global/The BlacklistEnglish/TV Shows/Global/The Blacklist	iName=S.1 E.8 - The Blacklist
-	2:	0,444444	idx=9143	support=0	ItemId: 0cc8925068c9a9a3c8d9314a6c9361c6	VodMenuDirect: English/Featured Content/Free/Global/The BlacklistEnglish/TV Shows/Global/The Blacklist	iName=S.1 E.9 - The Blacklist
-	3:	0,428571	idx=15658	support=0	ItemId: dec7f6989b7f4a7058d55b7909926fe2	VodMenuDirect: English/Featured Content/Free/CTV/The GoldbergsEnglish/TV Shows/CTV/The Goldbergs	iName=The Goldbergs S1 E10
-	4:	0,416667	idx=16419	support=0	ItemId: b4cebf8e330dd9ceec47913a1330b000	VodMenuDirect: English/Featured Content/Free/CTV/The MentalistEnglish/TV Shows/CTV/The Mentalist	iName=The Mentalist S6 E5
-	5:	0,416667	idx=15080	support=0	ItemId: ab9224e76cd80f4bcbd8c740f0f62835	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E69
-	6:	0,416667	idx=16845	support=0	ItemId: 0f482b27107f686e4331ac4a971db52c	VodMenuDirect: English/Featured Content/Free/CTV/Canada AM WeekendEnglish/TV Shows/CTV/Canada AM Weekend	iName=Canada AM Weekend S41 E1130
-	7:	0,416667	idx=16744	support=0	ItemId: 932f6ab950f3e4a71fe7680635041663	VodMenuDirect: English/Featured Content/Free/CTV/Saving HopeEnglish/TV Shows/CTV/Saving Hope	iName=Saving Hope S2 E7
-	8:	0,416667	idx=16469	support=0	ItemId: d2afbbf114017997cf4139a12e2c6bee	VodMenuDirect: English/Featured Content/Free/CTV/PlayedEnglish/TV Shows/CTV/Played	iName=Played S1 E3
-	9:	0,416667	idx=16367	support=0	ItemId: 40241d8b08191d8fc9b09f4fff916beb	VodMenuDirect: English/Featured Content/Free/CTV/Law & Order: SVUEnglish/TV Shows/CTV/Law & Order: SVU	iName=Law & Order: SVU S15 E8
-	10:	0,416667	idx=16395	support=0	ItemId: 44b8780a106f648b53610c8647999683	VodMenuDirect: English/Featured Content/Free/CTV/Saving HopeEnglish/TV Shows/CTV/Saving Hope	iName=Saving Hope S2 E9
+	1:	0,877664	idx=9143	support=0	ItemId: 0cc8925068c9a9a3c8d9314a6c9361c6	VodMenuDirect: English/Featured Content/Free/Global/The BlacklistEnglish/TV Shows/Global/The Blacklist	iName=S.1 E.9 - The Blacklist
+	2:	0,771517	idx=9122	support=0	ItemId: dae900d65b542a34c6a5ba8b4f4c2ef6	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E58
+	3:	0,771517	idx=11463	support=0	ItemId: f337a0bb05e2dee27eec51870e57541b	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E47
+	4:	0,771517	idx=9976	support=0	ItemId: 0f697d3aeb3d9114b2bc3a4f78ad00e2	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E33
+	5:	0,771517	idx=12554	support=0	ItemId: e5cb4c0c9aca08d1dc408c408d49885b	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E59
+	6:	0,771517	idx=15080	support=0	ItemId: ab9224e76cd80f4bcbd8c740f0f62835	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E69
+	7:	0,771517	idx=9978	support=0	ItemId: 0a7d8dae7d66061e8f5512abff8121bd	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E56
+	8:	0,771517	idx=12183	support=0	ItemId: 0fcb41b76babe022db4c494c7e21bc0d	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E57
+	9:	0,771517	idx=5471	support=0	ItemId: 6cba77bc3eed2d6dd17e5098cfc2f3b9	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E60
+	10:	0,771517	idx=8854	support=0	ItemId: 2a54c5da88cd95069851098a19ba010f	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E17
 
 
 idx=8	support=136
@@ -317,16 +315,16 @@ idx=8	support=136
 	eType=2	ts=2013-05-27 02:20:19	idx=3311	support=843	ItemId: b0f43ed5c4cea82b0606917a0152d393	VodMenuDirect: English/TV Shows/City/RevolutionEnglish/Featured Content/Free/City/Revolution	iName=S.1 E.18 - Revolution
 
 nRecommendations=10
-	1:	0,441165	idx=1875	support=1705	ItemId: 5f043b5dbc2efd5d59697610daf45a89	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/By Genre/DramaEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Last Chance	iName=The Company You Keep
-	2:	0,440566	idx=14079	support=320	ItemId: 96a81d6f22a87683f7dd4829c612ff58	VodMenuDirect: English/Movies/By Genre/Thriller & SuspenseEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Last Chance	iName=Compulsion
-	3:	0,440370	idx=11385	support=3035	ItemId: 7bfcbfde0d0e90ba4faa7de0ec734364	VodMenuDirect: English/Featured Content/Last ChanceEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Top Movies	iName=Epic
-	4:	0,439773	idx=13558	support=498	ItemId: bed194e9a266eaafb6e336edee380750	VodMenuDirect: English/Movies/By Genre/DramaEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Last Chance	iName=Emperor
-	5:	0,438843	idx=7892	support=587	ItemId: fa6e0ebbed9fc69423007e3eb4c98640	VodMenuDirect: English/Movies/By Genre/Family & KidsEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Last Chance	iName=Chihuahua Too!
-	6:	0,429646	idx=16717	support=176	ItemId: 0bb716edad877bb503f196774c2de6db	VodMenuDirect: English/Movies/By Genre/Action & AdventureEnglish/Movies/Alphabetical/C-FEnglish/Featured Content/Staff Picks/Jimmy's Picks	iName=Cloverfield
-	7:	0,429494	idx=16022	support=254	ItemId: b21e051a53618d76db8dca5468cd625d	VodMenuDirect: English/Movies/By Genre/Action & AdventureEnglish/Movies/Alphabetical/G-LEnglish/Featured Content/Last Chance	iName=Kon Tiki
-	8:	0,426724	idx=16419	support=0	ItemId: b4cebf8e330dd9ceec47913a1330b000	VodMenuDirect: English/Featured Content/Free/CTV/The MentalistEnglish/TV Shows/CTV/The Mentalist	iName=The Mentalist S6 E5
-	9:	0,425287	idx=16367	support=0	ItemId: 40241d8b08191d8fc9b09f4fff916beb	VodMenuDirect: English/Featured Content/Free/CTV/Law & Order: SVUEnglish/TV Shows/CTV/Law & Order: SVU	iName=Law & Order: SVU S15 E8
-	10:	0,424046	idx=16777	support=13	ItemId: a0db0b441d8a18a181baf35c1d05dcbc	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Drama	iName=The Thomas Crown Affair (1968)
+	1:	0,771517	idx=9978	support=0	ItemId: 0a7d8dae7d66061e8f5512abff8121bd	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E56
+	2:	0,771517	idx=9122	support=0	ItemId: dae900d65b542a34c6a5ba8b4f4c2ef6	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E58
+	3:	0,771517	idx=9976	support=0	ItemId: 0f697d3aeb3d9114b2bc3a4f78ad00e2	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E33
+	4:	0,771517	idx=8854	support=0	ItemId: 2a54c5da88cd95069851098a19ba010f	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E17
+	5:	0,771517	idx=15080	support=0	ItemId: ab9224e76cd80f4bcbd8c740f0f62835	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E69
+	6:	0,771517	idx=12554	support=0	ItemId: e5cb4c0c9aca08d1dc408c408d49885b	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E59
+	7:	0,771517	idx=12183	support=0	ItemId: 0fcb41b76babe022db4c494c7e21bc0d	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E57
+	8:	0,771517	idx=11463	support=0	ItemId: f337a0bb05e2dee27eec51870e57541b	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E47
+	9:	0,771517	idx=3612	support=0	ItemId: 209acd89501157d57c0726f80e0441ba	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E15B
+	10:	0,771517	idx=5471	support=0	ItemId: 6cba77bc3eed2d6dd17e5098cfc2f3b9	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E60
 
 
 idx=9	support=32
@@ -364,32 +362,32 @@ idx=9	support=32
 	eType=2	ts=2013-05-27 01:23:27	idx=8977	support=335	ItemId: c618192b55e506aee0288dbc4267f387	VodMenuDirect: English/Movies/Alphabetical/G-LEnglish/Movies/By Genre/Action & Adventure	iName=Jaws
 
 nRecommendations=10
-	1:	0,458333	idx=14606	support=0	ItemId: 57ea8dde257bdb8af81b04b697da1b85	VodMenuDirect: English/Featured Content/Free/CTV/Hot In ClevelandEnglish/TV Shows/CTV/Hot In Cleveland	iName=Hot In Cleveland S1 E8
-	2:	0,433333	idx=16829	support=0	ItemId: ff4a3e6c204c29ae1dbb2f0232d46955	VodMenuDirect: English/Featured Content/Free/Global/American DadEnglish/TV Shows/Global/American Dad	iName=S.9 E.5 - American Dad
-	3:	0,433333	idx=10784	support=0	ItemId: 9425d10ce3b79818ff9b4df27ea135c3	VodMenuDirect: English/Featured Content/Free/Global/Family GuyEnglish/TV Shows/Global/Family Guy	iName=S.12 E.6 - Family Guy
-	4:	0,422757	idx=10428	support=91	ItemId: 0b115a16a18450af3a241b0d10726ca5	VodMenuDirect: English/Movies/By Genre/Documentary & BiographyEnglish/Movies/Alphabetical/C-F	iName=The FIFA 2006 World Cup Film: The Grand Finale
-	5:	0,421909	idx=15938	support=656	ItemId: 2bb74b3a008030a4ba221262c6930387	VodMenuDirect: English/Featured Content/Free/Global/Febreze Sleep NetworkEnglish/TV Shows/Global/Febreze Sleep Network	iName=E.2 - Febreze Sleep Network
-	6:	0,421601	idx=15060	support=927	ItemId: 232066eeb47da23bc76ab45cbe0d7cfb	VodMenuDirect: English/Featured Content/Free/City/ScandalEnglish/TV Shows/City/Scandal	iName=S.3 E.06 - Scandal
-	7:	0,420654	idx=16661	support=501	ItemId: ddbc18d2d3ed4f449cb62da6b97c4bff	VodMenuDirect: English/Featured Content/Free/City/Package DealEnglish/TV Shows/City/Package Deal	iName=S.1 E.06 - Package Deal
-	8:	0,419226	idx=15400	support=96	ItemId: 4ce169f8840ce4e3f756c34d74ff7615	VodMenuDirect: English/Featured Content/Free/City/Meet The FamilyEnglish/TV Shows/City/Meet The Family	iName=S.1 E.06 - Meet The Family
-	9:	0,416667	idx=13249	support=0	ItemId: 2265b011379d89fe763dac9126948f41	VodMenuDirect: English/Featured Content/Free/Global/The West BlockEnglish/TV Shows/Global/The West Block	iName=S.3 E.12 - The West Block
-	10:	0,416667	idx=11905	support=0	ItemId: 2c923dd0643a3099120a3a4da32c4147	VodMenuDirect: English/Featured Content/Free/Global/Young & RestlessEnglish/TV Shows/Global/Young & Restless	iName=Nov.29.2013 - Y and R
+	1:	0,771517	idx=15080	support=0	ItemId: ab9224e76cd80f4bcbd8c740f0f62835	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E69
+	2:	0,771517	idx=8854	support=0	ItemId: 2a54c5da88cd95069851098a19ba010f	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E17
+	3:	0,771517	idx=11463	support=0	ItemId: f337a0bb05e2dee27eec51870e57541b	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E47
+	4:	0,771517	idx=9978	support=0	ItemId: 0a7d8dae7d66061e8f5512abff8121bd	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E56
+	5:	0,771517	idx=9976	support=0	ItemId: 0f697d3aeb3d9114b2bc3a4f78ad00e2	VodMenuDirect: English/Featured Content/Free/CTV/Dr. PhilEnglish/TV Shows/CTV/Dr. Phil	iName=Dr. Phil S12 E33
+	6:	0,771517	idx=9122	support=0	ItemId: dae900d65b542a34c6a5ba8b4f4c2ef6	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E58
+	7:	0,771517	idx=12554	support=0	ItemId: e5cb4c0c9aca08d1dc408c408d49885b	VodMenuDirect: English/Featured Content/Free/CTV/BethennyEnglish/TV Shows/CTV/Bethenny	iName=Bethenny S1 E59
+	8:	0,771517	idx=12183	support=0	ItemId: 0fcb41b76babe022db4c494c7e21bc0d	VodMenuDirect: English/Featured Content/Free/CTV/The Dr. Oz ShowEnglish/TV Shows/CTV/The Dr. Oz Show	iName=The Dr. Oz Show S5 E57
+	9:	0,771517	idx=3612	support=0	ItemId: 209acd89501157d57c0726f80e0441ba	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E15B
+	10:	0,771517	idx=5471	support=0	ItemId: 6cba77bc3eed2d6dd17e5098cfc2f3b9	VodMenuDirect: English/Featured Content/Free/CTV/The Marilyn Denis ShowEnglish/TV Shows/CTV/The Marilyn Denis Show	iName=The Marilyn Denis Show S4 E60
 
 
 idx=10	support=1
 	eType=2	ts=2013-07-16 19:24:39	idx=5372	support=1683	ItemId: f7ec6ce1e6a20b6ef688730a68ba7229	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Par genre/Famille et enfantsFrançais/Films/Alphabétique/M-R	iName=Le Réveil des gardiens
 
 nRecommendations=10
-	1:	0,500000	idx=8296	support=6	ItemId: 2abc39a449d9a49aefae3ff4db8b2e0a	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Famille et enfantsFrançais/Films/Par genre/Films d'ailleurs	iName=Petit Renne, Grand Héros
-	2:	0,497193	idx=15076	support=2565	ItemId: 0260e9354611ffef8f8c4d7456b756ed	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Famille et enfantsFrançais/En vedette/Contenu Populaire	iName=Les Croods
-	3:	0,481842	idx=5962	support=1462	ItemId: c54772f61b57825d69181baaec9ef2a6	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/S-ZFrançais/Films/Par genre/Famille et enfantsFrançais/En vedette/Contenu populaire	iName=L'Université des monstres
-	4:	0,477066	idx=12874	support=776	ItemId: eb75da1a8c92c07770c0e94ab65a1fab	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/S-ZFrançais/Films/Par genre/Famille et enfants	iName=Super Buddies, v.fr.
-	5:	0,467351	idx=9285	support=1381	ItemId: dd086c6f8bd542cc890775e12bb471ce	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Science-fiction et fantastiqueFrançais/En vedette/Contenu populaire	iName=Rives du Pacifique
-	6:	0,461504	idx=7615	support=219	ItemId: ac98ef470dd3b14452eddaccb502c1fa	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Famille et enfantsFrançais/Films/Par genre/Films d'ailleurs	iName=Freddy tête de crapaud
-	7:	0,455502	idx=14867	support=519	ItemId: 43be3998d164be5d900e83aa2f2a0823	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Drame	iName=On ne cédera pas
-	8:	0,452296	idx=12533	support=217	ItemId: 73b3b5a5ca9cbfa09f24c2cbc682deac	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Action et aventure	iName=Le Projet dinosaure
-	9:	0,450889	idx=5792	support=1657	ItemId: ff67695ce0be09d2bdae88254267ecde	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/HorreurFrançais/Films/Par genre/Thriller et suspenseFrançais/En vedette/Contenu Populaire	iName=La Purge
-	10:	0,448660	idx=6228	support=1042	ItemId: db568b5d08bda255ff34f944d50932fc	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Action et aventureFrançais/En vedette/Contenu populaire	iName=Maison blanche en Péril
+	1:	0,746203	idx=9455	support=0	ItemId: d7803a29de5effbaadc015fbd1d68753	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/A-BFrançais/Films/Par genre/Famille et enfantsFrançais/En vedette/Contenu Populaire	iName=Les Avions
+	2:	0,746203	idx=11332	support=0	ItemId: 25dde3b7bab197753615257a1773a89c	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/A-BFrançais/Films/Par genre/Famille et enfants	iName=Boule et Bill
+	3:	0,714435	idx=10664	support=0	ItemId: f6ecdec645f72fc82dc1b3d67f5bb8ff	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/C-FFrançais/Films/Par genre/Famille et enfants	iName=Cody le Robosapien
+	4:	0,707107	idx=1739	support=0	ItemId: 4bd5298afe35a9c1dd39c0a6c16ad8bc	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/G-LFrançais/Films/Par genre/Action et aventure	iName=Iron Man et Hulk: Héros unis
+	5:	0,686406	idx=73	support=0	ItemId: f4d23e806608ed9d56b72ad4b61f4f79	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Action et aventureFrançais/En vedette/Contenu Populaire	iName=Quitte ou Double
+	6:	0,686406	idx=1219	support=0	ItemId: e9262a4ec6ee6517a894f37bd446f161	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Horreur	iName=Morts avant l'aube
+	7:	0,670820	idx=11853	support=0	ItemId: d0099237bd04dd43401cc3f784f5c5ac	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Royaume de glace: Les aventuriers de la poudre magique
+	8:	0,670820	idx=1309	support=0	ItemId: d4e46b93e76f3c8a9cbd5ca6a2bf3b10	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Rox et Rouky 2
+	9:	0,639010	idx=900	support=0	ItemId: 99295ccee174e29c0dd29a5af031681f	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Action et aventure	iName=R.E.D 2, v.fr.
+	10:	0,639010	idx=11915	support=0	ItemId: e0c380fb50906d7475295bd6d37f25de	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Alphabétique/M-RFrançais/Films/Par genre/Thriller et suspenseFrançais/En vedette/Contenu Populaire	iName=Paranoia, v.fr.
 
 
 idx=11	support=18
@@ -413,32 +411,32 @@ idx=11	support=18
 	eType=2	ts=2013-10-26 23:29:24	idx=14892	support=1060	ItemId: cf16f69fdafa1b6fbff29cf7d7b6d5e4	VodMenuDirect: Français/En vedette/NouveautésFrançais/Films/Par genre/Thriller et suspenseFrançais/Films/Alphabétique/S-ZFrançais/En vedette/Dernière chance	iName=Sous surveillance
 
 nRecommendations=10
-	1:	0,426859	idx=10351	support=5251	ItemId: 097aa6917347770a6e7fd2f0fed36cec	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 01
-	2:	0,425914	idx=16780	support=3989	ItemId: c48718259d36d354b2510564976c560d	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/La vie parfaite/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/La vie parfaite/Saison 1	iName=La vie parfaite 1: Ép. 01
-	3:	0,425368	idx=7330	support=3544	ItemId: b4cbaff3a75b03d3d2a94a75e9da534c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 02
-	4:	0,425228	idx=5839	support=3832	ItemId: 3ce74e52aa3a7bf8240d21ad2650428f	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2	iName=Unité 9, saison 2: Ép. 01
-	5:	0,425158	idx=16432	support=2133	ItemId: 627d512979358e864222f9ee9eef62b4	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Les Parent/Saison 5Français/Émissions de télé/Radio-Canada sur demande/Les Parent/Saison 5	iName=Les Parent 5 11
-	6:	0,424655	idx=9345	support=1623	ItemId: 15911c305cd1c43740033c1cfa29152f	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Les Parent/Saison 5Français/Émissions de télé/Radio-Canada sur demande/Les Parent/Saison 5	iName=Les Parent 5 12
-	7:	0,424438	idx=11823	support=2703	ItemId: 018555062a457d407b591d6f91580f82	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les pêcheurs/Saison 1	iName=Les pêcheurs 1: Ép. 04
-	8:	0,424354	idx=10934	support=2576	ItemId: dd644344a4251b89a30e2ac653dc4bdc	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2	iName=Unité 9, saison 2: Ép. 03
-	9:	0,424311	idx=7355	support=2215	ItemId: e310a6c8ac8269ac74fe6eeeefdd4bb3	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Unité 9/Saison 2	iName=Unité 9, saison 2: Ép. 05
-	10:	0,424304	idx=15495	support=2535	ItemId: 15cf88894a88405150aa1417bf04433c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Séries et téléromans/Les Parent/Saison 6Français/Émissions de télé/Radio-Canada sur demande/Séries et téléromans/Les Parent/Saison 6	iName=Les Parent 6: Ép. 01
+	1:	0,721688	idx=3887	support=0	ItemId: 98a390d6c26784b174159ba1b1177b4e	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 43
+	2:	0,721688	idx=3089	support=0	ItemId: e86683291932ae52a823a4d3a2ce177b	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 46
+	3:	0,721688	idx=6794	support=0	ItemId: a15674b0ed4feb0ab63eb0d790da7789	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 48
+	4:	0,721688	idx=4045	support=0	ItemId: 4720f1dd41b4d2349c94a6479ce9cb35	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/La Semaine verte/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/La Semaine verte/Saison 2013	iName=La Semaine verte 2013: Ép. 11
+	5:	0,721688	idx=3798	support=0	ItemId: ea7bcbda13431ea36c25404b884dfd79	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/La Facture/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/La Facture/Saison 2013	iName=La Facture 2013: Ép. 12
+	6:	0,721688	idx=16573	support=0	ItemId: f1ff0935294e8cfa0050f755aa31848d	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 47
+	7:	0,721688	idx=7561	support=0	ItemId: e508017a6458248830a91e69404be566	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 40
+	8:	0,721688	idx=11612	support=0	ItemId: 737e6b5f459a15a89a4cfdc13d7bbc2c	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/La Semaine verte/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/La Semaine verte/Saison 2013	iName=La Semaine verte 2013: Ép. 11
+	9:	0,721688	idx=15005	support=0	ItemId: 30391e71ba0707a11a3addb0c50b5b6f	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 42
+	10:	0,721688	idx=2354	support=0	ItemId: 5ef8ee4d4f3951bbcfd4e097eee89efe	VodMenuDirect: Français/En vedette/Gratuités/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013Français/Émissions de télé/Radio-Canada sur demande/Magazines et affaires publiques/Alors on jase !/Saison 2013	iName=Alors on jase ! 2013: Ép. 44
 
 
 idx=12	support=1
 	eType=2	ts=2013-10-10 03:41:24	idx=9998	support=96	ItemId: ccb365296befc96cdfe1b2e3e45248e0	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/ComédieFrançais/Films/Par genre/Films Québécois	iName=Québec-Montréal
 
 nRecommendations=10
-	1:	0,375000	idx=3378	support=13	ItemId: 6102a2ce7f0302258d00225baec12c48	VodMenuDirect: Français/Films/Par genre/Documentaire et biographieFrançais/Films/Par genre/Films QuébécoisFrançais/Films/Alphabétique/M-R	iName=Quais-Blues
-	2:	0,350000	idx=6927	support=28	ItemId: 4ecd0c897e2abb92a5bd10d1ac132387	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Par genre/ComédieFrançais/Films/Par genre/Films Québécois	iName=Méchant party
-	3:	0,333731	idx=2947	support=44	ItemId: 6e89ed5cf398408532c8c665f3f5eb64	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Documentaire et biographieFrançais/Films/Par genre/Films Québécois	iName=Durs à cuire
-	4:	0,312500	idx=9406	support=435	ItemId: e6688c9664398081105619a9de3204d5	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Par genre/Famille et enfants	iName=Pokemon 7: Destinée Deoxys
-	5:	0,312500	idx=8431	support=333	ItemId: b745d9ad1a2cb27ad163186993a5998c	VodMenuDirect: Français/Films/Alphabétique/A-BFrançais/Films/Par genre/Comédie	iName=Angelina Ballerina: Les Soeurs Superstars
-	6:	0,300000	idx=5324	support=218	ItemId: 65c2ee220dc4ddd7200effeb432f8b3c	VodMenuDirect: Français/Films/Alphabétique/G-LFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/ComédieFrançais/Films/Par genre/Famille et enfants	iName=L'Âge de glace 2: la fonte
-	7:	0,300000	idx=1309	support=0	ItemId: d4e46b93e76f3c8a9cbd5ca6a2bf3b10	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Rox et Rouky 2
-	8:	0,300000	idx=4862	support=50	ItemId: e1b421b4a198dfa00a6923a672aead74	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Par genre/Famille et enfantsFrançais/Films/Par genre/Films Québécois	iName=La Rivière aux castors
-	9:	0,291667	idx=8988	support=1	ItemId: 737cb9197a1b9478e15a5cef3d83d43c	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Comédie	iName=Virginity Hit, The , v.fr.
-	10:	0,291667	idx=4949	support=43	ItemId: a51768b6a541a97f15a4f8f039509c86	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Comédie	iName=Méchantes ados
+	1:	0,591608	idx=16205	support=0	ItemId: 1aa61714ced57f3b40ca282422115746	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Documentaire et biographieFrançais/Films/Par genre/Films Québécois	iName=Pierre Falardeau
+	2:	0,540062	idx=3142	support=0	ItemId: ad96f026316fe5c96043347a1e2203d2	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Comédie	iName=P'tits Genies 2
+	3:	0,540062	idx=14688	support=0	ItemId: 66f32c01bb8fb9084cee4a2de3cdf744	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Comédie	iName=Quand est-ce qu'on arrête?
+	4:	0,507093	idx=1309	support=0	ItemId: d4e46b93e76f3c8a9cbd5ca6a2bf3b10	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Rox et Rouky 2
+	5:	0,507093	idx=11853	support=0	ItemId: d0099237bd04dd43401cc3f784f5c5ac	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Famille et enfants	iName=Royaume de glace: Les aventuriers de la poudre magique
+	6:	0,462910	idx=10905	support=0	ItemId: 3f201a29156a6a0db144d10d2361bb78	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Thriller et suspense	iName=Rage meurtriere 3
+	7:	0,462910	idx=5939	support=0	ItemId: 5760016ff30ca5a1b9915e24d14ea739	VodMenuDirect: Français/Films/Alphabétique/S-ZFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Comédie	iName=Turner et Hooch
+	8:	0,462910	idx=14985	support=0	ItemId: 63e8886715360a3266b3e9a0d3c35458	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Drame	iName=Open Range, v.fr.
+	9:	0,462910	idx=8564	support=0	ItemId: f06c6e0b8ef3ecc9b29ab2efcad170c5	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Horreur	iName=Monde infernal: La révolte des Lycans , v.fr.
+	10:	0,462910	idx=3647	support=0	ItemId: 19768e68b85547cbce91d08caecf49b7	VodMenuDirect: Français/Films/Alphabétique/M-RFrançais/Films/Derniers ajoutsFrançais/Films/Par genre/Horreur	iName=Resident Evil: Dégénération
 
 
 idx=13	support=2
@@ -446,16 +444,16 @@ idx=13	support=2
 	eType=2	ts=2013-11-09 20:51:33	idx=9297	support=273	ItemId: 9a95aad32bfd70161e04aae408c3cb13	VodMenuDirect: English/Movies/By Genre/Action & Adventure	iName=Teenage Mutant Ninja Turtles
 
 nRecommendations=10
-	1:	0,348203	idx=14111	support=132	ItemId: a186862eb33ad22d43a92af0f59d8709	VodMenuDirect: English/Movies/By Genre/Action & Adventure	iName=Teenage Mutant Ninja Turtles III
-	2:	0,089350	idx=4192	support=173	ItemId: df2d76925554a2030c05422c129ce172	VodMenuDirect: English/Movies/By Genre/Action & Adventure	iName=Teenage Mutant Ninja Turtles II
-	3:	0,047296	idx=12250	support=166	ItemId: 4d78d0065bb4082ea588bcee188704aa	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Featured Content/Top Movies	iName=Turbo
-	4:	0,025160	idx=11376	support=90	ItemId: be8e2b38774d87c1f51776fa04f97c60	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Recently Added	iName=Stuart Little 2
-	5:	0,024603	idx=13955	support=7	ItemId: 923e8549bf6c26001aad455f5acb2073	VodMenuDirect: English/Movies/By Genre/DramaEnglish/Movies/Alphabetical/M-R	iName=The Nativity Story
-	6:	0,023838	idx=12406	support=288	ItemId: 9ec77970da50b8fe452bf73164c23b3a	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=Shrek The Musical
-	7:	0,022910	idx=5678	support=185	ItemId: f873bfcad1213d82517c9f24bbe956fa	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=TMNT
-	8:	0,021842	idx=784	support=861	ItemId: 8e1d27a3314ca2d7b101107979b94ace	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/A-BEnglish/Movies/By Genre/Family & Kids	iName=Alpha & Omega: A Howl-iday Adventure
-	9:	0,021576	idx=1320	support=87	ItemId: 4e9216e5ec5c555e2d90e9e71c0f7cfd	VodMenuDirect: English/Featured Content/Packages and Special OffersEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Recently Added	iName=The Smurfs and Smurfs a Christmas Carol
-	10:	0,021186	idx=8654	support=63	ItemId: e430b072fa40c5bded2430908c9c684b	VodMenuDirect: English/Movies/By Genre/Action & AdventureEnglish/Movies/Alphabetical/G-L	iName=Ghost Rider
+	1:	0,170752	idx=4192	support=173	ItemId: df2d76925554a2030c05422c129ce172	VodMenuDirect: English/Movies/By Genre/Action & Adventure	iName=Teenage Mutant Ninja Turtles II
+	2:	0,147946	idx=14111	support=132	ItemId: a186862eb33ad22d43a92af0f59d8709	VodMenuDirect: English/Movies/By Genre/Action & Adventure	iName=Teenage Mutant Ninja Turtles III
+	3:	0,092634	idx=12250	support=166	ItemId: 4d78d0065bb4082ea588bcee188704aa	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Featured Content/Top Movies	iName=Turbo
+	4:	0,046950	idx=12406	support=288	ItemId: 9ec77970da50b8fe452bf73164c23b3a	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=Shrek The Musical
+	5:	0,046689	idx=11376	support=90	ItemId: be8e2b38774d87c1f51776fa04f97c60	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Recently Added	iName=Stuart Little 2
+	6:	0,044342	idx=4158	support=1285	ItemId: 0fd988851a2e8fccd21cc902df05a89f	VodMenuDirect: English/Movies/Coming Soon	iName=2 Guns - Coming Soon
+	7:	0,044267	idx=5678	support=185	ItemId: f873bfcad1213d82517c9f24bbe956fa	VodMenuDirect: English/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & Kids	iName=TMNT
+	8:	0,043237	idx=784	support=861	ItemId: 8e1d27a3314ca2d7b101107979b94ace	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/A-BEnglish/Movies/By Genre/Family & Kids	iName=Alpha & Omega: A Howl-iday Adventure
+	9:	0,041939	idx=1320	support=87	ItemId: 4e9216e5ec5c555e2d90e9e71c0f7cfd	VodMenuDirect: English/Featured Content/Packages and Special OffersEnglish/Movies/Alphabetical/S-ZEnglish/Movies/By Genre/Family & KidsEnglish/Movies/Recently Added	iName=The Smurfs and Smurfs a Christmas Carol
+	10:	0,040608	idx=16913	support=3238	ItemId: f6865b155e4749b21cd479df490593c5	VodMenuDirect: English/Featured Content/New ReleasesEnglish/Movies/Alphabetical/C-FEnglish/Movies/By Genre/Family & Kids	iName=The Croods
 
 
 idx=14	support=0

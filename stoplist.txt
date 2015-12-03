@@ -1,0 +1,34 @@
+MATCH (n:VOD)-[r:HAS_META]-(i:Item) RETURN n, count(i) as cnt order by cnt desc
+
+words		#ItemsContainingVOD
+0-9		79
+A-B		569		
+AlphabĂ©tique		1472
+Alphabetical		2824
+By Genre		3569
+By Title		925
+C-F		879
+G-L		894
+M-R		956
+Par catĂ©gorie		264
+Par genre		1456
+Par titre		375
+S-Z		923
+V sur demande		1977
+
+words		#ItemsContainingDirector
+
+Various		
+n/a			24
+NA			7
+n/d			21
+
+
+
+words		#ItemsContainingActor
+
+üres		11960
+NA			105
+n/a			83
+na			6
+n			1

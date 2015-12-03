@@ -13,6 +13,7 @@ import onlab.core.Database;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 
 import java.util.ArrayList;
@@ -26,17 +27,19 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
     private Labels[] labelTypes;
     private String[] keyValueTypes;
     private TLongDoubleHashMap wordIDFs;
+    private HashSet<String> stopWords;
     int method;
 
 
     public void setParameters(GraphDB graphDB, Database db, int method,
-                              Relationships[] rel_types,
-                              String[] keyValueTypes_, Labels[] labelTypes){
+                              Relationships[] rel_types, String[] keyValueTypes_,
+                              Labels[] labelTypes, String stopWordsFileName){
         super.setParameters(graphDB,db);
         this.method = method;
         this.relTypes = rel_types;
         this.keyValueTypes = keyValueTypes_;
         this.labelTypes = labelTypes;
+        this.stopWords = GraphDBBuilder.loadStopWordsFromFile(stopWordsFileName);
     }
 
     protected void computeSims(boolean uploadResultIntoDB){
@@ -147,7 +150,7 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
         TLongArrayList itemMetaWordIDs = new TLongArrayList();
         int i = 0;
         for (String keyValue : keyValueTypes) {
-            HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue);
+            HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue, stopWords);
             for (String word : itemWords) {
                 Long metaID = metaIDs.get(i + "" + word);
                 if(metaID != null)

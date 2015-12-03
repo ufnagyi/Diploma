@@ -78,12 +78,12 @@ public class HybridComputedPredictor extends GraphDBPredictor {
         long numOfComputedSims = 0;
         int changeCounter1 = 0;     //folyamat kiiratásához
 
-//        1 node teszteléséhez:
-//        ArrayList<Node> nodeList = new ArrayList<>();
+        //        1 node teszteléséhez:
+//        nodeList = new ArrayList<>();
 //        nodeList.add(graphDB.graphDBService.getNodeById(5680));
 
         for (Node item : nodeList) {
-            int changes = computeCosineSimilarityForUniqueEvents(item, simNodeFinder, simLinks,
+            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks,
                     nodeSeenDegrees, nodeWordDegrees);
             changeCounter1 += changes;
             if (changeCounter1 > 50000) {
@@ -98,10 +98,10 @@ public class HybridComputedPredictor extends GraphDBPredictor {
         printComputedSimilarityResults(simLinks,uploadResultIntoDB);
     }
 
-    private int computeCosineSimilarityForUniqueEvents(Node nodeA, TraversalDescription description,
-                                                       HashSet<SimLink<Long>> similarities,
-                                                       TLongIntHashMap nodeSeenDegrees,
-                                                       TLongIntHashMap nodeWordDegrees) {
+    private int computeCosineSimilarity(Node nodeA, TraversalDescription description,
+                                        HashSet<SimLink<Long>> similarities,
+                                        TLongIntHashMap nodeSeenDegrees,
+                                        TLongIntHashMap nodeWordDegrees) {
 
         int computedSims = 0;
         long startNodeID = nodeA.getId();
@@ -121,7 +121,7 @@ public class HybridComputedPredictor extends GraphDBPredictor {
                 if (relName.equals(Relationships.SEEN.name()))
                     suppSeenABForAllB.adjustOrPutValue(friendNodeId, 1, 1);                    //suppAB növelés
                 else
-                    suppWordABForAllB.adjustOrPutValue(friendNodeId, 1, metaWeights.get(relName));
+                    suppWordABForAllB.adjustOrPutValue(friendNodeId, metaWeights.get(relName), metaWeights.get(relName));
             }
         }
 
@@ -137,7 +137,8 @@ public class HybridComputedPredictor extends GraphDBPredictor {
             int suppSeenB = nodeSeenDegrees.get(friendNodeId);
             int suppWordB = nodeWordDegrees.get(friendNodeId);
             double sim = (suppSeenAB + suppWordAB) / (Math.sqrt(suppSeenA * suppSeenB) + Math.sqrt(suppWordA * suppWordB));
-            similarities.add(new SimLink<>(startNodeID, friendNodeId, sim));
+            if(sim > 0.0)
+                nodeSims.add(new SimLink<>(startNodeID, friendNodeId, sim));
 //            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
         }
         List<SimLink<Long>> simLinks = Ordering.from(SimLink.getComparator()).greatestOf(nodeSims, 1000);

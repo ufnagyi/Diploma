@@ -12,8 +12,8 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
     private TIntObjectHashMap<TIntDoubleHashMap> itemCFSimilarities;
     private TIntObjectHashMap<TIntDoubleHashMap> itemCBFSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;
-    private int method;
-    private int method2;
+    private int method;     //hogyan atlagoljam az adott recommender alg-ot
+    private int method2;    //hogyan atlagoljam a ket alg eredmenyet egybe
     private Similarities CFSim;
     private Similarities CBFSim;
 

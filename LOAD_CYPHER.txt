@@ -203,3 +203,27 @@ HAS_META list keszitese:   2015/11/23 00:52:55
 HAS_META list keszitese KESZ: 105412  2015/11/23 00:52:55
 GraphDB felépítve!  2015/11/23 00:53:05
 Futas vege: 2015/11/23 00:53:05
+
+-------------------------------------------------------------------
+Train set unique listával, stopword filterezéssel:
+GraphDB építés kezdése:   2015/12/03 04:44:40
+Item list keszitese:   2015/12/03 04:44:41
+Item list keszitese KESZ: 17001  2015/12/03 04:44:41
+User list keszitese:   2015/12/03 04:44:41
+User list keszitese KESZ: 343409  2015/12/03 04:44:42
+Actor list keszitese:   2015/12/03 04:44:42
+Actor list keszitese KESZ: 7476  2015/12/03 04:44:42
+Director list keszitese:   2015/12/03 04:44:42
+Director list keszitese KESZ: 1854  2015/12/03 04:44:42
+VOD list keszitese:   2015/12/03 04:44:42
+VOD list keszitese KESZ: 686  2015/12/03 04:44:42
+SEEN list keszitese:   2015/12/03 04:44:43
+SEEN list keszitese KESZ: 4471818  2015/12/03 04:44:59
+ACTS_IN list keszitese:   2015/12/03 04:44:59
+ACTS_IN list keszitese KESZ: 22132  2015/12/03 04:44:59
+DIR_BY list keszitese:   2015/12/03 04:44:59
+DIR_BY list keszitese KESZ: 4744  2015/12/03 04:44:59
+HAS_META list keszitese:   2015/12/03 04:44:59
+HAS_META list keszitese KESZ: 89986  2015/12/03 04:44:59
+GraphDB felépítve!  2015/12/03 04:45:04
+Futas vége:  2015/12/03 04:45:04

@@ -255,10 +255,13 @@ public class Main {
 
         GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
 
+        boolean uniqueEvents = false;
 //		-------------------------------------------------------------------------
         //GraphDB epites:
 
-//		GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true,false);
+        String stopWordsFileName = "stopwords.txt";
+
+//        GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true,uniqueEvents, stopWordsFileName);
 
         //TestDB:
 //		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
@@ -274,7 +277,7 @@ public class Main {
 //		ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
 //		exampleSimilarityPrinter.printExampleSimilarityResults(10,Similarities.CBF_SIM,Labels.Item);
 
-        boolean uniqueEvents = false;
+
 
 //		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
 //		cfGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CF_ISIM, 1, uniqueEvents, 1);
@@ -283,8 +286,8 @@ public class Main {
 
         HashMap<String,Double> weights = new HashMap<>(3);
         weights.put(Relationships.HAS_META.name(),1.0);
-        weights.put(Relationships.ACTS_IN.name(),1.0);
-        weights.put(Relationships.DIR_BY.name(),1.0);
+        weights.put(Relationships.ACTS_IN.name(),2.0);
+        weights.put(Relationships.DIR_BY.name(),2.0);
         Relationships[] relTypes = new Relationships[3];
         relTypes[0] = Relationships.HAS_META;
         relTypes[1] = Relationships.ACTS_IN;
@@ -300,35 +303,35 @@ public class Main {
 
 
 //        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
-//        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM, 2, weights, relTypes, 4.0);
+//        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM, 1, weights, relTypes, 4.0);
 //		wordBasedCoSimCBFGraphPredictor.train(true);
 //        wordBasedCoSimCBFGraphPredictor.trainFromGraphDB();
 //
 //		UserProfileBasedTFiDF_CBFPredictor userProfileBasedTFiDF_CBFPredictor = new UserProfileBasedTFiDF_CBFPredictor();
-//		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbs[0],2,relTypes,keyValueTypes,labelTypes);
-//		userProfileBasedTFiDF_CBFPredictor.train(false);
-////		userProfileBasedTFiDF_CBFPredictor.trainFromGraphDB();
+//		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbs[0],1,relTypes,keyValueTypes,labelTypes, stopWordsFileName);
+//		userProfileBasedTFiDF_CBFPredictor.train(true);
+//		userProfileBasedTFiDF_CBFPredictor.trainFromGraphDB();
 
-//		UserProfileBasedCoSimCBFPredictor userProfileBasedCoSimCBFPredictor = new UserProfileBasedCoSimCBFPredictor();
-//		userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbs[0],relTypes,labelTypes,keyValueTypes);
-//		userProfileBasedCoSimCBFPredictor.train(false);
+        UserProfileBasedCoSimCBFPredictor userProfileBasedCoSimCBFPredictor = new UserProfileBasedCoSimCBFPredictor();
+        userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbs[0],relTypes,labelTypes,keyValueTypes, stopWordsFileName, weights,2,1);
+        userProfileBasedCoSimCBFPredictor.train(false);
 
 //        CombinedHybridPredictor combinedHybridPredictor = new CombinedHybridPredictor();
 //        combinedHybridPredictor.setParameters(graphDB,dbs[0],2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
 //        combinedHybridPredictor.trainFromGraphDB();
 
-        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
-        hybridComputedPredictor.setParameters(graphDB,dbs[0],Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
-        hybridComputedPredictor.train(false);
+//        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
+//        hybridComputedPredictor.setParameters(graphDB,dbs[0],Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
+//        hybridComputedPredictor.train(true);
 //        hybridComputedPredictor.trainFromGraphDB();
 
 
 //		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
         //cfGraphPredictor, wordBasedCoSimCBFGraphPredictor, userProfileBasedTFiDF_CBFPredictor,
         // userProfileBasedCoSimCBFPredictor, combinedHybridPredictor, hybridComputedPredictor
-//        Predictor[] preds = new Predictor[]{hybridComputedPredictor};
+        Predictor[] preds = new Predictor[]{userProfileBasedCoSimCBFPredictor};
 
-//        testPredictors(preds, dbs[0], dbs[1]);
+        testPredictors(preds, dbs[0], dbs[1]);
 
 
         LogHelper.INSTANCE.log("Futas vége:");

@@ -346,3 +346,23 @@ Median sim: 0.8333333333333334
 1st decile sim: 0.45454545454545453
 2st decile sim: 0.5833333333333334
 Futas vége:  2015/12/02 05:42:51
+
+------------------------------------------------------------------------
+HF_SIM szűrőfeltétel nélkül (suppAB-re nincs korlát), all eventre, 1-1-1-es súlyozással, Actor, Director, VOD
+stopwordok benne vannak (nincs szűrve)
+
+Start HF_SIM!  2015/12/03 02:10:29
+Item word és SEEN supportok számítása:  2015/12/03 02:10:29
+Item word és SEEN supportok számítása KÉSZ!  2015/12/03 02:10:31
+Num of computed sims: 16816821
+Stop HF_SIM!  2015/12/03 02:16:59
+Upload computed similarities to DB:  2015/12/03 02:16:59
+Upload computed similarities to DB Done!  2015/12/03 02:17:44
+Max sim: 1.0
+Min sim: 0.0010332740067391826
+Avg sim: 0.46798381281324675
+Median sim: 0.43301270189221935
+1st decile sim: 0.1406596264737234
+2st decile sim: 0.18257418583505536
+Futas vége:  2015/12/03 02:17:48
+

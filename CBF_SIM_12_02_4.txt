@@ -4,7 +4,7 @@ Súlyok: 2,2,1
 suppAB > 4
 Method: 2
 Futási idő: 7,5 perc
-
+Régi hibás súlyozás
 
 idx=0	support=2
 	eType=2	ts=2013-05-26 01:49:41	idx=15705	support=4061	ItemId: 32110c7fc619a7b4b138c4551a9ac177	VodMenuDirect: English/Featured Content/Free/CTV/Criminal MindsEnglish/TV Shows/CTV/Criminal Minds	iName=S.8 E.823/824 - Criminal Minds

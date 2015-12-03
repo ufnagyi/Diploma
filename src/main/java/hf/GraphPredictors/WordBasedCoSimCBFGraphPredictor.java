@@ -98,7 +98,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
                 })
                 .evaluator(Evaluators.atDepth(2))
                 .uniqueness(Uniqueness.RELATIONSHIP_PATH);  //mivel metaadatokra nincs relacioismetles,
-                                                            // így node uniqunessre nincs szukseg!
+        // így node uniqunessre nincs szukseg!
 
         long numOfComputedSims = 0;
         int changeCounter1 = 0;     //folyamat kiiratásához
@@ -137,7 +137,7 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
             String rel = path.lastRelationship().getType().name();
             long friendNodeId = friendNode.getId();
             if (!similarities.contains(new SimLink<>(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
-                suppABForAllB.adjustOrPutValue(friendNodeId, 1, metaWeights.get(rel));                    //suppAB növelés
+                suppABForAllB.adjustOrPutValue(friendNodeId, metaWeights.get(rel), metaWeights.get(rel));                    //suppAB növelés
             }
         }
 
