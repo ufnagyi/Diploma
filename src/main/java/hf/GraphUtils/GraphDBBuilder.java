@@ -18,30 +18,30 @@ public class GraphDBBuilder {
     private static HashMap<Labels,HashMap<Object, Long>> IDToIDs;
     private static ExtendedDatabase dbExt;
     private static BatchInserter batchInserter;
-    private static final String actor = "Actor";
-    private static final String director = "Director";
-    private static final String VOD = "VodMenuDirect";
+    public static final String actor = "Actor";
+    public static final String director = "Director";
+    public static final String VOD = "VodMenuDirect";
     private static final String act_dir_separator = "\f";
     private static final String vod_separator = "[\f/]";
+    private static final String stopWordsFileName = "stopwords.txt";
     private static HashSet<String> stopWords;
 
-    public static void buildGraphDBFromImpressDB(GraphDB graphDB, Database db, boolean deleteIfExists,
-                                                 boolean onlyUniqueEvents, String stopWordsFileName) throws IOException {
+    public static void buildGraphDBFromImpressDB(GraphDB graphDB, boolean deleteIfExists) throws IOException {
 
         if(graphDB.isInited())
             graphDB.shutDownDB();
 
-        LogHelper.INSTANCE.log("GraphDB építés kezdése: ");
+        LogHelper.INSTANCE.logToFileT("GraphDB építés kezdése: ");
 
-        dbExt = (ExtendedDatabase) db;
+        dbExt = (ExtendedDatabase) graphDB.db;
         IDToIDs = new HashMap<>();
 
         //Delete if exists
         if(graphDB.getDbFolder().exists() && deleteIfExists)
             FileUtils.deleteRecursively(graphDB.getDbFolder());
 
-//        //VOD Stoplist
-        stopWords = loadStopWordsFromFile(stopWordsFileName);
+        //MetaWord Stoplist
+        stopWords = (graphDB.filterStopWords) ? loadStopWordsFromFile() : null;
 
         try {
             batchInserter = BatchInserters.inserter(graphDB.getDbFolder().getAbsoluteFile());
@@ -70,7 +70,7 @@ public class GraphDBBuilder {
             //Relationships:
 
             //SEEN
-            if(onlyUniqueEvents)
+            if(graphDB.uniqueEvents)
                 insertRelationshipsWithoutProperties(Relationships.SEEN, getUniqueSEENRelationships());
             else
                 insertRelationshipsWithoutProperties(Relationships.SEEN, getSEENRelationships());
@@ -84,18 +84,25 @@ public class GraphDBBuilder {
             insertRelationshipsWithoutProperties(Relationships.HAS_META,
                     getMetaRelationships(VOD,vod_separator,Labels.VOD));
             IDToIDs.remove(Labels.Item);
+
+            //IDF values:
+            graphDB.initDB();
+            graphDB.computeAndUploadIDFValues(Labels.Actor,Relationships.ACTS_IN);
+            graphDB.computeAndUploadIDFValues(Labels.Director,Relationships.DIR_BY);
+            graphDB.computeAndUploadIDFValues(Labels.VOD,Relationships.HAS_META);
+            graphDB.shutDownDB();
         }
         finally {
             if ( batchInserter != null )
             {
                 batchInserter.shutdown();
-                LogHelper.INSTANCE.log("GraphDB felépítve!");
+                LogHelper.INSTANCE.logToFileT("GraphDB felépítve!");
             }
         }
     }
 
     private static void insertNodesAndSaveGraphIDs(Labels l, ArrayList<Map<String,Object>> nodes){
-        LogHelper.INSTANCE.log(l.name() + " list keszitese: ");
+        LogHelper.INSTANCE.logToFileT(l.name() + " list keszitese: ");
         HashMap<Object, Long> actualMap = new HashMap<>();
         int num = 0;
         for(; num < nodes.size(); num++){
@@ -104,7 +111,7 @@ public class GraphDBBuilder {
             actualMap.put(nodeProps.get(l.getUniqueName()),graphDBID);
         }
         IDToIDs.put(l,actualMap);
-        LogHelper.INSTANCE.log(l.name() +" list keszitese KESZ: " + num);
+        LogHelper.INSTANCE.logToFileT(l.name() +" list keszitese KESZ: " + num);
     }
 
     private static ArrayList<Map<String, Object>> getItemsFromDB() {
@@ -149,13 +156,13 @@ public class GraphDBBuilder {
     }
 
     private static void insertRelationshipsWithoutProperties(Relationships rel, ArrayList<DirectedLink<Long>> links){
-        LogHelper.INSTANCE.log(rel.name() + " list keszitese: ");
+        LogHelper.INSTANCE.logToFileT(rel.name() + " list keszitese: ");
         int num = 0;
         for(DirectedLink<Long> l : links){
             batchInserter.createRelationship(l.startNode,l.endNode,rel,null);
             num++;
         }
-        LogHelper.INSTANCE.log(rel.name() +" list keszitese KESZ: " + num);
+        LogHelper.INSTANCE.logToFileT(rel.name() +" list keszitese KESZ: " + num);
     }
 
     private static ArrayList<DirectedLink<Long>> getUniqueSEENRelationships() {
@@ -165,7 +172,7 @@ public class GraphDBBuilder {
         for (Database.Event e : dbExt.events(null)) {
             long userGraphDBID = userIDToIDPairs.get(dbExt.getUserId(e.uIdx));
             long itemGraphDBID = itemIDToIDPairs.get(dbExt.getItemId(e.iIdx));
-            uniqueEvents.add(new DirectedLink(userGraphDBID,itemGraphDBID));
+            uniqueEvents.add(new DirectedLink<>(userGraphDBID,itemGraphDBID));
         }
         IDToIDs.remove(Labels.User);    //betöltve minden, ami hozzájuk kapcsolódik, ezért törlöm
 
@@ -183,7 +190,7 @@ public class GraphDBBuilder {
         for (Database.Event e : dbExt.events(null)) {
             long userGraphDBID = userIDToIDPairs.get(dbExt.getUserId(e.uIdx));
             long itemGraphDBID = itemIDToIDPairs.get(dbExt.getItemId(e.iIdx));
-            events.add(new DirectedLink(userGraphDBID,itemGraphDBID));
+            events.add(new DirectedLink<>(userGraphDBID,itemGraphDBID));
         }
         IDToIDs.remove(Labels.User);    //betöltve minden, ami hozzájuk kapcsolódik, ezért törlöm
         return events;
@@ -199,7 +206,7 @@ public class GraphDBBuilder {
             long itemGraphDBID = itemIDToIDPairs.get(iID);
             for(String s : metas){
                 long metaGraphDBID = metaIDToIDPairs.get(s);
-                metaRel.add(new DirectedLink(itemGraphDBID,metaGraphDBID));
+                metaRel.add(new DirectedLink<>(itemGraphDBID,metaGraphDBID));
             }
         }
         IDToIDs.remove(label);
@@ -210,10 +217,10 @@ public class GraphDBBuilder {
         ExtendedDatabase dbExt = (ExtendedDatabase) db;
         HashSet<String> itemMetaWords = new HashSet<>();
         String keyAll =  dbExt.getItemKeyValue(dbExt.getItemIndex(iID) , key);
-        String key_value_separator = (key.equals("VodMenuDirect")) ? vod_separator : act_dir_separator;
+        String key_value_separator = (key.equals(GraphDBBuilder.VOD)) ? vod_separator : act_dir_separator;
         String[] values = keyAll.split(key_value_separator);
         for (String val : values) {
-            if (checkCondition(val, stopWords))
+            if (checkCondition(val, key, stopWords))
                 itemMetaWords.add(val);
         }
         return itemMetaWords;
@@ -222,16 +229,33 @@ public class GraphDBBuilder {
     /**
      * Grafba toltes elott metaword ellenorzese
      * @param word Ellenorizendo metaword
-     * @return
      */
-    public static boolean checkCondition(String word, HashSet<String> stopWords) {
-        if (!word.equals("") && word.length() > 2 && !stopWords.contains(word)){
-            return true;
+    public static boolean checkCondition(String word, String metaType, HashSet<String> stopWords) {
+        if(stopWords != null) {
+            if (!word.equals("") && word.length() > 2 && !stopWords.contains(word)) {
+                return true;
+            }
+        }
+        else {
+            switch (metaType) {
+                case actor:
+                    if (!word.equals("") && !word.equals("NA") && !word.equals("na") && !word.equals("n/a") && !word.equals("N\\A") && !word.equals("N/A"))
+                        return true;
+                    break;
+                case director:
+                    if (!word.equals("") && !word.equals("NA") && !word.equals("na") && !word.equals("n/a") && !word.equals("N\\A") && !word.equals("N/A") && !word.equals("n/d"))
+                        return true;
+                    break;
+                case VOD:
+                    if (!word.equals("") && word.length() > 2)
+                        return true;
+                    break;
+            }
         }
         return false;
     }
 
-    public static HashSet<String> loadStopWordsFromFile(String stopWordsFileName) {
+    public static HashSet<String> loadStopWordsFromFile() {
         HashSet<String> stopWords = new HashSet<>();
         try {
             Scanner stopFile = new Scanner(new FileReader(stopWordsFileName));

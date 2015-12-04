@@ -13,11 +13,10 @@ import onlab.core.Database;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
@@ -27,47 +26,68 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
     private Labels[] labelTypes;
     private String[] keyValueTypes;
     private TLongDoubleHashMap wordIDFs;
-    private HashSet<String> stopWords;
-    int method;
+    private int method;
 
 
-    public void setParameters(GraphDB graphDB, Database db, int method,
-                              Relationships[] rel_types, String[] keyValueTypes_,
-                              Labels[] labelTypes, String stopWordsFileName){
-        super.setParameters(graphDB,db);
+    public void setParameters(GraphDB graphDB, int method,
+                              Relationships[] rel_types) {
+        super.setParameters(graphDB);
         this.method = method;
         this.relTypes = rel_types;
+
+        Labels[] labelTypes = new Labels[rel_types.length];
+        String[] keyValueTypes_ = new String[rel_types.length];
+        int i = 0;
+        for (Relationships rel : rel_types) {
+            labelTypes[i] = rel.name().equals(Relationships.ACTS_IN.name()) ? Labels.Actor :
+                    (rel.name().equals(Relationships.DIR_BY.name()) ? Labels.Director : Labels.VOD);
+            keyValueTypes_[i] = rel.name().equals(Relationships.ACTS_IN.name()) ? "Actor" :
+                    (rel.name().equals(Relationships.DIR_BY.name()) ? "Director" : "VodMenuDirect");
+            i++;
+        }
         this.keyValueTypes = keyValueTypes_;
         this.labelTypes = labelTypes;
-        this.stopWords = GraphDBBuilder.loadStopWordsFromFile(stopWordsFileName);
     }
 
-    protected void computeSims(boolean uploadResultIntoDB){
-        //kiszamolom a metawordok idf-jeit es betoltom DB-be
-        for(int i = 0; i < labelTypes.length; i++)
-            graphDB.computeAndUploadIDFValues(labelTypes[i],relTypes[i]);
+    public String getName() {
+        return "User Profile Based TF-iDF Predictor ";
+    }
+
+    public String getShortName(){
+        return "CBF_TFIDF";
+    }
+
+    @Override
+    public void printParameters() {
+        graphDB.printParameters();
+        LogHelper.INSTANCE.logToFile(this.getName() + " Parameters:");
+        LogHelper.INSTANCE.logToFile("Relációk: " + Arrays.toString(relTypes));
+        LogHelper.INSTANCE.logToFile("Labelek: " + Arrays.toString(labelTypes));
+        LogHelper.INSTANCE.logToFile("Method: " + method);
+    }
+
+    protected void computeSims(boolean uploadResultIntoDB) {
         populateMetaIDs();
         buildUserProfiles();
     }
 
-    public void trainFromGraphDB(){
+    public void trainFromGraphDB() {
         graphDB.initDB();
-        populateMetaIDs();
-        buildUserProfiles();
+        computeSims(false);
     }
 
     /**
      * String word -> long ID
      */
-    private void populateMetaIDs(){
-        LogHelper.INSTANCE.log("MetaID map előállítása:");
+    private void populateMetaIDs() {
+        LogHelper.INSTANCE.logToFileT("MetaID map előállítása:");
         metaIDs = graphDB.getMetaIDs(labelTypes);
-        LogHelper.INSTANCE.log("MetaID map előállítása KÉSZ!");
+        LogHelper.INSTANCE.logToFileT("MetaID map előállítása KÉSZ!");
     }
 
 
-    private void buildUserProfiles(){
-        LogHelper.INSTANCE.log("Start CBFSim with UserProfile and TFiDF:");
+    private void buildUserProfiles() {
+        LogHelper.INSTANCE.logToFileT("Start CBFSim with UserProfile and TFiDF:");
         Transaction tx = graphDB.startTransaction();
         ArrayList<Node> userList = graphDB.getNodesByLabel(Labels.User);
 
@@ -82,7 +102,7 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
         userProfiles = new TIntObjectHashMap<>(userList.size());
 
         TraversalDescription mWordsOfItemsSeenByUser =
-                UserProfileBasedCoSimCBFPredictor.getNewMetaTraversalByUser(graphDB,relTypes);
+                UserProfileBasedCoSimCBFPredictor.getNewMetaTraversalByUser(graphDB, relTypes);
 
         int numOfComputedUserProfiles = 0;
         int changeCounter1 = 0;
@@ -90,7 +110,7 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
         for (Node user : userList) {
             computeProfile(user, mWordsOfItemsSeenByUser);
             changeCounter1++;
-            if(changeCounter1 > 30000){
+            if (changeCounter1 > 30000) {
                 graphDB.endTransaction(tx);
                 tx = graphDB.startTransaction();
                 numOfComputedUserProfiles += changeCounter1;
@@ -101,10 +121,10 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
         numOfComputedUserProfiles += changeCounter1;
 
         graphDB.endTransaction(tx);
-        LogHelper.INSTANCE.log("CBFSim with UserProfile and TFiDF KÉSZ! " + numOfComputedUserProfiles);
+        LogHelper.INSTANCE.logToFileT("CBFSim with UserProfile and TFiDF KÉSZ! " + numOfComputedUserProfiles);
     }
 
-    private void computeProfile(Node user, TraversalDescription description){
+    private void computeProfile(Node user, TraversalDescription description) {
 
         int userID = (int) user.getProperty(Labels.User.getIDName());
         TLongIntHashMap mWordFrequencies = new TLongIntHashMap();
@@ -112,25 +132,23 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
 
         for (Path path : description.traverse(user)) {
             Node mWord = path.endNode();
-            mWordFrequencies.adjustOrPutValue(mWord.getId(),1,1);
+            mWordFrequencies.adjustOrPutValue(mWord.getId(), 1, 1);
             numOfMetaWords++;
 //            System.out.println(mWord.getAllProperties());
         }
         TLongDoubleHashMap userProfile = new TLongDoubleHashMap(mWordFrequencies.size());
         TLongIntIterator mWordFrequency = mWordFrequencies.iterator();
-        while(mWordFrequency.hasNext()){
+        while (mWordFrequency.hasNext()) {
             mWordFrequency.advance();
             long metaWord = mWordFrequency.key();
             int wordFrequency = mWordFrequency.value();
 //            System.out.println(metaIDs.inverse().get(metaWord) + ": " + wordFrequency);
             double relativeWordFrequency = (double) wordFrequency / numOfMetaWords;
             double tf_iDF = relativeWordFrequency * wordIDFs.get(metaWord);
-            userProfile.put(metaWord,tf_iDF);
+            userProfile.put(metaWord, tf_iDF);
         }
-        userProfiles.put(userID,userProfile);
+        userProfiles.put(userID, userProfile);
     }
-
-
 
 
     private int lastUser = -1;
@@ -150,27 +168,28 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
         TLongArrayList itemMetaWordIDs = new TLongArrayList();
         int i = 0;
         for (String keyValue : keyValueTypes) {
-            HashSet<String> itemWords = GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue, stopWords);
+            HashSet<String> itemWords =
+                    GraphDBBuilder.getUniqueItemMetaWordsByKey(this.db, iID, keyValue, graphDB.stopWords);
             for (String word : itemWords) {
                 Long metaID = metaIDs.get(i + "" + word);
-                if(metaID != null)
-                    itemMetaWordIDs.add(metaID.longValue());
+                if (metaID != null)
+                    itemMetaWordIDs.add(metaID);
             }
             i++;
         }
 
         int matches = 0;
 
-        if( uID != lastUser) {
+        if (uID != lastUser) {
             userProfile = userProfiles.get(uID);
             userRelDegree = userProfile.size();
             lastUser = uID;
             numUser++;
-            if(numUser % 1000 == 0)
+            if (numUser % 1000 == 0)
                 System.out.println(numUser);
         }
         TLongIterator itemMetaWords = itemMetaWordIDs.iterator();
-        while(itemMetaWords.hasNext()){
+        while (itemMetaWords.hasNext()) {
             long word = itemMetaWords.next();
             double userIFIDFForWord = userProfile.get(word);
             if (userIFIDFForWord > 0.0) {
@@ -179,10 +198,9 @@ public class UserProfileBasedTFiDF_CBFPredictor extends GraphDBPredictor {
             }
         }
 
-        if(method == 1) {
+        if (method == 1) {
             prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
-        }
-        else
+        } else
             prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
 
         return prediction;

@@ -10,6 +10,9 @@ import onlab.core.predictor.Predictor;
 import onlab.core.util.PredictorUtil;
 import onlab.core.util.Util;
 
+import java.io.IOException;
+import java.security.InvalidParameterException;
+import java.util.Calendar;
 import java.util.HashMap;
 
 /**
@@ -23,10 +26,31 @@ public class Main {
     public static String getItemsFilename() {
         return DIR + "items_final.csv";
     }
-    public static String getEventsFilename() { return DIR + "events_final.csv"; }
-    public static String getDatabaseFullFilename() { return DIR + "db_full.bin"; }
-    public static String getDatabaseTrainFilename() { return DIR + "db_train.bin"; }
-    public static String getDatabaseTestFilename() { return DIR + "db_test.bin"; }
+
+    public static String getEventsFilename() {
+        return DIR + "events_final.csv";
+    }
+
+    public static String getDatabaseFullFilename() {
+        return DIR + "db_full.bin";
+    }
+
+    public static String getDatabaseTrainFilename() {
+        return DIR + "db_train.bin";
+    }
+
+    public static String getDatabaseTestFilename() {
+        return DIR + "db_test.bin";
+    }
+
+    public final static String rootDBDir = "C:/Nandi_diploma/";
+    public final static String dbNoFilterAllEvents = rootDBDir + "Neo4J_NoFilter_AllEvents";
+    public final static String dbFilterAllEvents = rootDBDir + "Neo4J_Filter_AllEvents";
+    public final static String dbNoFilterUniqueEvents = rootDBDir + "Neo4J_NoFilter_UniqueEvents";
+    public final static String dbFilterUniqueEvents = rootDBDir + "Neo4J_Filter_UniqueEvents";
+    public static Database dbTrain;
+    public static Database dbTest;
+
 
     public static void buildDatabaseAndSave() throws Exception {
 
@@ -177,8 +201,8 @@ public class Main {
         };
     }
 
-    public static void testPredictors(Predictor[] predictors, Database dbTrain, Database dbTest) throws Exception {
-        System.out.println("TESTING PREDICTORS...");
+    public static void testPredictorsOLD(Predictor[] predictors, Database dbTrain, Database dbTest) throws Exception {
+        LogHelper.INSTANCE.logToFileT("TESTING PREDICTORS...");
 
         System.out.println("Initializing Recall measurement class");
         Evaluation eval = new SimpleRecallMeasurement();
@@ -222,118 +246,154 @@ public class Main {
         }
     }
 
+    public static void testPredictor(GraphDBPredictor predictor) throws Exception {
+        LogHelper.INSTANCE.logSeparatorToFile();
+        LogHelper.INSTANCE.logToFileT("TESTING GRAPH PREDICTOR " + predictor.getName());
+
+        System.out.println("Initializing Recall measurement class");
+        Evaluation eval = new SimpleRecallMeasurement();
+        eval.setParameters(SimpleRecallMeasurement.RETURN_RECALL_IN + "=10");
+        eval.setParameters(SimpleRecallMeasurement.EVENT_SAMPLE_RATIO + "=0.1");
+        eval.prepare(dbTest, dbTrain);
+        System.out.println("Evaluation parameters: " + eval.getParameters().toString(","));
+
+        System.out.println("Initializing Recommendations Printer class...");
+        RecoPrinter rp = new RecoPrinterBasic();
+        rp.setParameters(RecoPrinterBasic.ITEM_META_KEYS + "=ItemId:VodMenuDirect");
+
+        System.out.println("Calculating the max time of training dataset for random recommendations...");
+        long time = dbTrain.getMaxTimeByEvents();
+
+        System.out.println("Selecting random users to sample personalized recommendations...");
+        int[] userIdxsToPrint = PredictorUtil.selectRandomUsers(dbTrain, 42, 15, 2, 20);
+        System.out.println("Selecting random items to sample item2item lists...");
+        int[] itemIdxsToPrint = PredictorUtil.selectRandomItems(dbTrain, 42, 15, 0, 1000);
+
+
+        double val = eval.run(predictor);
+        LogHelper.INSTANCE.logToFile(eval.getClass().getSimpleName() + ": " + val);
+        Calendar cal = Calendar.getInstance();
+        String recommenderListFileName = predictor.getShortName() + "_"
+                + cal.get(Calendar.MONTH) + "_" + cal.get(Calendar.DAY_OF_MONTH) + cal.getTimeInMillis() + ".txt";
+        LogHelper.INSTANCE.logToFile("Recommender list file: " + recommenderListFileName);
+
+        System.out.printf("%s: %.6f\n", eval.getClass().getSimpleName(), val);
+        System.out.println("Printing recommendations to file...");
+        ItemRecommendation[] iRecs = Recommender.getItemRecommendationBulk(predictor, userIdxsToPrint, time, 10, null);
+        rp.printItemRecs(iRecs, dbTrain, DIR + recommenderListFileName);
+        LogHelper.INSTANCE.printMemUsage();
+        LogHelper.INSTANCE.logToFileT("TESTING GRAPH PREDICTOR " + predictor.getName() + " DONE!");
+    }
+
     public static void main(String[] args) throws Exception {
-        LogHelper.INSTANCE.log("Futas kezdése:");
-
-        //region OldPredictorProcess
-
-//		System.out.println("\nSTEP 1: Importing, building and saving database:");
-//		buildDatabaseAndSave();
-
-//		System.out.println("\nSTEP 2: Loading binary databases from file:");
-        Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(),getDatabaseTestFilename()}); //getDatabaseTrainFilename(), getDatabaseTestFilename()
-
-
-//		System.out.println("\nSTEP 3: Predictor training:");
-//		Predictor[] preds = trainPredictors(dbs[0]);
-
-        //		System.out.println("\nExample for predictor saving:");
-//		Util.savePredictor(preds[0], DIR + "p1.pr");
-//		Predictor p1 = Util.loadPredictor(DIR + "p1.pr", dbs[0]);
-//		Predictor[] preds = new Predictor[]{p1};
-
-        //endregion
-
-
-//		------------------------------------------------------------------------
-//        //ha a node és relationship csv-ket létre kell hozni az import-toolhoz:
-//        Reader r = new Reader(dbs[0]);
-//        r.createAllCSVs();
+        LogHelper.INSTANCE.logToFileT("Futas kezdése:");
+        //getDatabaseTrainFilename(), getDatabaseTestFilename()
+        Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
+        dbTrain = dbs[0];
+        dbTest = dbs[1];
+        LogHelper.INSTANCE.printMemUsage();
 //		-------------------------------------------------------------------------
-        //      C:/Nandi_diploma/Neo4J_Database
-        //      C:/Nandi_diploma/Test_Database
-
-        GraphDB graphDB = new GraphDB("C:/Nandi_diploma/Neo4J_Database");
-
-        boolean uniqueEvents = false;
-//		-------------------------------------------------------------------------
-        //GraphDB epites:
-
-        String stopWordsFileName = "stopwords.txt";
-
-//        GraphDBBuilder.buildGraphDBFromImpressDB(graphDB,dbs[0],true,uniqueEvents, stopWordsFileName);
-
-        //TestDB:
-//		GraphDB testDB = new GraphDB("C:/Nandi_diploma/Test_Database");
-//		GraphDBBuilder.buildGraphDBFromImpressDB(testDB,dbs[1],true);
-
-        //Létrehozott hasonlóság törléséhez:
-//		graphDB.deleteSimilaritiesByType(Similarities.CBF_SIM);
+        GraphDB graphDB = buildGraphDB(dbFilterAllEvents);
+        graphDB = null;
+        System.gc();
+        graphDB = buildGraphDB(dbFilterUniqueEvents);
+        graphDB = null;
+        System.gc();
+        graphDB = buildGraphDB(dbNoFilterAllEvents);
+        graphDB = null;
+        System.gc();
+        graphDB = buildGraphDB(dbNoFilterUniqueEvents);
 
 //		-------------------------------------------------------------------------
-//		graphDB.initDB();
 
+//        GraphDB graphDB = new GraphDB(dbTrain, dbFilterAllEvents, false, true);
+//        testCFPredictor(graphDB, Similarities.CF_ISIM, 1, 0);
+//        testCFPredictor(graphDB, Similarities.CF_ISIM2, 1, 1);
 
-//		ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
+//        ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
 //		exampleSimilarityPrinter.printExampleSimilarityResults(10,Similarities.CBF_SIM,Labels.Item);
 
-
-
-//		CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-//		cfGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CF_ISIM, 1, uniqueEvents, 1);
-//		cfGraphPredictor.train(true);
-//		cfGraphPredictor.trainFromGraphDB();
-
-        HashMap<String,Double> weights = new HashMap<>(3);
-        weights.put(Relationships.HAS_META.name(),1.0);
-        weights.put(Relationships.ACTS_IN.name(),2.0);
-        weights.put(Relationships.DIR_BY.name(),2.0);
+        HashMap<String, Double> weights = new HashMap<>(3);
+        weights.put(Relationships.HAS_META.name(), 1.0);
+        weights.put(Relationships.ACTS_IN.name(), 2.0);
+        weights.put(Relationships.DIR_BY.name(), 2.0);
         Relationships[] relTypes = new Relationships[3];
         relTypes[0] = Relationships.HAS_META;
         relTypes[1] = Relationships.ACTS_IN;
         relTypes[2] = Relationships.DIR_BY;
-        Labels[] labelTypes = new Labels[3];
-        labelTypes[0] = Labels.VOD;
-        labelTypes[1] = Labels.Actor;
-        labelTypes[2] = Labels.Director;
-        String[] keyValueTypes = new String[3];
-        keyValueTypes[0] = "VodMenuDirect";
-        keyValueTypes[1] = "Actor";
-        keyValueTypes[2] = "Director";
 
 
 //        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
-//        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbs[0], Similarities.CBF_SIM, 1, weights, relTypes, 4.0);
+//        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB, dbTrain, Similarities.CBF_SIM, 1, weights, relTypes, 4.0);
 //		wordBasedCoSimCBFGraphPredictor.train(true);
 //        wordBasedCoSimCBFGraphPredictor.trainFromGraphDB();
 //
 //		UserProfileBasedTFiDF_CBFPredictor userProfileBasedTFiDF_CBFPredictor = new UserProfileBasedTFiDF_CBFPredictor();
-//		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbs[0],1,relTypes,keyValueTypes,labelTypes, stopWordsFileName);
+//		userProfileBasedTFiDF_CBFPredictor.setParameters(graphDB,dbTrain,1,relTypes,keyValueTypes,labelTypes, stopWordsFileName, uniqueEvents);
 //		userProfileBasedTFiDF_CBFPredictor.train(true);
 //		userProfileBasedTFiDF_CBFPredictor.trainFromGraphDB();
 
-        UserProfileBasedCoSimCBFPredictor userProfileBasedCoSimCBFPredictor = new UserProfileBasedCoSimCBFPredictor();
-        userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbs[0],relTypes,labelTypes,keyValueTypes, stopWordsFileName, weights,2,1);
-        userProfileBasedCoSimCBFPredictor.train(false);
+//        UserProfileBasedCoSimCBFPredictor userProfileBasedCoSimCBFPredictor = new UserProfileBasedCoSimCBFPredictor();
+//        userProfileBasedCoSimCBFPredictor.setParameters(graphDB,dbTrain,relTypes,labelTypes,keyValueTypes, stopWordsFileName, weights,2,1, uniqueEvents);
+//        userProfileBasedCoSimCBFPredictor.train(false);
 
 //        CombinedHybridPredictor combinedHybridPredictor = new CombinedHybridPredictor();
-//        combinedHybridPredictor.setParameters(graphDB,dbs[0],2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
+//        combinedHybridPredictor.setParameters(graphDB,dbTrain,2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
 //        combinedHybridPredictor.trainFromGraphDB();
 
 //        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
-//        hybridComputedPredictor.setParameters(graphDB,dbs[0],Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
+//        hybridComputedPredictor.setParameters(graphDB,dbTrain,Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
 //        hybridComputedPredictor.train(true);
 //        hybridComputedPredictor.trainFromGraphDB();
 
+        LogHelper.INSTANCE.logToFileT("Futas vége:");
+        LogHelper.INSTANCE.logToFile("separator");
+        LogHelper.INSTANCE.close();
+    }
 
-//		System.out.println("\nSTEP4: Testing, evaluating predictors and printing random recommendations:");
-        //cfGraphPredictor, wordBasedCoSimCBFGraphPredictor, userProfileBasedTFiDF_CBFPredictor,
-        // userProfileBasedCoSimCBFPredictor, combinedHybridPredictor, hybridComputedPredictor
-        Predictor[] preds = new Predictor[]{userProfileBasedCoSimCBFPredictor};
+    public static void testCFPredictor(GraphDB graphDB, Similarities sim, int method, int minSuppAB) throws Exception {
+        CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
+        cfGraphPredictor.setParameters(graphDB, sim, method, minSuppAB);
+        cfGraphPredictor.train(true);
+        System.gc();
+        cfGraphPredictor.trainFromGraphDB();
+        testPredictor(cfGraphPredictor);
+        LogHelper.INSTANCE.printMemUsage();
+        System.gc();
+    }
 
-        testPredictors(preds, dbs[0], dbs[1]);
-
-
-        LogHelper.INSTANCE.log("Futas vége:");
+    public static GraphDB buildGraphDB(String dbType) throws IOException {
+        switch (dbType) {
+            case dbNoFilterAllEvents:
+                LogHelper.INSTANCE.logToFile("No Filter + All Events DB");
+                GraphDB NoFilterAllEventsDB = new GraphDB(dbTrain, dbNoFilterAllEvents, false, false);
+                GraphDBBuilder.buildGraphDBFromImpressDB(NoFilterAllEventsDB, true);
+                LogHelper.INSTANCE.printMemUsage();
+                LogHelper.INSTANCE.logSeparatorToFile();
+                return NoFilterAllEventsDB;
+            case dbFilterAllEvents:
+                LogHelper.INSTANCE.logToFile("Filter + All Events DB");
+                GraphDB FilterAllEventsDB = new GraphDB(dbTrain, dbFilterAllEvents, false, true);
+                GraphDBBuilder.buildGraphDBFromImpressDB(FilterAllEventsDB, true);
+                LogHelper.INSTANCE.printMemUsage();
+                LogHelper.INSTANCE.logSeparatorToFile();
+                return FilterAllEventsDB;
+            case dbNoFilterUniqueEvents:
+                LogHelper.INSTANCE.logToFile("No Filter + Unique Events DB");
+                GraphDB NoFilterUniqueEventsDB = new GraphDB(dbTrain, dbNoFilterUniqueEvents, true, false);
+                GraphDBBuilder.buildGraphDBFromImpressDB(NoFilterUniqueEventsDB, true);
+                LogHelper.INSTANCE.printMemUsage();
+                LogHelper.INSTANCE.logSeparatorToFile();
+                return NoFilterUniqueEventsDB;
+            case dbFilterUniqueEvents:
+                LogHelper.INSTANCE.logToFile("Filter + Unique Events DB");
+                GraphDB FilterUniqueEventsDB = new GraphDB(dbTrain, dbFilterUniqueEvents, true, true);
+                GraphDBBuilder.buildGraphDBFromImpressDB(FilterUniqueEventsDB, true);
+                LogHelper.INSTANCE.printMemUsage();
+                LogHelper.INSTANCE.logSeparatorToFile();
+                return FilterUniqueEventsDB;
+            default:
+                throw new InvalidParameterException("Nincs ilyen gráfDB típus!");
+        }
     }
 }

@@ -1,10 +1,11 @@
 package hf.GraphUtils;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
-import gnu.trove.map.hash.*;
+import gnu.trove.map.hash.TIntDoubleHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongDoubleHashMap;
 import onlab.core.Database;
 import onlab.core.ExtendedDatabase;
 import org.neo4j.graphdb.*;
@@ -19,6 +20,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 public class GraphDB {
     public GraphDatabaseService graphDBService = null;
@@ -26,15 +28,26 @@ public class GraphDB {
     public ExtendedDatabase dbExt = null;
     private File dbFolder;
     private boolean inited = false;
+    public HashSet<String> stopWords;
+    public boolean uniqueEvents;
+    public boolean filterStopWords;
+    public long initialDBSize;
 
-    public GraphDB(Database db, String newDBFolder) {
+    public GraphDB(Database db, String DBFolder, boolean uniqueEvents, boolean filterStopWords) {
         this.db = db;
         this.dbExt = (ExtendedDatabase) db;
-        setDbFolder(newDBFolder);
+        setDbFolder(DBFolder);
+        this.uniqueEvents = uniqueEvents;
+        this.filterStopWords = filterStopWords;
+        this.stopWords = (filterStopWords) ? GraphDBBuilder.loadStopWordsFromFile() : null;
+        this.initialDBSize = this.getDBSize();
     }
 
-    public GraphDB(String oldDBFolder){
-        setDbFolder(oldDBFolder);
+    public void printParameters(){
+        LogHelper.INSTANCE.logToFile("GraphDB parameters:");
+        LogHelper.INSTANCE.logToFile("Event list: " + (this.uniqueEvents ? "unique" : "all"));
+        LogHelper.INSTANCE.logToFile("Stopwords: " + (filterStopWords ? "filtered" : "unfiltered"));
+        LogHelper.INSTANCE.logToFile("Database size: " + this.getDBSize() + " MB");
     }
 
     private static void registerShutdownHook(final GraphDatabaseService graphDb) {
@@ -84,6 +97,16 @@ public class GraphDB {
         inited = false;
     }
 
+    public long getDBSize(){
+        long MB = 1024*1024;
+        Iterable<File> files = com.google.common.io.Files.fileTreeTraverser()
+                .breadthFirstTraversal(this.getDbFolder());
+        long size = StreamSupport.stream(files.spliterator(), false)
+                .filter(f -> f.isFile())
+                .mapToLong(File::length).sum();
+        return size / MB;
+    }
+
     public void listGraphDBInfo(){
         System.out.println("--------------------------------------");
         System.out.println("Adatbazis informaciok:");
@@ -128,9 +151,6 @@ public class GraphDB {
 
     /**
      * Adott node osszes szomszedjanak DB-beli(!) ID-ja rel menten
-     * @param node
-     * @param rel
-     * @return
      */
     public static HashSet<Long> getAllNeighborDBIDsByRel(Node node, Relationships rel){
         HashSet<Long> neighbors = new HashSet<>();
@@ -192,7 +212,7 @@ public class GraphDB {
     }
 
     public void computeAndUploadIDFValues(Labels l, Relationships rel){
-        LogHelper.INSTANCE.log(l.name() + " node-ok IDF értékeinek számitása és feltöltése:");
+        LogHelper.INSTANCE.logToFileT(l.name() + " node-ok IDF értékeinek számitása és feltöltése:");
         Transaction tx = this.startTransaction();
         double numOfItems = (double) IteratorUtil.count(graphDBService.findNodes(Labels.Item));
         ArrayList<Node> nodeList = this.getNodesByLabel(l);
@@ -200,7 +220,7 @@ public class GraphDB {
             n.setProperty("idf", Math.log(numOfItems / n.getDegree(rel)));
         }
         this.endTransaction(tx);
-        LogHelper.INSTANCE.log(nodeList.size() + " érték feltöltve!");
+        LogHelper.INSTANCE.logToFileT(nodeList.size() + " érték feltöltve!");
     }
 
     /**
@@ -236,7 +256,7 @@ public class GraphDB {
     }
 
     public void deleteSimilaritiesByType(Similarities sim){
-        LogHelper.INSTANCE.log(sim.name() + " hasonlóságok törlése!");
+        LogHelper.INSTANCE.logToFileT(sim.name() + " hasonlóságok törlése!");
         Transaction tx = this.startTransaction();
         long deletedSims = 0;
         long deletedSims2 = 0;
@@ -256,7 +276,7 @@ public class GraphDB {
         }
         this.endTransaction(tx);
         deletedSims += deletedSims2;
-        System.out.println("Törölt hasonlóságok száma: " + deletedSims + "!");
+        LogHelper.INSTANCE.logToFileT("Törölt hasonlóságok száma: " + deletedSims + "!");
     }
 
     /**
@@ -393,7 +413,6 @@ public class GraphDB {
         return degree;
     }
 
-
     public TIntObjectHashMap<HashSet<Integer>> getAllUserItems() {
         Transaction tx = this.startTransaction();
         ArrayList<Node> users = this.getNodesByLabel(Labels.User);
@@ -405,7 +424,7 @@ public class GraphDB {
         count = 0;
         for(Node user : users){
             int userID = (int) user.getProperty(Labels.User.getIDName());
-            userItems.put(userID, this.getAllNeighborIDsByRel(Labels.Item, user, Relationships.SEEN));
+            userItems.put(userID, GraphDB.getAllNeighborIDsByRel(Labels.Item, user, Relationships.SEEN));
             if(++count > percent){
                 percent = percent + percent1;
                 System.out.print(percent_act + "% ");

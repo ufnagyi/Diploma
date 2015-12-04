@@ -2,8 +2,6 @@ package hf.GraphPredictors;
 
 
 import com.google.common.collect.Ordering;
-import gnu.trove.iterator.TLongDoubleIterator;
-import gnu.trove.iterator.TLongIntIterator;
 import gnu.trove.iterator.TLongIterator;
 import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -11,7 +9,6 @@ import gnu.trove.map.hash.TLongDoubleHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 import gnu.trove.set.hash.TLongHashSet;
 import hf.GraphUtils.*;
-import onlab.core.Database;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.BranchState;
 import org.neo4j.graphdb.traversal.Evaluators;
@@ -26,35 +23,56 @@ public class HybridComputedPredictor extends GraphDBPredictor {
     private HashMap<String, Double> metaWeights;
     private Relationships[] relTypes;
     private int method;
-    private boolean uniqueEvents;
+    private int minSuppSeenAB;
+    private double minSuppWordAB;
 
-    public void setParameters(GraphDB graphDB, Database db, Similarities sim, int method, boolean uniqueEvents_,
-                              HashMap<String,Double> _weights, Relationships[] rel_types){
-        super.setParameters(graphDB,db);
+    public void setParameters(GraphDB graphDB, Similarities sim, int method,
+                              HashMap<String, Double> _weights, Relationships[] rel_types,
+                              double minSuppWordAB, int minSuppSeenAB) {
+        super.setParameters(graphDB);
         this.sim = sim;
         this.method = method;
-        this.uniqueEvents = uniqueEvents_;
         this.metaWeights = _weights;
         this.relTypes = rel_types;
+        this.minSuppSeenAB = minSuppSeenAB;
+        this.minSuppWordAB = minSuppWordAB;
+    }
+
+    public String getName() {
+        return "Hybrid Computed Predictor ";
+    }
+
+    public String getShortName(){
+        return "HYB_COMPUTED";
+    }
+
+    public void printParameters() {
+        graphDB.printParameters();
+        LogHelper.INSTANCE.logToFile(this.getName() + sim.name() + " Parameters:");
+        LogHelper.INSTANCE.logToFile("Súlyok: " + metaWeights.toString());
+        LogHelper.INSTANCE.logToFile("Relációk: " + Arrays.toString(relTypes));
+        LogHelper.INSTANCE.logToFile("Method: " + method);
+        LogHelper.INSTANCE.logToFile("MinSuppWordAB: " + minSuppWordAB);
+        LogHelper.INSTANCE.logToFile("MinSuppSeenAB: " + minSuppSeenAB);
     }
 
     @Override
     public void trainFromGraphDB() {
         graphDB.initDB();
-        LogHelper.INSTANCE.log("Adatok betöltése a gráfból:");
-        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból:");
+        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból:");
+        LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból:");
         itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
-        LogHelper.INSTANCE.log("Similarity-k betöltése a gráfból KÉSZ!");
-        LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból:");
+        LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból KÉSZ!");
+        LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból:");
         userItems = graphDB.getAllUserItems();
-        LogHelper.INSTANCE.log("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!" );
-        LogHelper.INSTANCE.log("Adatok betöltése a gráfból KÉSZ!");
+        LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!");
+        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból KÉSZ!");
         graphDB.shutDownDB();
     }
 
     @Override
     protected void computeSims(boolean uploadResultIntoDB) {
-        LogHelper.INSTANCE.log("Start " + sim.name() + "!");
+        LogHelper.INSTANCE.logToFileT("Start " + sim.name() + "!");
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
 
@@ -64,16 +82,16 @@ public class HybridComputedPredictor extends GraphDBPredictor {
 
         TraversalDescription simNodeFinder = getTraversalForActualEventList();
 
-        LogHelper.INSTANCE.log("Item word és SEEN supportok számítása:");
+        LogHelper.INSTANCE.logToFileT("Item word és SEEN supportok számítása:");
         TLongIntHashMap nodeWordDegrees = new TLongIntHashMap(nodeList.size());    //friendNode_B --> suppB(RelTypes)
         TLongIntHashMap nodeSeenDegrees = new TLongIntHashMap(nodeList.size());    //friendNode_B --> suppB(SEEN)
-        for(Node item : nodeList) {
+        for (Node item : nodeList) {
             long nodeID = item.getId();
-            int itemSeenDegree = uniqueEvents ? item.getDegree() : GraphDB.getDistinctDegree(item, Relationships.SEEN);
+            int itemSeenDegree = this.graphDB.uniqueEvents ? item.getDegree() : GraphDB.getDistinctDegree(item, Relationships.SEEN);
             nodeSeenDegrees.put(nodeID, itemSeenDegree);
             nodeWordDegrees.put(nodeID, GraphDB.getSumOfDegreesByRelationships(item, relTypes));
         }
-        LogHelper.INSTANCE.log("Item word és SEEN supportok számítása KÉSZ!");
+        LogHelper.INSTANCE.logToFileT("Item word és SEEN supportok számítása KÉSZ!");
 
         long numOfComputedSims = 0;
         int changeCounter1 = 0;     //folyamat kiiratásához
@@ -95,7 +113,7 @@ public class HybridComputedPredictor extends GraphDBPredictor {
             }
         }
         graphDB.endTransaction(tx);
-        printComputedSimilarityResults(simLinks,uploadResultIntoDB);
+        printComputedSimilarityResults(simLinks, uploadResultIntoDB);
     }
 
     private int computeCosineSimilarity(Node nodeA, TraversalDescription description,
@@ -131,18 +149,18 @@ public class HybridComputedPredictor extends GraphDBPredictor {
         while (allFriends.hasNext()) {
             long friendNodeId = allFriends.next();
             int suppSeenAB = suppSeenABForAllB.get(friendNodeId);
-            suppSeenAB = (suppSeenAB > 1) ? suppSeenAB : 0; //csak azokat a CF hasonlosagokat szamolom, ahol a suppAB > 1
+            suppSeenAB = (suppSeenAB > minSuppSeenAB) ? suppSeenAB : 0; //csak azokat a CF hasonlosagokat szamolom, ahol a suppAB > 1
             double suppWordAB = suppWordABForAllB.get(friendNodeId);
-            suppWordAB = (suppWordAB > 4.0) ? suppWordAB : 0; //csak azokat a CBF hasonlosagokat szamolom, ahol a suppAB > 4
+            suppWordAB = (suppWordAB > minSuppWordAB) ? suppWordAB : 0; //csak azokat a CBF hasonlosagokat szamolom, ahol a suppAB > 4
             int suppSeenB = nodeSeenDegrees.get(friendNodeId);
             int suppWordB = nodeWordDegrees.get(friendNodeId);
             double sim = (suppSeenAB + suppWordAB) / (Math.sqrt(suppSeenA * suppSeenB) + Math.sqrt(suppWordA * suppWordB));
-            if(sim > 0.0)
+            if (sim > 0.0)
                 nodeSims.add(new SimLink<>(startNodeID, friendNodeId, sim));
-//            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
+//            LogHelper.INSTANCE.logToFile("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
         }
         List<SimLink<Long>> simLinks = Ordering.from(SimLink.getComparator()).greatestOf(nodeSims, 1000);
-        for(SimLink<Long> s : simLinks){
+        for (SimLink<Long> s : simLinks) {
             similarities.add(s);
             computedSims++;     //hány hasonlóságot tárolunk el
         }
@@ -157,7 +175,7 @@ public class HybridComputedPredictor extends GraphDBPredictor {
             i++;
         }
         allRelevantRelationships[i] = Relationships.SEEN;
-        return (uniqueEvents) ?
+        return (this.graphDB.uniqueEvents) ?
                 graphDB.graphDBService.traversalDescription()
                         .depthFirst()
                         .expand(new PathExpander<Object>() {
@@ -226,20 +244,20 @@ public class HybridComputedPredictor extends GraphDBPredictor {
         2) a User által látott filmek közül az adott itemmel sim kapcsolatban állók számával átlagolom
             --> prediction / matches
          */
-        int matches =  0;
+        int matches = 0;
 
-        if( uID != lastUser) {
+        if (uID != lastUser) {
             itemsSeenByUser = userItems.get(uID);
             userRelDegree = itemsSeenByUser.size();
             lastUser = uID;
             numUser++;
-            if(numUser % 1000 == 0)
+            if (numUser % 1000 == 0)
                 System.out.println(numUser);
         }
 
-        for(int i : itemsSeenByUser) {
+        for (int i : itemsSeenByUser) {
             double d;
-            Link<Integer> l = new Link<>(i,iID);
+            Link<Integer> l = new Link<>(i, iID);
             TIntDoubleHashMap itemSims = itemSimilarities.get(l.startNode);
             d = itemSims == null ? 0.0 : itemSims.get(l.endNode);
             if (d > 0.0) {
@@ -248,10 +266,9 @@ public class HybridComputedPredictor extends GraphDBPredictor {
             }
         }
 
-        if(method == 1) {
+        if (method == 1) {
             prediction = userRelDegree > 0 ? (prediction / userRelDegree) : 0.0;  //1-es módszer
-        }
-        else
+        } else
             prediction = matches > 0 ? prediction / matches : 0.0;         //2-es módszer
 
         return prediction;
