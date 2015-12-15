@@ -248,7 +248,7 @@ public class Main {
 
     public static void testPredictor(GraphDBPredictor predictor) throws Exception {
         LogHelper.INSTANCE.logSeparatorToFile();
-        LogHelper.INSTANCE.logToFileT("TESTING GRAPH PREDICTOR " + predictor.getName());
+        LogHelper.INSTANCE.logToFileStartTimer("TESTING GRAPH PREDICTOR " + predictor.getName());
 
         System.out.println("Initializing Recall measurement class");
         Evaluation eval = new SimpleRecallMeasurement();
@@ -259,13 +259,13 @@ public class Main {
 
         System.out.println("Initializing Recommendations Printer class...");
         RecoPrinter rp = new RecoPrinterBasic();
-        rp.setParameters(RecoPrinterBasic.ITEM_META_KEYS + "=ItemId:VodMenuDirect");
+        rp.setParameters(RecoPrinterBasic.ITEM_META_KEYS + "=ItemId:VodMenuDirect:Actor:Director");
 
         System.out.println("Calculating the max time of training dataset for random recommendations...");
         long time = dbTrain.getMaxTimeByEvents();
 
         System.out.println("Selecting random users to sample personalized recommendations...");
-        int[] userIdxsToPrint = PredictorUtil.selectRandomUsers(dbTrain, 42, 15, 2, 20);
+        int[] userIdxsToPrint = PredictorUtil.selectRandomUsers(dbTrain, 42, 15, 2, 5);
         System.out.println("Selecting random items to sample item2item lists...");
         int[] itemIdxsToPrint = PredictorUtil.selectRandomItems(dbTrain, 42, 15, 0, 1000);
 
@@ -274,7 +274,8 @@ public class Main {
         LogHelper.INSTANCE.logToFile(eval.getClass().getSimpleName() + ": " + val);
         Calendar cal = Calendar.getInstance();
         String recommenderListFileName = predictor.getShortName() + "_"
-                + cal.get(Calendar.MONTH) + "_" + cal.get(Calendar.DAY_OF_MONTH) + cal.getTimeInMillis() + ".txt";
+                + (cal.get(Calendar.MONTH) + 1) + "_" + cal.get(Calendar.DAY_OF_MONTH) + "_"
+                + cal.get(Calendar.HOUR) + "_" + cal.get(Calendar.MINUTE) + ".txt";
         LogHelper.INSTANCE.logToFile("Recommender list file: " + recommenderListFileName);
 
         System.out.printf("%s: %.6f\n", eval.getClass().getSimpleName(), val);
@@ -283,9 +284,11 @@ public class Main {
         rp.printItemRecs(iRecs, dbTrain, DIR + recommenderListFileName);
         LogHelper.INSTANCE.printMemUsage();
         LogHelper.INSTANCE.logToFileT("TESTING GRAPH PREDICTOR " + predictor.getName() + " DONE!");
+        LogHelper.INSTANCE.logToFileStopTimer("Prediction runtime: ");
     }
 
     public static void main(String[] args) throws Exception {
+        LogHelper.INSTANCE.logSeparatorToFile();
         LogHelper.INSTANCE.logToFileT("Futas kezdése:");
         //getDatabaseTrainFilename(), getDatabaseTestFilename()
         Database[] dbs = Util.loadDatabases(new String[]{getDatabaseTrainFilename(), getDatabaseTestFilename()});
@@ -293,34 +296,67 @@ public class Main {
         dbTest = dbs[1];
         LogHelper.INSTANCE.printMemUsage();
 //		-------------------------------------------------------------------------
-        GraphDB graphDB = buildGraphDB(dbFilterAllEvents);
-        graphDB = null;
-        System.gc();
-        graphDB = buildGraphDB(dbFilterUniqueEvents);
-        graphDB = null;
-        System.gc();
-        graphDB = buildGraphDB(dbNoFilterAllEvents);
-        graphDB = null;
-        System.gc();
-        graphDB = buildGraphDB(dbNoFilterUniqueEvents);
+        GraphDB graphDB;
+//        graphDB = buildGraphDB(dbFilterAllEvents);
+//        graphDB = buildGraphDB(dbFilterUniqueEvents);
+//        graphDB = buildGraphDB(dbNoFilterAllEvents);
+//        graphDB = buildGraphDB(dbNoFilterUniqueEvents);
 
 //		-------------------------------------------------------------------------
 
-//        GraphDB graphDB = new GraphDB(dbTrain, dbFilterAllEvents, false, true);
-//        testCFPredictor(graphDB, Similarities.CF_ISIM, 1, 0);
-//        testCFPredictor(graphDB, Similarities.CF_ISIM2, 1, 1);
+//        int method = Integer.valueOf(args[1]);
+//        int minSuppAB = Integer.valueOf(args[2]);
+//        boolean uploadToDB = args[3].equals("no") ? false : true;
+//        boolean train = args[3].equals("new") ? true : false;
+//        setParams(args[0], uniqueEvents, filterStopWords);
+
+        String dbType = dbFilterAllEvents;
+        boolean uniqueEvents = getEventType(dbType);
+        boolean filterStopWords = getFiltertype(dbType);
+        graphDB = new GraphDB(dbTrain, dbType, uniqueEvents, filterStopWords);
+
+        int method = 1;
+        int minSuppSeenAB = 2;
+        double minMetaSuppAB = 2.0;
+        boolean uploadToDB = false;
+        boolean train = true;
+        double cf_sim = 0.8;
+
+        HashMap<String, Double> weights = new HashMap<>(1);
+        weights.put(Relationships.HAS_META.name(), 1.0);
+//        weights.put(Relationships.ACTS_IN.name(), 1.0);
+//        weights.put(Relationships.DIR_BY.name(), 1.0);
+        Relationships[] relTypes = new Relationships[1];
+        relTypes[0] = Relationships.HAS_META;
+//        relTypes[1] = Relationships.ACTS_IN;
+//        relTypes[2] = Relationships.DIR_BY;
+
+
+        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
+        wordBasedCoSimCBFGraphPredictor.setParameters(graphDB,Similarities.CBF_SIM,method,weights,relTypes,minMetaSuppAB);
+        wordBasedCoSimCBFGraphPredictor.train(uploadToDB);
+        testPredictor(wordBasedCoSimCBFGraphPredictor);
+
+//        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
+//        hybridComputedPredictor.setParameters(graphDB,Similarities.HF_SIM,method,weights,relTypes,minMetaSuppAB,minSuppSeenAB,cf_sim);
+//        if (train) {
+//            hybridComputedPredictor.train(uploadToDB);
+//        } else {
+//            hybridComputedPredictor.trainFromGraphDB();
+//        }
+//        testPredictor(hybridComputedPredictor);
+
+//        hybridComputedPredictor.setMethod(2);
+//
+//        testPredictor(hybridComputedPredictor);
+
+//        userProfileBasedCoSimCBFPredictor.setMethod(2);
+//        testPredictor(userProfileBasedCoSimCBFPredictor);
 
 //        ExampleSimilarityPrinter exampleSimilarityPrinter = new ExampleSimilarityPrinter(graphDB);
 //		exampleSimilarityPrinter.printExampleSimilarityResults(10,Similarities.CBF_SIM,Labels.Item);
 
-        HashMap<String, Double> weights = new HashMap<>(3);
-        weights.put(Relationships.HAS_META.name(), 1.0);
-        weights.put(Relationships.ACTS_IN.name(), 2.0);
-        weights.put(Relationships.DIR_BY.name(), 2.0);
-        Relationships[] relTypes = new Relationships[3];
-        relTypes[0] = Relationships.HAS_META;
-        relTypes[1] = Relationships.ACTS_IN;
-        relTypes[2] = Relationships.DIR_BY;
+
 
 
 //        WordBasedCoSimCBFGraphPredictor wordBasedCoSimCBFGraphPredictor = new WordBasedCoSimCBFGraphPredictor();
@@ -341,25 +377,39 @@ public class Main {
 //        combinedHybridPredictor.setParameters(graphDB,dbTrain,2,1,Similarities.CF_ISIM, Similarities.CBF_SIM);
 //        combinedHybridPredictor.trainFromGraphDB();
 
-//        HybridComputedPredictor hybridComputedPredictor = new HybridComputedPredictor();
-//        hybridComputedPredictor.setParameters(graphDB,dbTrain,Similarities.HF_SIM,2,uniqueEvents,weights,relTypes);
-//        hybridComputedPredictor.train(true);
-//        hybridComputedPredictor.trainFromGraphDB();
-
         LogHelper.INSTANCE.logToFileT("Futas vége:");
-        LogHelper.INSTANCE.logToFile("separator");
+        LogHelper.INSTANCE.logSeparatorToFile();
         LogHelper.INSTANCE.close();
     }
 
-    public static void testCFPredictor(GraphDB graphDB, Similarities sim, int method, int minSuppAB) throws Exception {
-        CFGraphPredictor cfGraphPredictor = new CFGraphPredictor();
-        cfGraphPredictor.setParameters(graphDB, sim, method, minSuppAB);
-        cfGraphPredictor.train(true);
-        System.gc();
-        cfGraphPredictor.trainFromGraphDB();
-        testPredictor(cfGraphPredictor);
-        LogHelper.INSTANCE.printMemUsage();
-        System.gc();
+    public static boolean getEventType(String dbType) throws InvalidParameterException{
+        switch (dbType) {
+            case dbNoFilterAllEvents:
+                return false;
+            case dbFilterAllEvents:
+                return false;
+            case dbNoFilterUniqueEvents:
+                return true;
+            case dbFilterUniqueEvents:
+                return true;
+            default:
+                throw new InvalidParameterException("Nincs ilyen gráfDB típus!");
+        }
+    }
+
+    public static boolean getFiltertype(String dbType) throws InvalidParameterException{
+        switch (dbType) {
+            case dbNoFilterAllEvents:
+                return false;
+            case dbFilterAllEvents:
+                return true;
+            case dbNoFilterUniqueEvents:
+                return false;
+            case dbFilterUniqueEvents:
+                return true;
+            default:
+                throw new InvalidParameterException("Nincs ilyen gráfDB típus!");
+        }
     }
 
     public static GraphDB buildGraphDB(String dbType) throws IOException {

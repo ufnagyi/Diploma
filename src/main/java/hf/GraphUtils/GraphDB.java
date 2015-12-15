@@ -46,7 +46,7 @@ public class GraphDB {
     public void printParameters(){
         LogHelper.INSTANCE.logToFile("GraphDB parameters:");
         LogHelper.INSTANCE.logToFile("Event list: " + (this.uniqueEvents ? "unique" : "all"));
-        LogHelper.INSTANCE.logToFile("Stopwords: " + (filterStopWords ? "filtered" : "unfiltered"));
+        LogHelper.INSTANCE.logToFile("Stopwords: " + (this.filterStopWords ? "filtered" : "unfiltered"));
         LogHelper.INSTANCE.logToFile("Database size: " + this.getDBSize() + " MB");
     }
 
@@ -244,12 +244,11 @@ public class GraphDB {
         Transaction tx = this.startTransaction();
         HashBiMap<String, Long> wordIDs = HashBiMap.create();
 //        TObjectLongHashMap wordIDs = new TObjectLongHashMap();
-        int i = 0;
-        for(Labels l : labels){
-            ArrayList<Node> nodeList = this.getNodesByLabel(l);
+
+        for(int i = 0; i < labels.length; i++){
+            ArrayList<Node> nodeList = this.getNodesByLabel(labels[i]);
             for(Node n : nodeList)
-                wordIDs.put(i + "" + n.getProperty(l.getPropertyName()),n.getId());
-            i++;
+                wordIDs.put(i + "" + n.getProperty(labels[i].getPropertyName()),n.getId());
         }
         this.endTransaction(tx);
         return wordIDs;

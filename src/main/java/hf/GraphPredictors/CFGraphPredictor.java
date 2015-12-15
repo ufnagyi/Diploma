@@ -49,32 +49,45 @@ public class CFGraphPredictor extends GraphDBPredictor {
 
     public void trainFromGraphDB() {
         graphDB.initDB();
-        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból:");
+        printParameters();
+        LogHelper.INSTANCE.logToFileStartTimer("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból:");
         itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
         LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból KÉSZ!");
         LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból:");
         userItems = graphDB.getAllUserItems();
         LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!");
-        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból KÉSZ!");
+        LogHelper.INSTANCE.logToFileStopTimer("Adatok betöltése a gráfból KÉSZ! Betöltési idő: ");
         graphDB.shutDownDB();
     }
 
     public void computeSims(boolean uploadResultIntoDB) {
-        LogHelper.INSTANCE.logToFileT("Start " + sim.name() + "!");
+        LogHelper.INSTANCE.logToFileStartTimer("Start " + sim.name() + "!");
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
-
         ArrayList<Node> nodeList = graphDB.getNodesByLabel(Labels.Item);
+
+        printParameters();
+
+        if(!uploadResultIntoDB) {
+            itemSimilarities = new TIntObjectHashMap<>();
+        }
 
         Transaction tx = graphDB.startTransaction();
 
         LogHelper.INSTANCE.logToFileT("Item SEEN supportok számítása:");
         TLongIntHashMap nodeDegrees = new TLongIntHashMap(nodeList.size());    //friendNode_B --> suppB(SEEN)
+        TLongIntHashMap nodeItemIDs = new TLongIntHashMap(nodeList.size());     //long id -> int id
         for (Node item : nodeList) {
             long nodeID = item.getId();
             int itemSeenDegree = this.graphDB.uniqueEvents ? item.getDegree() : GraphDB.getDistinctDegree(item, Relationships.SEEN);
             nodeDegrees.put(nodeID, itemSeenDegree);
+            if(!uploadResultIntoDB){
+                int itemID = (int)item.getProperty(Labels.Item.getIDName());
+                nodeItemIDs.put(nodeID,itemID);
+                TIntDoubleHashMap tIntDoubleHashMap = new TIntDoubleHashMap();
+                itemSimilarities.put(itemID,tIntDoubleHashMap);
+            }
         }
         LogHelper.INSTANCE.logToFileT("Item SEEN supportok számítása KÉSZ!");
 
@@ -89,7 +102,7 @@ public class CFGraphPredictor extends GraphDBPredictor {
 //        nodeList.add(graphDB.graphDBService.getNodeById(5680));
 
         for (Node item : nodeList) {
-            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks, nodeDegrees);
+            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks, nodeDegrees, uploadResultIntoDB, nodeItemIDs);
             changeCounter1 += changes;
             if (changeCounter1 > 50000) {
                 graphDB.endTransaction(tx);
@@ -101,10 +114,17 @@ public class CFGraphPredictor extends GraphDBPredictor {
         }
         graphDB.endTransaction(tx);
         printComputedSimilarityResults(simLinks, uploadResultIntoDB);
+        if(!uploadResultIntoDB){
+            LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból:");
+            userItems = graphDB.getAllUserItems();
+            LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ!");
+        }
+        graphDB.shutDownDB();
     }
 
     public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                       HashSet<SimLink<Long>> similarities, TLongIntHashMap nodeDegrees) {
+                                       HashSet<SimLink<Long>> similarities, TLongIntHashMap nodeDegrees,
+                                       boolean uploadResultIntoDB, TLongIntHashMap nodeItemIDs) {
 
         int computedSims = 0;
 
@@ -126,14 +146,20 @@ public class CFGraphPredictor extends GraphDBPredictor {
             friends.advance();
             if (friends.value() > minSuppAB) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
                 computedSims++;     //hány hasonlóságot számoltunk ki
-                int suppB = nodeDegrees.get(friends.key());
+                long friendID = friends.key();
+                int suppB = nodeDegrees.get(friendID);
                 double sim = friends.value() / (Math.sqrt(suppA * suppB));
-                similarities.add(new SimLink<>(startNodeID, friends.key(), sim));
+                SimLink<Long> s = new SimLink<>(startNodeID, friendID, sim);
+                similarities.add(s);
+                if(!uploadResultIntoDB){
+                    itemSimilarities.get(nodeItemIDs.get(s.startNode)).put(nodeItemIDs.get(s.endNode),s.similarity);
+                }
 //            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
             }
         }
         return computedSims;
     }
+
 
     //Ha az event lista NEM unique! Alap grafbejarassal (nem AllEventes-sel).
     //A szurest itt vegzem el, nem a bejarasban ---> lassu!

@@ -84,18 +84,17 @@ public class GraphDBBuilder {
             insertRelationshipsWithoutProperties(Relationships.HAS_META,
                     getMetaRelationships(VOD,vod_separator,Labels.VOD));
             IDToIDs.remove(Labels.Item);
-
-            //IDF values:
-            graphDB.initDB();
-            graphDB.computeAndUploadIDFValues(Labels.Actor,Relationships.ACTS_IN);
-            graphDB.computeAndUploadIDFValues(Labels.Director,Relationships.DIR_BY);
-            graphDB.computeAndUploadIDFValues(Labels.VOD,Relationships.HAS_META);
-            graphDB.shutDownDB();
         }
         finally {
             if ( batchInserter != null )
             {
                 batchInserter.shutdown();
+                //IDF values:
+                graphDB.initDB();
+                graphDB.computeAndUploadIDFValues(Labels.Actor,Relationships.ACTS_IN);
+                graphDB.computeAndUploadIDFValues(Labels.Director,Relationships.DIR_BY);
+                graphDB.computeAndUploadIDFValues(Labels.VOD,Relationships.HAS_META);
+                graphDB.shutDownDB();
                 LogHelper.INSTANCE.logToFileT("GraphDB felépítve!");
             }
         }

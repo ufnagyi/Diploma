@@ -64,14 +64,15 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
     @Override
     public void trainFromGraphDB() {
         graphDB.initDB();
-        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból:");
+        printParameters();
+        LogHelper.INSTANCE.logToFileStartTimer("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból:");
         itemSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, sim);
         LogHelper.INSTANCE.logToFileT("Similarity-k betöltése a gráfból KÉSZ!");
         LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból:");
         userItems = graphDB.getAllUserItems();
         LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!");
-        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból KÉSZ!");
+        LogHelper.INSTANCE.logToFileStopTimer("Adatok betöltése a gráfból KÉSZ!");
         graphDB.shutDownDB();
     }
 
@@ -80,18 +81,31 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
      * CosineSim alapu CBF
      */
     public void computeSims(boolean uploadResultIntoDB) {
-        LogHelper.INSTANCE.logToFileT("Start " + sim.name() + "!");
+        LogHelper.INSTANCE.logToFileStartTimer("Start " + sim.name() + "!");
 
-        Transaction tx = graphDB.startTransaction();
         ArrayList<Node> itemList = graphDB.getNodesByLabel(Labels.Item);
 
         HashSet<SimLink<Long>> simLinks = new HashSet<>();
+        printParameters();
+        if(!uploadResultIntoDB) {
+            itemSimilarities = new TIntObjectHashMap<>();
+        }
+
+        Transaction tx = graphDB.startTransaction();
 
         LogHelper.INSTANCE.logToFileT("Item SEEN supportok számítása:");
-        TLongIntHashMap nodeDegrees = new TLongIntHashMap(itemList.size());    //friendNode_B --> suppB(relTypes)
+        TLongIntHashMap nodeDegrees = new TLongIntHashMap(itemList.size());    //friendNode_B --> suppB(SEEN)
+        TLongIntHashMap nodeItemIDs = new TLongIntHashMap(itemList.size());     //long id -> int id
         for (Node item : itemList) {
             long nodeID = item.getId();
-            nodeDegrees.put(nodeID, GraphDB.getSumOfDegreesByRelationships(item, relTypes));
+            int itemWordDegree = GraphDB.getSumOfDegreesByRelationships(item, relTypes);
+            nodeDegrees.put(nodeID, itemWordDegree);
+            if(!uploadResultIntoDB){
+                int itemID = (int)item.getProperty(Labels.Item.getIDName());
+                nodeItemIDs.put(nodeID,itemID);
+                TIntDoubleHashMap tIntDoubleHashMap = new TIntDoubleHashMap();
+                itemSimilarities.put(itemID,tIntDoubleHashMap);
+            }
         }
         LogHelper.INSTANCE.logToFileT("Item SEEN supportok számítása KÉSZ!");
 
@@ -102,7 +116,6 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
                     public Iterable<Relationship> expand(Path path, BranchState<Object> objectBranchState) {
                         return path.endNode().getRelationships(relTypes);
                     }
-
                     @Override
                     public PathExpander<Object> reverse() {
                         return null;
@@ -120,22 +133,29 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 //        nodeList.add(graphDB.graphDBService.getNodeById(8));
 
         for (Node item : itemList) {
-            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks, nodeDegrees);
-            numOfComputedSims += changes;
+            int changes = computeCosineSimilarity(item, simNodeFinder, simLinks, nodeDegrees, uploadResultIntoDB, nodeItemIDs);
             changeCounter1 += changes;
             if (changeCounter1 > 50000) {
                 graphDB.endTransaction(tx);
                 tx = graphDB.startTransaction();
+                numOfComputedSims += changeCounter1;
                 changeCounter1 = 0;
                 System.out.println(numOfComputedSims);
             }
         }
         graphDB.endTransaction(tx);
         printComputedSimilarityResults(simLinks, uploadResultIntoDB);
+        if(!uploadResultIntoDB){
+            LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból:");
+            userItems = graphDB.getAllUserItems();
+            LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ!");
+        }
+        graphDB.shutDownDB();
     }
 
     public int computeCosineSimilarity(Node nodeA, TraversalDescription description,
-                                       HashSet<SimLink<Long>> similarities, TLongIntHashMap nodeDegrees) {
+                                       HashSet<SimLink<Long>> similarities, TLongIntHashMap nodeDegrees,
+                                       boolean uploadResultIntoDB, TLongIntHashMap nodeItemIDs) {
 
         int computedSims = 0;
 
@@ -146,9 +166,9 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
 
         for (Path path : description.traverse(nodeA)) {
             Node friendNode = path.endNode();
-            String rel = path.lastRelationship().getType().name();
             long friendNodeId = friendNode.getId();
             if (!similarities.contains(new SimLink<>(startNodeID, friendNodeId))) {        //ha még nem lett kiszámolva a hasonlóságuk
+                String rel = path.lastRelationship().getType().name();
                 suppABForAllB.adjustOrPutValue(friendNodeId, metaWeights.get(rel), metaWeights.get(rel));                    //suppAB növelés
             }
         }
@@ -158,18 +178,31 @@ public class WordBasedCoSimCBFGraphPredictor extends GraphDBPredictor {
         while (friends.hasNext()) {
             friends.advance();
             if (friends.value() > minSuppAB) {      //csak azokat a hasonlóságokat számolom ki, ahol a suppAB > 1
-                int suppB = nodeDegrees.get(friends.key());
+                long friendNodeID = friends.key();
+                int suppB = nodeDegrees.get(friendNodeID);
                 double sim = friends.value() / (Math.sqrt(suppA * suppB));
-                nodeSims.add(new SimLink<>(startNodeID, friends.key(), sim));
+                nodeSims.add(new SimLink<>(startNodeID, friendNodeID, sim));
 //            System.out.println("A: " + suppA + " B: " + suppB + " AB: " + suppAB + " sim: " + sim);
             }
         }
         List<SimLink<Long>> simLinks = Ordering.from(SimLink.getComparator()).greatestOf(nodeSims, 1000);
         for (SimLink<Long> s : simLinks) {
             similarities.add(s);
+            if(!uploadResultIntoDB){
+                itemSimilarities.get(nodeItemIDs.get(s.startNode)).put(nodeItemIDs.get(s.endNode),s.similarity);
+            }
             computedSims++;     //hány hasonlóságot tárolunk el
         }
         return computedSims;
+    }
+
+    public void setMethod(int m){
+        this.method = m;
+        resetNumUser();
+    }
+
+    public void resetNumUser(){
+        this.numUser = 0;
     }
 
 

@@ -12,12 +12,14 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
     private TIntObjectHashMap<TIntDoubleHashMap> itemCBFSimilarities;
     private TIntObjectHashMap<HashSet<Integer>> userItems;
     private int method;     //hogyan atlagoljam az adott recommender alg-ot
-    private int method2;    //hogyan atlagoljam a ket alg eredmenyet egybe
+    private double CF_SIM_WEIGHT;    //hogyan atlagoljam a ket alg eredmenyet egybe
     private Similarities CFSim;
     private Similarities CBFSim;
+    private double CBF_SIM_WEIGHT;
 
     @Override
     protected void computeSims(boolean uploadResultIntoDB) {
+        trainFromGraphDB();
     }
 
     public String getName(){
@@ -28,12 +30,14 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
         return "HYB_COMBINED";
     }
 
-    public void setParameters(GraphDB graphDB, int method, int method2, Similarities cfSim, Similarities cbfSim) {
+    public void setParameters(GraphDB graphDB, int method, double cf_weight, Similarities cfSim, Similarities cbfSim) {
         super.setParameters(graphDB);
         this.method = method;
-        this.method2 = method2;
+        this.CF_SIM_WEIGHT = cf_weight;
+        this.CBF_SIM_WEIGHT = 1.0 - CF_SIM_WEIGHT;
         this.CFSim = cfSim;
         this.CBFSim = cbfSim;
+        this.numUser = 0;
     }
 
     @Override
@@ -41,7 +45,7 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
         graphDB.printParameters();
         LogHelper.INSTANCE.logToFile(this.getName() + " Parameters:");
         LogHelper.INSTANCE.logToFile("Method: " + method);
-        LogHelper.INSTANCE.logToFile("Method2: " + method2);
+        LogHelper.INSTANCE.logToFile("CF_SIM_WEIGHT: " + CF_SIM_WEIGHT);
         LogHelper.INSTANCE.logToFile("CF_SIM: " + CFSim.name());
         LogHelper.INSTANCE.logToFile("CBF_SIM: " + CBFSim.name());
     }
@@ -49,7 +53,8 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
     @Override
     public void trainFromGraphDB() {
         graphDB.initDB();
-        LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból:");
+        printParameters();
+        LogHelper.INSTANCE.logToFileStartTimer("Adatok betöltése a gráfból:");
         LogHelper.INSTANCE.logToFileT("CFSimilarity betöltése a gráfból:");
         itemCFSimilarities = graphDB.getAllSimilaritiesBySim(Labels.Item, CFSim);
         LogHelper.INSTANCE.logToFileT("CBFSimilarity betöltése a gráfból:");
@@ -59,7 +64,9 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
         userItems = graphDB.getAllUserItems();
         LogHelper.INSTANCE.logToFileT("Felhasználó-item kapcsolatok betöltése a gráfból KÉSZ! " + userItems.size() + " user betöltve!");
         LogHelper.INSTANCE.logToFileT("Adatok betöltése a gráfból KÉSZ!");
+        LogHelper.INSTANCE.logToFileStopTimer("Runtime:");
         graphDB.shutDownDB();
+        LogHelper.INSTANCE.printMemUsage();
     }
 
 
@@ -72,7 +79,7 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
     public double predict(int uID, int iID, long time) {
         int cfMatches = 0;
         int cbfMatches = 0;
-        double prediction = 0.0;
+
         if (uID != lastUser) {
             itemsSeenByUser = userItems.get(uID);
             userRelDegree = itemsSeenByUser.size();
@@ -106,17 +113,17 @@ public class CombinedHybridPredictor extends GraphDBPredictor {
         if (method == 1) {
             cfPrediction = userRelDegree > 0 ? (cfPrediction / userRelDegree) : 0.0;  //1-es módszer
             cbfPrediction = userRelDegree > 0 ? (cbfPrediction / userRelDegree) : 0.0;
-        } else {
+        } else if (method == 2) {
             cfPrediction = cfMatches > 0 ? cfPrediction / cfMatches : 0.0;         //2-es módszer
             cbfPrediction = cbfMatches > 0 ? cbfPrediction / cbfMatches : 0.0;
+        } else if (method == 3) {
+            cfPrediction = userRelDegree > 0 ? (cfPrediction / userRelDegree) : 0.0;  //1-es módszer
+            cbfPrediction = cbfMatches > 0 ? cbfPrediction / cbfMatches : 0.0;      //2-es módszer
+        } else {
+            cfPrediction = cfMatches > 0 ? cfPrediction / cfMatches : 0.0;          //2-es módszer
+            cbfPrediction = userRelDegree > 0 ? (cbfPrediction / userRelDegree) : 0.0;      //1-es módszer
         }
 
-        switch (method2) {
-            case 1:
-                prediction = (cfPrediction + cbfPrediction) / 2;
-                break;     //CF és CBF átlaga
-        }
-
-        return prediction;
+        return (CF_SIM_WEIGHT * cfPrediction + CBF_SIM_WEIGHT * cbfPrediction) / 2;
     }
 }

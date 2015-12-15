@@ -2,7 +2,6 @@ package hf.GraphPredictors;
 
 import gnu.trove.map.hash.TLongIntHashMap;
 import hf.GraphUtils.*;
-import hf.Main;
 import onlab.core.Database;
 import onlab.core.evaluation.Evaluation;
 import onlab.core.predictor.Predictor;
@@ -50,9 +49,10 @@ abstract public class GraphDBPredictor extends Predictor {
         return suppNode;
     }
 
-    public void printComputedSimilarityResults(HashSet<SimLink<Long>> simLinks, boolean uploadResultIntoDB) {
+    public void printComputedSimilarityResults(HashSet<SimLink<Long>>  simLinks, boolean uploadResultIntoDB) {
         LogHelper.INSTANCE.logToFileT("Num of computed sims: " + simLinks.size());
         LogHelper.INSTANCE.logToFileT("Stop " + sim.name() + "!");
+        LogHelper.INSTANCE.logToFileStopTimer("Runtime: ");
 
         if (uploadResultIntoDB) {
             LogHelper.INSTANCE.logToFileT("Upload computed similarities to DB:");
